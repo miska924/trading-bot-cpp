@@ -3,6 +3,6 @@
 
 
 TEST(BacktestingTest, TestAddSimple) {
-    trading_bot::Market market = trading_bot::Market();
+    trading_bot::DummyMarket market = trading_bot::DummyMarket();
     EXPECT_NE(market.time(), 0);
 }

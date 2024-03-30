@@ -1,10 +1,10 @@
 #include <iostream>
 
-#include "markets/market.h"
+#include "markets/backtest_market.h"
 
 
 int main() {
-    trading_bot::Market market = trading_bot::Market();
+    trading_bot::BacktestMarket market = trading_bot::BacktestMarket();
     std::cout << "Market time: " << market.time() << std::endl;
     return 0;
 }
