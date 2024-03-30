@@ -1,9 +1,10 @@
 #include <iostream>
-#include "trading_bot/backtesting.h"
+
+#include "markets/market.h"
 
 
 int main() {
-    int result = trading_bot::add(1, 2);
-    std::cout << "The result of adding 1 and 2 is: " << result << std::endl;
+    trading_bot::Market market = trading_bot::Market();
+    std::cout << "Market time: " << market.time() << std::endl;
     return 0;
 }
