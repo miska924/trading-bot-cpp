@@ -13,6 +13,15 @@ namespace trading_bot {
         double low;
         double close;
         double volume;
+
+        bool operator==(const Candle& other) const {
+            return time == other.time
+                && open == other.open
+                && high == other.high
+                && low == other.low
+                && close == other.close
+                && volume == other.volume;
+        }
     };
 
     enum OrderSide {

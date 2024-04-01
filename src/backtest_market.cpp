@@ -61,18 +61,30 @@ BacktestMarket::BacktestMarket(std::string dataFileName) {
 
     std::string line;
     std::getline(file, line); // skip header
+    bool first = true;
     while (std::getline(file, line)) {
         Candle candle = readCSVCandle(line);
         candles.push_back(candle);
+
+        if (first) {
+            first = false;
+            marketTime = candle.time;
+        }
     }
 }
 
 void BacktestMarket::finish() {
-    marketTime = candles.size();
+    if (candles.empty()){
+        return;
+    }
+    marketTime = candles.back().time;
 }
 
 const std::vector<Candle>* BacktestMarket::allCandles() const {
-    if (marketTime >= candles.size()) {
+    if (candles.size() == 0) {
+        return &candles;
+    }
+    if (marketTime >= candles.back().time) {
         return &candles;
     }
     return nullptr;
