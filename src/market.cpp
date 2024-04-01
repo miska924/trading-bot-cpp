@@ -25,4 +25,8 @@ namespace trading_bot {
         return true;
     }
 
+    bool DummyMarket::update() {
+        return false;
+    }
+
 } // trading_bot

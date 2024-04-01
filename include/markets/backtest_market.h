@@ -21,10 +21,11 @@ namespace trading_bot {
         ~BacktestMarket() = default;
         time_t time() const override;
         virtual bool order(Order order) override;
+        virtual bool update() override;
         void finish();
         const std::vector<Candle>* allCandles() const;
     private:
-        time_t marketTime = 0;
+        size_t currentCandle = 0;
         std::vector<Candle> candles;
     };
 

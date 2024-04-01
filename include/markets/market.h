@@ -43,6 +43,7 @@ namespace trading_bot {
         virtual ~Market() = default;
         virtual time_t time() const;
         virtual bool order(Order order) = 0;
+        virtual bool update() = 0;
         const std::vector<Order>& history() const;
     protected:
         void saveOrder(Order order);
@@ -53,6 +54,7 @@ namespace trading_bot {
     class DummyMarket : public Market {
     public:
         virtual bool order(Order order) override;
+        virtual bool update() override;
     };
 
 } // trading_bot

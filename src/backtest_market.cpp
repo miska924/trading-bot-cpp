@@ -33,15 +33,24 @@ Candle readCSVCandle(std::string line) {
 }
 
 time_t BacktestMarket::time() const {
-    return marketTime;
+    if (candles.empty()) {
+        return 0;
+    }
+    return candles[std::min(candles.size() - 1, currentCandle)].time;
 }
 
 bool BacktestMarket::order(Order order) {
-    marketTime++;
     saveOrder(order);
     return true;
 }
 
+bool BacktestMarket::update() {
+    if (currentCandle >= candles.size()) {
+        return false;
+    }
+    currentCandle++;
+    return true;
+}
 
 BacktestMarket::BacktestMarket(size_t size) {
     candles.resize(size);
@@ -61,15 +70,9 @@ BacktestMarket::BacktestMarket(std::string dataFileName) {
 
     std::string line;
     std::getline(file, line); // skip header
-    bool first = true;
     while (std::getline(file, line)) {
         Candle candle = readCSVCandle(line);
         candles.push_back(candle);
-
-        if (first) {
-            first = false;
-            marketTime = candle.time;
-        }
     }
 }
 
@@ -77,14 +80,14 @@ void BacktestMarket::finish() {
     if (candles.empty()){
         return;
     }
-    marketTime = candles.back().time;
+    currentCandle = candles.size();
 }
 
 const std::vector<Candle>* BacktestMarket::allCandles() const {
     if (candles.size() == 0) {
         return &candles;
     }
-    if (marketTime >= candles.back().time) {
+    if (currentCandle >= candles.size()) {
         return &candles;
     }
     return nullptr;
