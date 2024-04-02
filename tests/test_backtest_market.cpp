@@ -60,9 +60,7 @@ TEST(BacktestingTest, TestReadCSVCandle) {
     }));
 }
 
-
-TEST(BacktestingTest, TestCandlesFromFile) {
-    std::string testDataFileName = "../../test_data/data.csv";
+void testCandlesFromFile(const std::string& testDataFileName) {
     std::ifstream file(testDataFileName);
     
     size_t linesCount = 0;
@@ -82,7 +80,7 @@ TEST(BacktestingTest, TestCandlesFromFile) {
     file.close();
 
     trading_bot::BacktestMarket market = trading_bot::BacktestMarket(
-        "../../test_data/data.csv"
+        testDataFileName
     );
 
     EXPECT_EQ(market.getCandles().size(), 1);
@@ -96,4 +94,14 @@ TEST(BacktestingTest, TestCandlesFromFile) {
         linesCount
     );
     EXPECT_EQ(market.time(),  finish_time);
+}
+
+TEST(BacktestingTest, TestCandlesFromFile) {
+    std::string testDataFileName = "../../test_data/data.csv";
+    testCandlesFromFile(testDataFileName);
+}
+
+TEST(BacktestingTest, TestCandlesFromLargeFile) {
+    std::string testDataFileName = "../../test_data/btcusdt_15m_3y.csv";
+    testCandlesFromFile(testDataFileName);
 }
