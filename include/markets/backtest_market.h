@@ -23,10 +23,8 @@ namespace trading_bot {
         virtual bool order(Order order) override;
         virtual bool update() override;
         void finish();
-        const std::vector<Candle>* allCandles() const;
     private:
-        size_t currentCandle = 0;
-        std::vector<Candle> candles;
+        std::vector<Candle> futureCandles;
     };
 
 }

@@ -14,14 +14,7 @@ namespace trading_bot {
         double close;
         double volume;
 
-        bool operator==(const Candle& other) const {
-            return time == other.time
-                && open == other.open
-                && high == other.high
-                && low == other.low
-                && close == other.close
-                && volume == other.volume;
-        }
+        bool operator==(const Candle& other) const;
     };
 
     enum OrderSide {
@@ -33,9 +26,7 @@ namespace trading_bot {
         OrderSide side;
         double amount;
 
-        bool operator==(const Order& other) const {
-            return side == other.side && amount == other.amount;
-        }
+        bool operator==(const Order& other) const;
     };
 
     class Market {
@@ -45,8 +36,10 @@ namespace trading_bot {
         virtual bool order(Order order) = 0;
         virtual bool update() = 0;
         const std::vector<Order>& history() const;
+        const std::vector<Candle>& getCandles() const;
     protected:
         void saveOrder(Order order);
+        std::vector<Candle> candles;
     private:
         std::vector<Order> orderHistory;
     };
