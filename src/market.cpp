@@ -37,13 +37,4 @@ namespace trading_bot {
         orderHistory.push_back(order);
     }
 
-    bool DummyMarket::order(Order order) {
-        saveOrder(order);
-        return true;
-    }
-
-    bool DummyMarket::update() {
-        return false;
-    }
-
 } // trading_bot

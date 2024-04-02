@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
-#include "strategies/strategy.h"
+#include "strategies/dummy_strategy.h"
+#include "markets/dummy_market.h"
 
 
 TEST(DummyStrategy, TestRun) {

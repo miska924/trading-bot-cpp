@@ -1,5 +1,5 @@
 #include "gtest/gtest.h"
-#include "markets/market.h"
+#include "markets/dummy_market.h"
 
 
 TEST(DummyMarket, TestInit) {

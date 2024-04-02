@@ -44,10 +44,4 @@ namespace trading_bot {
         std::vector<Order> orderHistory;
     };
 
-    class DummyMarket : public Market {
-    public:
-        virtual bool order(Order order) override;
-        virtual bool update() override;
-    };
-
 } // trading_bot
