@@ -38,10 +38,10 @@ TEST(BacktestingTest, TestHistory) {
 
 TEST(BacktestingTest, TestRandomCandlesGeneration) {
     trading_bot::BacktestMarket market = trading_bot::BacktestMarket();
-    EXPECT_EQ(market.allCandles(), nullptr);
+    EXPECT_EQ(market.getCandles().size(), 1);
     market.finish();
     EXPECT_EQ(
-        market.allCandles()->size(),
+        market.getCandles().size(),
         trading_bot::DEFAULT_RANDOM_BACKTEST_MARKET_SIZE
     );
 }
@@ -85,14 +85,14 @@ TEST(BacktestingTest, TestCandlesFromFile) {
         "../../test_data/data.csv"
     );
 
-    EXPECT_EQ(market.allCandles(), nullptr);
+    EXPECT_EQ(market.getCandles().size(), 1);
     EXPECT_EQ(market.time(),  start_time);
 
     market.finish();
 
-    EXPECT_NE(market.allCandles(), nullptr);
+    EXPECT_NE(market.getCandles().size(), 1);
     EXPECT_EQ(
-        market.allCandles()->size(),
+        market.getCandles().size(),
         linesCount
     );
     EXPECT_EQ(market.time(),  finish_time);

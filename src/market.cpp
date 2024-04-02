@@ -6,6 +6,19 @@
 
 namespace trading_bot {
 
+    bool Candle::operator==(const Candle& other) const {
+        return time == other.time
+            && open == other.open
+            && high == other.high
+            && low == other.low
+            && close == other.close
+            && volume == other.volume;
+    }
+
+    bool Order::operator==(const Order& other) const {
+        return side == other.side && amount == other.amount;
+    }
+
     time_t Market::time() const {
         return std::chrono::system_clock::to_time_t(
             std::chrono::system_clock::now()
@@ -16,13 +29,12 @@ namespace trading_bot {
         return orderHistory;
     }
 
-    void Market::saveOrder(Order order) {
-        orderHistory.push_back(order);
+    const std::vector<Candle>& Market::getCandles() const {
+        return candles;
     }
 
-    bool DummyMarket::order(Order order) {
-        saveOrder(order);
-        return true;
+    void Market::saveOrder(Order order) {
+        orderHistory.push_back(order);
     }
 
 } // trading_bot
