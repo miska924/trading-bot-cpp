@@ -12,4 +12,4 @@ namespace TradingBot {
         return false;
     }
 
-} // TradingBot
+} // namespace TradingBot

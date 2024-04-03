@@ -38,4 +38,4 @@ namespace TradingBot {
         orderHistory.push_back(order);
     }
 
-} // TradingBot
+} // namespace TradingBot

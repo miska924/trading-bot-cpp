@@ -41,6 +41,7 @@ namespace TradingBot {
     }
 
     bool BacktestMarket::order(Order order) {
+        order.price = candles.back().close;
         saveOrder(order);
         return true;
     }
@@ -90,4 +91,4 @@ namespace TradingBot {
         futureCandles.clear();
     }
 
-} // TradingBot
+} // namespace TradingBot

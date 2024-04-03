@@ -10,4 +10,4 @@ namespace TradingBot {
             });
         }
     }
-} // TradingBot
+} // namespace TradingBot

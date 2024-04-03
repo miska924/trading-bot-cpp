@@ -25,4 +25,4 @@ namespace TradingBot {
         EMAFeature previousSlowEMA;
     };
 
-} // TradingBot
+} // namespace TradingBot

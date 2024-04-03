@@ -1,4 +1,5 @@
 include(FetchContent)
+
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
@@ -50,6 +51,7 @@ target_link_libraries(
   macd_strategy
   feature
   ema_feature
+  plotting
 )
 
 

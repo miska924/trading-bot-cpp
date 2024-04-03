@@ -1,4 +1,5 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+
 #include "strategies/dummy_strategy.h"
 #include "markets/dummy_market.h"
 

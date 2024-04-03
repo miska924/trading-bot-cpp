@@ -11,4 +11,4 @@ namespace TradingBot {
         virtual void run() = 0;
     };
 
-} // TradingBot
+} // namespace TradingBot

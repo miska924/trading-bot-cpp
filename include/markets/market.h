@@ -26,6 +26,7 @@ namespace TradingBot {
         time_t time;
         OrderSide side;
         double amount;
+        double price;
 
         bool operator==(const Order& other) const;
     };
@@ -45,4 +46,4 @@ namespace TradingBot {
         std::vector<Order> orderHistory;
     };
 
-} // TradingBot
+} // namespace TradingBot

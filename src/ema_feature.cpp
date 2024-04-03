@@ -23,4 +23,4 @@ namespace TradingBot {
         return ema(candles, period, lag);
     }
 
-} // TradingBot
+} // namespace TradingBot

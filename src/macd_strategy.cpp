@@ -35,4 +35,4 @@ namespace TradingBot {
         } while (market->update());
     }
 
-} // TradingBot
+} // namespace TradingBot

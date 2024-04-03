@@ -1,4 +1,5 @@
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+
 #include "features/ema_feature.h"
 #include "markets/backtest_market.h"
 

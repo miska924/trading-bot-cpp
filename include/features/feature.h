@@ -14,4 +14,4 @@ namespace TradingBot {
         virtual std::optional<double> operator()(const std::vector<Candle>& candles) const = 0;
     };
 
-} // TradingBot
+} // namespace TradingBot

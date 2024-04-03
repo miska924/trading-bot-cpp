@@ -1,14 +1,13 @@
-#include "gtest/gtest.h"
-#include "markets/backtest_market.h"
-
+#include <gtest/gtest.h>
 #include <fstream>
+
+#include "markets/backtest_market.h"
 
 
 TEST(BacktestingTest, TestStartTime) {
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
     EXPECT_EQ(market.time(), 0);
 }
-
 
 TEST(BacktestingTest, TestHistory) {
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
@@ -35,7 +34,6 @@ TEST(BacktestingTest, TestHistory) {
     EXPECT_EQ(market.history()[1], orders[1]);
 }
 
-
 TEST(BacktestingTest, TestRandomCandlesGeneration) {
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
     EXPECT_EQ(market.getCandles().size(), 1);
@@ -45,7 +43,6 @@ TEST(BacktestingTest, TestRandomCandlesGeneration) {
         TradingBot::DEFAULT_RANDOM_BACKTEST_MARKET_SIZE
     );
 }
-
 
 TEST(BacktestingTest, TestReadCSVCandle) {
     std::string csvCandle = "2023-11-08 06:00:00,1699412400.0,35306.61,35321.37,35260.0,35288.65,182.86608";

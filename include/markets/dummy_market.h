@@ -11,4 +11,4 @@ namespace TradingBot {
         virtual bool update() override;
     };
 
-} // TradingBot
+} // namespace TradingBot

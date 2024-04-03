@@ -15,4 +15,4 @@ namespace TradingBot {
         Market* market;
     };
 
-} // TradingBot
+} // namespace TradingBot

@@ -27,4 +27,4 @@ namespace TradingBot {
         std::vector<Candle> futureCandles;
     };
 
-}
+} // namespace TradingBot

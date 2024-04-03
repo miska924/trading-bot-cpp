@@ -18,4 +18,4 @@ namespace TradingBot {
         int lag;
     };
 
-} // TradingBot
+} // namespace TradingBot
