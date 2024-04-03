@@ -3,7 +3,7 @@
 #include "markets/market.h"
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     class DummyMarket : public Market {
     public:
@@ -11,4 +11,4 @@ namespace trading_bot {
         virtual bool update() override;
     };
 
-} // trading_bot
+} // TradingBot

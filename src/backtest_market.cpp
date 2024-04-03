@@ -8,7 +8,7 @@
 #include <algorithm>
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     Candle readCSVCandle(std::string line) {
         std::istringstream iss(line);
@@ -90,4 +90,4 @@ namespace trading_bot {
         futureCandles.clear();
     }
 
-} // trading_bot
+} // TradingBot

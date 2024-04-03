@@ -3,6 +3,6 @@
 
 
 TEST(DummyMarket, TestInit) {
-    trading_bot::DummyMarket market = trading_bot::DummyMarket();
+    TradingBot::DummyMarket market = TradingBot::DummyMarket();
     EXPECT_NE(market.time(), 0);
 }

@@ -4,8 +4,8 @@
 
 
 TEST(DummyStrategy, TestRun) {
-    trading_bot::DummyMarket market = trading_bot::DummyMarket();
-    trading_bot::DummyStrategy strategy = trading_bot::DummyStrategy(&market);
+    TradingBot::DummyMarket market = TradingBot::DummyMarket();
+    TradingBot::DummyStrategy strategy = TradingBot::DummyStrategy(&market);
     strategy.run();
 
     EXPECT_EQ(market.history().empty(), true);

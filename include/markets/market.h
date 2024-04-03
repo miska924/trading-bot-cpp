@@ -4,7 +4,7 @@
 #include <vector>
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     struct Candle {
         time_t time;
@@ -23,6 +23,7 @@ namespace trading_bot {
     };
 
     struct Order {
+        time_t time;
         OrderSide side;
         double amount;
 
@@ -44,4 +45,4 @@ namespace trading_bot {
         std::vector<Order> orderHistory;
     };
 
-} // trading_bot
+} // TradingBot

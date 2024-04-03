@@ -3,7 +3,7 @@
 #include "markets/market.h"
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     class Strategy {
     public:
@@ -11,4 +11,4 @@ namespace trading_bot {
         virtual void run() = 0;
     };
 
-} // trading_bot
+} // TradingBot

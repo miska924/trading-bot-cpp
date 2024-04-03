@@ -1,7 +1,7 @@
 #include "markets/dummy_market.h"
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     bool DummyMarket::order(Order order) {
         saveOrder(order);
@@ -12,4 +12,4 @@ namespace trading_bot {
         return false;
     }
 
-} // trading_bot
+} // TradingBot

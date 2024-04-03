@@ -4,7 +4,7 @@
 #include <time.h>
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     bool Candle::operator==(const Candle& other) const {
         return time == other.time
@@ -34,7 +34,8 @@ namespace trading_bot {
     }
 
     void Market::saveOrder(Order order) {
+        order.time = time();
         orderHistory.push_back(order);
     }
 
-} // trading_bot
+} // TradingBot
