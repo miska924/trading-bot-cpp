@@ -1,6 +1,6 @@
 #include "strategies/dummy_strategy.h"
 
-namespace trading_bot {
+namespace TradingBot {
 
     void DummyStrategy::run() {
         while (market->update()) {
@@ -10,4 +10,4 @@ namespace trading_bot {
             });
         }
     }
-} // trading_bot
+} // namespace TradingBot

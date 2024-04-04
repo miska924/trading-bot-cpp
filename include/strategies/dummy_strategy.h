@@ -3,7 +3,7 @@
 #include "strategies/strategy.h"
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     const double DUMMY_STRATEGY_BUY_AMOUNT = 1.0;
 
@@ -15,4 +15,4 @@ namespace trading_bot {
         Market* market;
     };
 
-} // trading_bot
+} // namespace TradingBot

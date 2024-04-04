@@ -4,7 +4,7 @@
 #include <time.h>
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     bool Candle::operator==(const Candle& other) const {
         return time == other.time
@@ -25,8 +25,12 @@ namespace trading_bot {
         );
     }
 
-    const std::vector<Order>& Market::history() const {
+    const std::vector<Order>& Market::getOrderHistory() const {
         return orderHistory;
+    }
+
+    const std::vector<Balance>& Market::getBalanceHistory() const {
+        return balanceHistory;
     }
 
     const std::vector<Candle>& Market::getCandles() const {
@@ -37,4 +41,13 @@ namespace trading_bot {
         orderHistory.push_back(order);
     }
 
-} // trading_bot
+    double Balance::asAssetA() const {
+        return assetA + assetB * price;
+    }
+
+    void Balance::update(double newPrice, time_t newTime) {
+        price = newPrice;
+        time = newTime;
+    }
+
+} // namespace TradingBot

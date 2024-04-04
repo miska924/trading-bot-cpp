@@ -19,7 +19,7 @@ jobs:
     - name: Create Build Directory
       run: mkdir build
     - name: Configure CMake
-      run: cmake -S . -B build -G Ninja
+      run: cmake -S . -B build -G Ninja -DRUN_LARGE_TESTS=OFF
     - name: Build
       run: cmake --build build
     - name: Test

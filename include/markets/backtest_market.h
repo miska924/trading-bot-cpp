@@ -7,7 +7,7 @@
 #include "markets/market.h"
 
 
-namespace trading_bot {
+namespace TradingBot {
 
     const char COMMA = ',';
     const size_t DEFAULT_RANDOM_BACKTEST_MARKET_SIZE = 100;
@@ -27,4 +27,4 @@ namespace trading_bot {
         std::vector<Candle> futureCandles;
     };
 
-}
+} // namespace TradingBot

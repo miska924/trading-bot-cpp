@@ -4,7 +4,7 @@
 
 
 int main() {
-    trading_bot::BacktestMarket market = trading_bot::BacktestMarket();
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
     std::cout << "Market time: " << market.time() << std::endl;
     return 0;
 }
