@@ -28,8 +28,10 @@ namespace TradingBot {
 
 
             if (fast > slow && previousFast < previousSlow) {
+                market->order({.side = OrderSide::RESET});
                 market->order({.side = OrderSide::BUY, .amount = 1});
             } else if (fast < slow && previousFast > previousSlow) {
+                market->order({.side = OrderSide::RESET});
                 market->order({.side = OrderSide::SELL, .amount = 1});
             }
         } while (market->update());

@@ -21,6 +21,7 @@ namespace TradingBot {
 
     enum OrderSide {
         BUY = 1,
+        RESET = 0,
         SELL = -1,
     };
 

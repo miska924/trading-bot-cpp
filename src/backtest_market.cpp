@@ -44,8 +44,16 @@ namespace TradingBot {
         order.time = time();
         order.price = candles.back().close;
 
-        balance.assetB += order.amount * order.side;
-        balance.assetA -= order.amount * order.price * order.side;
+        if (order.side == OrderSide::RESET) {
+            balance.assetA += balance.assetB * order.price;
+            balance.assetB = 0;
+        } else if (order.side == OrderSide::BUY) {
+            balance.assetB += order.amount * balance.assetA / order.price;
+            balance.assetA -= order.amount * balance.assetA;
+        } else if (order.side == OrderSide::SELL) {
+            balance.assetB -= order.amount * balance.assetA / order.price;
+            balance.assetA += order.amount * balance.assetA;
+        }
 
         balance.update(order.price, order.time);
         balanceHistory.back() = balance;
