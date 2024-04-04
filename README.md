@@ -14,8 +14,7 @@ To enable plotting for tests to see strategy performance you need `gnuplot` to b
         for apt (ubuntu/etc)
     </summary>
     <code>
-    sudo apt update
-    sudo apt install gnuplot
+    sudo apt update && sudo apt install gnuplot
     </code>
 </details>
 
