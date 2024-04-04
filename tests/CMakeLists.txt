@@ -54,7 +54,6 @@ target_link_libraries(
   plotting
 )
 
-
 include(GoogleTest)
 
 gtest_discover_tests(test_dummy_market)

@@ -6,7 +6,7 @@
 
 const double EPS = 1e-5;
 
-TEST(EMAFeature, TestEMAFeatureDefault) {
+TEST(EMAFeatureTest, TestEMAFeatureDefault) {
     std::string testDataFileName = "../../test_data/data.csv";
     TradingBot::EMAFeature ema = TradingBot::EMAFeature();
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(testDataFileName);
@@ -18,7 +18,7 @@ TEST(EMAFeature, TestEMAFeatureDefault) {
     EXPECT_EQ((*ema(market.getCandles()) - 35275.840330223742) < EPS, true);
 }
 
-TEST(EMAFeature, TestEMAFeature30) {
+TEST(EMAFeatureTest, TestEMAFeature30) {
     int period = 30;
     std::string testDataFileName = "../../test_data/data.csv";
     TradingBot::EMAFeature ema = TradingBot::EMAFeature(period);

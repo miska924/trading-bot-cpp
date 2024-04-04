@@ -4,7 +4,7 @@
 #include "markets/dummy_market.h"
 
 
-TEST(DummyStrategy, TestRun) {
+TEST(DummyStrategyTest, TestRun) {
     TradingBot::DummyMarket market = TradingBot::DummyMarket();
     TradingBot::DummyStrategy strategy = TradingBot::DummyStrategy(&market);
     strategy.run();

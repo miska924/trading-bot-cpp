@@ -3,7 +3,7 @@
 #include "markets/dummy_market.h"
 
 
-TEST(DummyMarket, TestInit) {
+TEST(DummyMarketTest, TestInit) {
     TradingBot::DummyMarket market = TradingBot::DummyMarket();
     EXPECT_NE(market.time(), 0);
 }
