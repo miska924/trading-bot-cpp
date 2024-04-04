@@ -13,7 +13,8 @@ namespace TradingBot {
     void plot(
         std::string fileName,
         std::vector<TradingBot::Candle> candles,
-        std::vector<TradingBot::Order> orders
+        std::vector<TradingBot::Order> orders,
+        std::vector<TradingBot::Balance> balances
     );
 
 } // namespace TradingBot

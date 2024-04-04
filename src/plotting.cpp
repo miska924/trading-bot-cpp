@@ -12,7 +12,8 @@ namespace TradingBot {
     void plot(
         std::string fileName,
         std::vector<TradingBot::Candle> candles,
-        std::vector<TradingBot::Order> orders
+        std::vector<TradingBot::Order> orders,
+        std::vector<TradingBot::Balance> balances
     ) {
         if (!checkGnuplot()) {
             return;
@@ -22,6 +23,12 @@ namespace TradingBot {
         for (const TradingBot::Candle& candle : candles) {
             candleCloses.push_back(candle.close);
             candleTimes.push_back(candle.time);
+        }
+
+        std::vector<double> balanceHistory, balanceTimes;
+        for (const TradingBot::Balance& balance : balances) {
+            balanceHistory.push_back(balance.asAssetA());
+            balanceTimes.push_back(balance.time);
         }
 
         std::vector<double> buyOrderPrices, buyOrderTimes, sellOrderPrices, sellOrderTimes;
@@ -35,29 +42,41 @@ namespace TradingBot {
             }
         }
 
-        auto f = matplot::figure(true);
-        auto ax = matplot::axes(f);
-        ax->position({
-            WIDTH_MARGIN,
-            HIGHT_MARGIN,
-            float(1.0 - 2 * WIDTH_MARGIN),
-            float(1.0 - 2 * HIGHT_MARGIN),
-        });
+        // Создаём фигуру и определяем размеры подграфов (2 ряда, 1 столбец, текущий подграф 1)
+        auto fig = matplot::figure(true);
 
-        f->size(DEFAULT_PLOT_WIDTH, DEFAULT_PLOT_HEIGHT);
-        ax->plot(candleTimes, candleCloses);
+        auto ax1 = fig->add_subplot(2, 1, 1);
+        ax1->hold(matplot::on);
+        ax1->plot(candleTimes, candleCloses);
 
-        ax->hold(matplot::on);
-
-        auto buy = ax->scatter(buyOrderTimes, buyOrderPrices);
+        auto buy = ax1->scatter(buyOrderTimes, buyOrderPrices);
         buy->marker_face_color("#00AA00");
         buy->color("none");
 
-        auto sell = ax->scatter(sellOrderTimes, sellOrderPrices);
+        auto sell = ax1->scatter(sellOrderTimes, sellOrderPrices);
         sell->marker_face_color("red");
         sell->color("none");
 
-        f->save(fileName);
+        auto ax2 = fig->add_subplot(2, 1, 2);
+        ax2->hold(matplot::on);
+        ax2->plot(balanceTimes, balanceHistory);
+
+        ax1->position({
+            WIDTH_MARGIN,
+            float((1.0 - 3 * HIGHT_MARGIN) / 2 + 2 * HIGHT_MARGIN),
+            float(1.0 - 2 * WIDTH_MARGIN),
+            float((1.0 - 3 * HIGHT_MARGIN) / 2)
+        });
+        ax2->position({
+            WIDTH_MARGIN,
+            HIGHT_MARGIN,
+            float(1.0 - 2 * WIDTH_MARGIN),
+            float((1.0 - 3 * HIGHT_MARGIN) / 2)
+        });
+
+        fig->size(DEFAULT_PLOT_WIDTH, DEFAULT_PLOT_HEIGHT);
+        fig->save(fileName);
+
     }
 
 } // namespace TradingBot

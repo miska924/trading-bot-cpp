@@ -25,8 +25,12 @@ namespace TradingBot {
         );
     }
 
-    const std::vector<Order>& Market::history() const {
+    const std::vector<Order>& Market::getOrderHistory() const {
         return orderHistory;
+    }
+
+    const std::vector<Balance>& Market::getBalanceHistory() const {
+        return balanceHistory;
     }
 
     const std::vector<Candle>& Market::getCandles() const {
@@ -34,8 +38,16 @@ namespace TradingBot {
     }
 
     void Market::saveOrder(Order order) {
-        order.time = time();
         orderHistory.push_back(order);
+    }
+
+    double Balance::asAssetA() const {
+        return assetA + assetB * price;
+    }
+
+    void Balance::update(double newPrice, time_t newTime) {
+        price = newPrice;
+        time = newTime;
     }
 
 } // namespace TradingBot

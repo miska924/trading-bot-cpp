@@ -41,7 +41,15 @@ namespace TradingBot {
     }
 
     bool BacktestMarket::order(Order order) {
+        order.time = time();
         order.price = candles.back().close;
+
+        balance.assetB += order.amount * order.side;
+        balance.assetA -= order.amount * order.price * order.side;
+
+        balance.update(order.price, order.time);
+        balanceHistory.back() = balance;
+        
         saveOrder(order);
         return true;
     }
@@ -52,6 +60,10 @@ namespace TradingBot {
         }
         candles.push_back(futureCandles.back());
         futureCandles.pop_back();
+
+        balance.update(candles.back().close, time());
+        balanceHistory.push_back(balance);
+    
         return true;
     }
 

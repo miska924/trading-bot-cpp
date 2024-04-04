@@ -9,5 +9,5 @@ TEST(DummyStrategyTest, TestRun) {
     TradingBot::DummyStrategy strategy = TradingBot::DummyStrategy(&market);
     strategy.run();
 
-    EXPECT_EQ(market.history().empty(), true);
+    EXPECT_EQ(market.getOrderHistory().empty(), true);
 }
