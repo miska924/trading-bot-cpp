@@ -33,6 +33,8 @@ namespace TradingBot {
 
         double asAssetA() const;
         void update(double newPrice, time_t newTime);
+
+        bool operator<(const Balance& other) const;
     };
 
     struct Order {
@@ -52,14 +54,16 @@ namespace TradingBot {
         virtual bool update() = 0;
         const std::vector<Order>& getOrderHistory() const;
         const std::vector<Balance>& getBalanceHistory() const;
+        Balance getBalance() const;
         const std::vector<Candle>& getCandles() const;
+        time_t getCandleTimeDelta() const;
     protected:
         void saveOrder(Order order);
         std::vector<Candle> candles;
         Balance balance;
         std::vector<Balance> balanceHistory;
-    private:
         std::vector<Order> orderHistory;
+        time_t candleTimeDelta;
     };
 
 } // namespace TradingBot

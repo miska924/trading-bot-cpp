@@ -33,8 +33,16 @@ namespace TradingBot {
         return balanceHistory;
     }
 
+    Balance Market::getBalance() const {
+        return balance;
+    }
+
     const std::vector<Candle>& Market::getCandles() const {
         return candles;
+    }
+
+    time_t Market::getCandleTimeDelta() const {
+        return candleTimeDelta;
     }
 
     void Market::saveOrder(Order order) {
@@ -48,6 +56,10 @@ namespace TradingBot {
     void Balance::update(double newPrice, time_t newTime) {
         price = newPrice;
         time = newTime;
+    }
+
+    bool Balance::operator<(const Balance& other) const {
+        return asAssetA() < other.asAssetA();
     }
 
 } // namespace TradingBot

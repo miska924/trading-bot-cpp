@@ -44,6 +44,11 @@ TEST(BacktestingTest, TestRandomCandlesGeneration) {
     );
 }
 
+TEST(BacktestingTest, TestCandleTimeDelta) {
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
+    EXPECT_EQ(market.getCandleTimeDelta(), 1);
+}
+
 TEST(BacktestingTest, TestReadCSVCandle) {
     std::string csvCandle = "2023-11-08 06:00:00,1699412400.0,35306.61,35321.37,35260.0,35288.65,182.86608";
     TradingBot::Candle candle = TradingBot::readCSVCandle(csvCandle);
@@ -96,6 +101,14 @@ void testCandlesFromFile(const std::string& testDataFileName) {
 TEST(BacktestingTest, TestCandlesFromFile) {
     std::string testDataFileName = "../../test_data/data.csv";
     testCandlesFromFile(testDataFileName);
+}
+
+TEST(BacktestingTest, TestCandleTimeDelta15m) {
+    std::string testDataFileName = "../../test_data/data.csv";
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(
+        testDataFileName
+    );
+    EXPECT_EQ(market.getCandleTimeDelta(), 15 * 60);
 }
 
 TEST(BacktestingTest, TestCandlesFromLargeFile) {

@@ -61,3 +61,7 @@ target_link_libraries(
   plotting
   matplot
 )
+target_link_libraries(
+  macd_strategy
+  matplot
+)
