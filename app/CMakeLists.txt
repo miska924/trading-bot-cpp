@@ -2,6 +2,15 @@
 add_executable(trading_bot_app main.cpp)
 
 # Связываем исполняемый файл с библиотекой backtesting
-target_link_libraries(trading_bot_app PRIVATE market)
-target_link_libraries(trading_bot_app PRIVATE backtest_market)
-target_link_libraries(trading_bot_app PRIVATE macd_strategy)
+target_link_libraries(
+    trading_bot_app
+    market
+    backtest_market
+    macd_strategy
+    strategy
+    fitter
+    matplot
+    plotting
+    ema_feature
+    feature
+)

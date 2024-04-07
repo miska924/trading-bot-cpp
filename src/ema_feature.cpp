@@ -23,4 +23,12 @@ namespace TradingBot {
         return ema(candles, period, lag);
     }
 
+    int EMAFeature::getPeriod() const {
+        return period;
+    }
+
+    int EMAFeature::getLag() const {
+        return lag;
+    }
+
 } // namespace TradingBot

@@ -10,8 +10,17 @@
 
 namespace TradingBot {
 
-    const double DEFAULT_MACD_FAST_PERIOD = 15;
-    const double DEFAULT_MACD_SLOW_PERIOD = 30;
+    const int DEFAULT_MACD_FAST_PERIOD = 15;
+    const int DEFAULT_MACD_SLOW_PERIOD = 30;
+    const int DEFAULT_MACD_HOLD_CANDLES = 30;
+
+    const int MIN_MACD_FAST_PERIOD = 1;
+    const int MIN_MACD_SLOW_PERIOD = 1;
+    const int MIN_MACD_HOLD_CANDLES = 1;
+
+    const int MAX_MACD_FAST_PERIOD = 1000;
+    const int MAX_MACD_SLOW_PERIOD = 1000;
+    const int MAX_MACD_HOLD_CANDLES = 1000;
 
     struct MACDParameters {
         int fastPeriod = DEFAULT_MACD_FAST_PERIOD;
@@ -21,63 +30,57 @@ namespace TradingBot {
     class MACDStrategy : public Strategy {
     public:
         MACDStrategy() = default;
-        MACDStrategy(Market* _market, const MACDParameters& parameters);
+        MACDStrategy(Market* _market, const ParamSet& paramSet);
         MACDStrategy(
             Market* market,
             int fastPeriod = DEFAULT_MACD_FAST_PERIOD,
             int slowPeriod = DEFAULT_MACD_SLOW_PERIOD
         );
-        virtual void run() override;
+        virtual void step() override;
+        virtual ParamSet getDefaultParamSet() const override;
+        virtual ParamSet getMinParamSet() const override;
+        virtual ParamSet getMaxParamSet() const override;
+        virtual bool checkParamSet(const ParamSet& paramSet) const override;
+
     protected:
-        Market* market = nullptr;
         EMAFeature fastEMA;
         EMAFeature slowEMA;
         EMAFeature previousFastEMA;
         EMAFeature previousSlowEMA;
     };
 
-    class MACD5CandlesStrategy : public MACDStrategy {
+    class MACDHoldSlowStrategy : public MACDStrategy {
     public:
-        MACD5CandlesStrategy() = default;
-        MACD5CandlesStrategy(Market* _market, const MACDParameters& parameters);
-        MACD5CandlesStrategy(
+        MACDHoldSlowStrategy() = default;
+        MACDHoldSlowStrategy(Market* _market, const ParamSet& parameters);
+        MACDHoldSlowStrategy(
             Market* _market,
             int fastPeriod = DEFAULT_MACD_FAST_PERIOD,
             int slowPeriod = DEFAULT_MACD_SLOW_PERIOD
         );
-        virtual void run() override;
+        virtual void step() override;
+    protected:
+        int hold = 1;
+        int waitUntill = 0;
     };
 
-    class MACD5CandlesStrategyFitter {
-    private:
-        const std::vector<Candle>& candles;
-        int sumL;
-        int sumR;
-
-        MACDParameters bestParameters;
-        Balance bestBalance = {
-            .assetA = 0,
-            .assetB = 0
-        };
-
-        std::vector<std::thread> threadPool;
-        std::vector<std::atomic<bool>> threadStatus;
-        std::mutex bestMutex;
-        int numThreads;
-
+    class MACDHoldFixedCandlesStrategy : public MACDHoldSlowStrategy {
     public:
-        MACD5CandlesStrategyFitter(
-            const std::vector<Candle>& candles,
-            int sumL,
-            int sumR
+        MACDHoldFixedCandlesStrategy() = default;
+        MACDHoldFixedCandlesStrategy(Market* _market, const ParamSet& parameters);
+        MACDHoldFixedCandlesStrategy(
+            Market* _market,
+            int fastPeriod = DEFAULT_MACD_FAST_PERIOD,
+            int slowPeriod = DEFAULT_MACD_SLOW_PERIOD,
+            int holdCandles = DEFAULT_MACD_HOLD_CANDLES
         );
-        ~MACD5CandlesStrategyFitter();
-        void singleRun(int fastPeriod, int slowPeriod, std::atomic<bool>& threadStatus);
-        void fit();
-        MACDParameters getBestParameters();
-        Balance getBestBalance();
-        void plotBestStrategy();
+        virtual void step() override;
+        virtual ParamSet getDefaultParamSet() const override;
+        virtual ParamSet getMinParamSet() const override;
+        virtual ParamSet getMaxParamSet() const override;
+        virtual bool checkParamSet(const ParamSet& paramSet) const override;
+    protected:
+        int hold = 1;
     };
-
 
 } // namespace TradingBot

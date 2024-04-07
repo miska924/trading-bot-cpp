@@ -1,3 +1,5 @@
+#pragma once
+
 #include <matplot/matplot.h>
 
 #include "markets/market.h"

@@ -9,10 +9,8 @@ namespace TradingBot {
 
     class DummyStrategy : public Strategy {
     public:
-        DummyStrategy(Market* market) : market(market) {};
-        virtual void run() override;
-    protected:
-        Market* market;
+        DummyStrategy(Market* _market);
+        virtual void step() override;
     };
 
 } // namespace TradingBot
