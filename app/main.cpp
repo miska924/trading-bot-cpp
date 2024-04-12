@@ -8,12 +8,13 @@
 
 int main() {
     const std::string testDataFileName = "../../test_data/btcusdt_15m_3y.csv";
-    TradingBot::BacktestMarket market(testDataFileName);
+    std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+    TradingBot::BacktestMarket market(candles);
 
     TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(&market, 10000, 1000, 100);
 
     strategy.run();
-    TradingBot::plot("BestStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    TradingBot::plot("BestStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
 
     return 0;
 }

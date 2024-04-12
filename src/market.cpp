@@ -37,10 +37,6 @@ namespace TradingBot {
         return balance;
     }
 
-    const std::vector<Candle>& Market::getCandles() const {
-        return candles;
-    }
-
     time_t Market::getCandleTimeDelta() const {
         return candleTimeDelta;
     }

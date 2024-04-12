@@ -19,7 +19,7 @@ namespace TradingBot {
     template<class Strat>
     class StrategyFitter {
     private:
-        std::vector<Candle> candles;
+        const Helpers::VectorView<Candle>& candles;
         int sumL;
         int sumR;
 
@@ -36,7 +36,7 @@ namespace TradingBot {
 
     public:
         StrategyFitter(
-            const std::vector<Candle>& candles
+            const Helpers::VectorView<Candle>& candles
         );
         ~StrategyFitter();
         void singleRun(const ParamSet& parameters, std::atomic<bool>& threadStatus);
@@ -99,7 +99,7 @@ namespace TradingBot {
 
     template<class Strat>
     StrategyFitter<Strat>::StrategyFitter(
-        const std::vector<Candle>& candles
+        const Helpers::VectorView<Candle>& candles
     ) : candles(candles) {
         numThreads = std::thread::hardware_concurrency();
         if (numThreads == 0) {
@@ -120,7 +120,7 @@ namespace TradingBot {
 
     template<class Strat>
     void StrategyFitter<Strat>::singleRun(const ParamSet& paramSet, std::atomic<bool>& threadStatus) {
-        BacktestMarket market = BacktestMarket(candles);
+        BacktestMarket market = BacktestMarket(candles, false);
         Strat strategy = Strat(
             &market,
             paramSet
@@ -142,7 +142,7 @@ namespace TradingBot {
 
     template<class Strat>
     void StrategyFitter<Strat>::fit(int iterationsLimit) {
-        BacktestMarket m = BacktestMarket(candles);
+        BacktestMarket m = BacktestMarket(candles, false);
         Strat s = Strat(&m);
         int singleParamIterations = std::floor(std::pow(
             double(iterationsLimit),
@@ -213,7 +213,7 @@ namespace TradingBot {
 
     template <class Strat>
     void StrategyFitter<Strat>::plotBestStrategy(const std::string& fileName) {
-        BacktestMarket market = BacktestMarket(candles);
+        BacktestMarket market = BacktestMarket(candles, true);
         Strat bestStrategy = Strat(
             &market,
             bestParameters
@@ -222,7 +222,7 @@ namespace TradingBot {
 
         plot(
             fileName,
-            market.getCandles(),
+            market.getCandles().toVector(),
             market.getOrderHistory(),
             market.getBalanceHistory()
         );

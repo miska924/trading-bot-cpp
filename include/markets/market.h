@@ -3,6 +3,8 @@
 #include <time.h>
 #include <vector>
 
+#include "helpers/vector_view.h"
+
 
 namespace TradingBot {
 
@@ -52,14 +54,13 @@ namespace TradingBot {
         virtual time_t time() const;
         virtual bool order(Order order) = 0;
         virtual bool update() = 0;
+        virtual Helpers::VectorView<Candle> getCandles() const = 0;
         const std::vector<Order>& getOrderHistory() const;
         const std::vector<Balance>& getBalanceHistory() const;
         Balance getBalance() const;
-        const std::vector<Candle>& getCandles() const;
         time_t getCandleTimeDelta() const;
     protected:
         void saveOrder(Order order);
-        std::vector<Candle> candles;
         Balance balance;
         std::vector<Balance> balanceHistory;
         std::vector<Order> orderHistory;

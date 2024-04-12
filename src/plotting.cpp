@@ -11,21 +11,25 @@ namespace TradingBot {
     
     void plot(
         std::string fileName,
-        std::vector<TradingBot::Candle> candles,
-        std::vector<TradingBot::Order> orders,
-        std::vector<TradingBot::Balance> balances
+        const std::vector<TradingBot::Candle>& candles,
+        const std::vector<TradingBot::Order>& orders,
+        const std::vector<TradingBot::Balance>& balances
     ) {
         if (!checkGnuplot()) {
             return;
         }
 
         std::vector<double> candleCloses, candleTimes;
+        candleCloses.reserve(candles.size());
+        candleTimes.reserve(candles.size());
         for (const TradingBot::Candle& candle : candles) {
             candleCloses.push_back(candle.close);
             candleTimes.push_back(candle.time);
         }
 
         std::vector<double> balanceHistory, balanceTimes;
+        balanceHistory.reserve(balances.size());
+        balanceTimes.reserve(balances.size());
         for (const TradingBot::Balance& balance : balances) {
             balanceHistory.push_back(balance.asAssetA());
             balanceTimes.push_back(balance.time);
@@ -37,6 +41,12 @@ namespace TradingBot {
                             sellOrderTimes,
                             resetOrderPrices,
                             resetOrderTimes;
+        buyOrderPrices.reserve(orders.size());
+        buyOrderTimes.reserve(orders.size());
+        sellOrderPrices.reserve(orders.size());
+        sellOrderTimes.reserve(orders.size());
+        resetOrderPrices.reserve(orders.size());
+        resetOrderTimes.reserve(orders.size());
         for (const TradingBot::Order& order : orders) {
             if (order.side == TradingBot::OrderSide::BUY) {
                 buyOrderPrices.push_back(order.price);

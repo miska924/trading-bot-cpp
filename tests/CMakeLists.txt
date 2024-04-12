@@ -20,12 +20,14 @@ target_link_libraries(
   gtest_main
   dummy_market
   market
+  vector_view
 )
 target_link_libraries(
   test_backtest_market
   gtest_main
   backtest_market
   market
+  vector_view
 )
 target_link_libraries(
   test_dummy_strategy
@@ -35,6 +37,7 @@ target_link_libraries(
   backtest_market
   strategy
   dummy_strategy
+  vector_view
 )
 target_link_libraries(
   test_ema_feature
@@ -43,6 +46,7 @@ target_link_libraries(
   backtest_market
   feature
   ema_feature
+  vector_view
 )
 target_link_libraries(
   test_macd_strategy
@@ -55,6 +59,7 @@ target_link_libraries(
   ema_feature
   fitter
   plotting
+  vector_view
 )
 target_link_libraries(
   test_fitter
@@ -68,6 +73,7 @@ target_link_libraries(
   fitter
   plotting
   matplot
+  vector_view
 )
 target_link_libraries(
   test_autofit_strategy
@@ -82,6 +88,7 @@ target_link_libraries(
   plotting
   matplot
   autofit_strategy
+  vector_view
 )
 
 include(GoogleTest)

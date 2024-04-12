@@ -10,11 +10,13 @@ const double EPS = 1e-5;
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     std::string testDataFileName = "../../test_data/data.csv";
-    TradingBot::BacktestMarket market(testDataFileName);
+    std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+
+    TradingBot::BacktestMarket market(candles);
     TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(&market, 100, 100, 100);
     strategy.run();
 
-    TradingBot::plot("TestAutoFitStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    TradingBot::plot("TestAutoFitStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
 
     // TODO: debug different balance between runs
     // EXPECT_EQ(

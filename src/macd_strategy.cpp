@@ -4,6 +4,7 @@
 
 #include "markets/backtest_market.h"
 #include "plotting/plotting.h"
+#include "helpers/vector_view.h"
 
 
 namespace TradingBot {
@@ -70,7 +71,7 @@ namespace TradingBot {
     }
 
     void MACDStrategy::step() {
-        const std::vector<Candle>& candles = market->getCandles();
+        Helpers::VectorView<Candle> candles = market->getCandles();
         std::optional<double> fastOptional = fastEMA(candles);
         std::optional<double> slowOptional = slowEMA(candles);
         std::optional<double> previousFastOptional = previousFastEMA(candles);
@@ -126,7 +127,7 @@ namespace TradingBot {
             market->order({.side = OrderSide::RESET});
         }
 
-        const std::vector<Candle>& candles = market->getCandles();
+        Helpers::VectorView<Candle> candles = market->getCandles();
 
         std::optional<double> fastOptional = fastEMA(candles);
         std::optional<double> slowOptional = slowEMA(candles);
@@ -195,7 +196,7 @@ namespace TradingBot {
             market->order({.side = OrderSide::RESET});
         }
 
-        const std::vector<Candle>& candles = market->getCandles();
+        Helpers::VectorView<Candle> candles = market->getCandles();
 
         std::optional<double> fastOptional = fastEMA(candles);
         std::optional<double> slowOptional = slowEMA(candles);

@@ -35,27 +35,28 @@ namespace TradingBot {
 
     std::vector<Candle> readCSVFile(std::string dataFileName) {
         std::ifstream file(dataFileName);
-
         std::vector<Candle> candles;
+
         std::string line;
         std::getline(file, line); // skip header
         while (std::getline(file, line)) {
             Candle candle = readCSVCandle(line);
             candles.push_back(candle);
         }
-        return std::move(candles);
+        return candles;
     }
 
     time_t BacktestMarket::time() const {
-        if (candles.empty()) {
+        if (current == -1) {
             return 0;
         }
-        return candles.back().time;
+        return candles[current].time;
     }
 
     bool BacktestMarket::order(Order order) {
+        assert(current != -1 && current < candles.size());
         order.time = time();
-        order.price = candles.back().close;
+        order.price = candles[current].close;
 
         if (order.side == OrderSide::RESET) {
             balance.assetA += balance.assetB * order.price * (1.0 - DEFAULT_FEE);
@@ -69,82 +70,66 @@ namespace TradingBot {
         }
 
         balance.update(order.price, order.time);
-        balanceHistory.back() = balance;
+        if (saveHistory) {
+            balanceHistory.back() = balance;
+            saveOrder(order);
+        }
         
-        saveOrder(order);
         return true;
     }
 
     bool BacktestMarket::update() {
-        if (futureCandles.empty()) {
+        if (current + 1 >= candles.size()) {
             return false;
         }
-        candles.push_back(futureCandles.back());
-        futureCandles.pop_back();
+        ++current;
 
-        balance.update(candles.back().close, time());
-        balanceHistory.push_back(balance);
+        balance.update(candles[current].close, time());
+        if (saveHistory) {
+            balanceHistory.push_back(balance);
+        }
     
         return true;
     }
 
-    BacktestMarket::BacktestMarket(size_t size) {
-        futureCandles.resize(size);
-        time_t time = size;
-        // fill in reverse order
-        for (Candle& candle : futureCandles) {
-            candle.time = --time;
-            candle.open = rand();
-            candle.close = rand();
-            candle.high = rand();
-            candle.low = rand();
-            candle.volume = rand();
-        }
-        initFutureCandles = futureCandles;
-        update();
-        candleTimeDelta = 1;
-    }
+    BacktestMarket::BacktestMarket(
+        const Helpers::VectorView<Candle>& candles,
+        bool saveHistory
+    ) : candles(candles), saveHistory(saveHistory) {
+        current = -1;
 
-    BacktestMarket::BacktestMarket(std::string dataFileName) {
-        futureCandles = readCSVFile(dataFileName);
-        std::reverse(futureCandles.begin(), futureCandles.end());
-        if (futureCandles.size() >= 2) {
-            candleTimeDelta = futureCandles[0].time - futureCandles[1].time;
+        if (candles.size() > 1) {
+            candleTimeDelta = candles[1].time - candles[0].time;
+        } else {
+            candleTimeDelta = 0;
         }
-        initFutureCandles = futureCandles;
-        update();
-    }
 
-    BacktestMarket::BacktestMarket(const std::vector<Candle>& candles) {
-        futureCandles = candles;
-        std::reverse(futureCandles.begin(), futureCandles.end());
-        if (futureCandles.size() >= 2) {
-            candleTimeDelta = futureCandles[0].time - futureCandles[1].time;
-        }
-        initFutureCandles = futureCandles;
         update();
     }
 
     void BacktestMarket::finish() {
-        if (futureCandles.empty()){
-            return;
-        }
-        candles.insert(candles.end(), futureCandles.rbegin(), futureCandles.rend());
-        futureCandles.clear();
+        current = int(candles.size()) - 1;
     }
 
     void BacktestMarket::restart() {
         finish();
 
         balance = Balance();
-        balanceHistory.clear();
+        if (saveHistory) {
+            balanceHistory.clear();
+            orderHistory.clear();
+        }
 
-        orderHistory.clear();
-
-        futureCandles = initFutureCandles;
-        candles.clear();
-        
+        current = -1;
         update();
+    }
+
+
+    Helpers::VectorView<Candle> BacktestMarket::getCandles() const {
+        if (current == candles.size()) {
+            return candles;
+        }
+        return candles.subView(0, current + 1);
     }
 
 } // namespace TradingBot

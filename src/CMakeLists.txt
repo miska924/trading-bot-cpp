@@ -22,6 +22,7 @@ add_library(macd_strategy macd_strategy.cpp)
 add_library(plotting plotting.cpp)
 add_library(fitter fitter.cpp)
 add_library(autofit_strategy autofit_strategy.cpp)
+add_library(vector_view vector_view.cpp)
 
 target_include_directories(market
     PUBLIC 
@@ -63,13 +64,27 @@ target_include_directories(fitter
     PUBLIC 
         ${PROJECT_SOURCE_DIR}/include/fitter
 )
+target_include_directories(vector_view
+    PUBLIC 
+        ${PROJECT_SOURCE_DIR}/include/helpers
+)
+target_link_libraries(
+  market
+  vector_view
+)
+target_link_libraries(
+  backtest_market
+  vector_view
+)
 target_link_libraries(
   plotting
   matplot
+  vector_view
 )
 target_link_libraries(
   macd_strategy
   matplot
+  vector_view
 )
 target_link_libraries(
   fitter
@@ -78,6 +93,7 @@ target_link_libraries(
   market
   plotting
   matplot
+  vector_view
 )
 target_link_libraries(
   autofit_strategy
@@ -90,4 +106,5 @@ target_link_libraries(
   ema_feature
   feature
   fitter
+  vector_view
 )

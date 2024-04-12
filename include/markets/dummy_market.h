@@ -9,6 +9,9 @@ namespace TradingBot {
     public:
         virtual bool order(Order order) override;
         virtual bool update() override;
+        virtual Helpers::VectorView<Candle> getCandles() const override;
+    private:
+        std::vector<Candle> candles;
     };
 
 } // namespace TradingBot

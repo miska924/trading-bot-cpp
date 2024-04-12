@@ -10,7 +10,6 @@
 namespace TradingBot {
 
     const char COMMA = ',';
-    const size_t DEFAULT_RANDOM_BACKTEST_MARKET_SIZE = 100;
     const double DEFAULT_FEE = 0.002;
 
     Candle readCSVCandle(std::string line);
@@ -18,18 +17,18 @@ namespace TradingBot {
 
     class BacktestMarket : public Market {
     public:
-        BacktestMarket(size_t size = DEFAULT_RANDOM_BACKTEST_MARKET_SIZE);
-        BacktestMarket(std::string dataFileName);
-        BacktestMarket(const std::vector<Candle>& candles);
+        BacktestMarket(const Helpers::VectorView<Candle>& candles, bool saveHistory = true);
         ~BacktestMarket() = default;
         time_t time() const override;
         virtual bool order(Order order) override;
         virtual bool update() override;
+        virtual Helpers::VectorView<Candle> getCandles() const override;
         void finish();
         void restart();
     private:
-        std::vector<Candle> futureCandles;
-        std::vector<Candle> initFutureCandles;
+        Helpers::VectorView<Candle> candles;
+        int current = -1;
+        bool saveHistory;
     };
 
 } // namespace TradingBot

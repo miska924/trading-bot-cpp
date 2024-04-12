@@ -11,7 +11,7 @@ namespace TradingBot {
     class Feature {
     public:
         virtual ~Feature() = default;
-        virtual std::optional<double> operator()(const std::vector<Candle>& candles) const = 0;
+        virtual std::optional<double> operator()(const Helpers::VectorView<Candle>& candles) const = 0;
     };
 
 } // namespace TradingBot

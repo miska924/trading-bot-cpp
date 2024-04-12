@@ -77,10 +77,10 @@ namespace TradingBot {
         if (nextFit <= market->time()) {
             nextFit = market->time() + fitStep * market->getCandleTimeDelta();
 
-            const std::vector<Candle>& allCandles = market->getCandles();
-            std::vector<Candle> candles(
-                allCandles.end() - std::min(fitWindow, int(allCandles.size())),
-                allCandles.end()
+            const Helpers::VectorView<Candle>& allCandles = market->getCandles();
+            Helpers::VectorView<Candle> candles = allCandles.subView(
+                allCandles.size() - fitWindow,
+                allCandles.size()
             );
 
             StrategyFitter<Strat> fitter(candles);
