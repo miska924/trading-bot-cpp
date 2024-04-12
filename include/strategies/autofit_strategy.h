@@ -28,7 +28,8 @@ namespace TradingBot {
             Market* market,
             int fitWindow = DEFAULT_FIT_WINDOW,
             int fitStep = DEFAULT_FIT_STEP,
-            int fitIterations = DEFAULT_FIT_ITERATIONS
+            int fitIterations = DEFAULT_FIT_ITERATIONS,
+            bool forceStop = false
         );
         virtual void step() override;
         virtual ParamSet getDefaultParamSet() const override;
@@ -40,6 +41,7 @@ namespace TradingBot {
         int fitWindow;
         int fitStep;
         int nextFit = 0;
+        bool forceStop;
         Strat strategy;
         int fitIterations = DEFAULT_FIT_ITERATIONS;
     };
@@ -51,7 +53,7 @@ namespace TradingBot {
         fitWindow = std::get<int>(paramSet[0]);
         fitStep = std::get<int>(paramSet[1]);
         fitIterations = std::get<int>(paramSet[2]);
-        
+        forceStop = std::get<int>(paramSet[3]);
     }
 
     template <class Strat>
@@ -59,12 +61,15 @@ namespace TradingBot {
         Market* market,
         int fitWindow,
         int fitStep,
-        int fitIterations
-    ) : fitWindow(fitWindow), fitStep(fitStep), fitIterations(fitIterations) {
+        int fitIterations,
+        bool forceStop
+    ) : fitWindow(fitWindow), fitStep(fitStep), fitIterations(fitIterations), forceStop(forceStop) {
         this->market = market;
         paramSet = {
             fitWindow,
-            fitStep
+            fitStep,
+            fitIterations,
+            forceStop
         };
     }
 
@@ -74,7 +79,11 @@ namespace TradingBot {
             return;
         }
         
-        if (nextFit <= market->time()) {
+        if (nextFit <= market->time() && (forceStop || market->getBalance().assetB == 0)) {
+            if (forceStop) {
+                market->order(Order{.side = OrderSide::RESET});
+            }
+
             nextFit = market->time() + fitStep * market->getCandleTimeDelta();
 
             const Helpers::VectorView<Candle>& allCandles = market->getCandles();
@@ -99,6 +108,7 @@ namespace TradingBot {
             DEFAULT_FIT_WINDOW,
             DEFAULT_FIT_STEP,
             DEFAULT_FIT_ITERATIONS,
+            0,
         };
     }
 
@@ -108,6 +118,7 @@ namespace TradingBot {
             MIN_FIT_WINDOW,
             MIN_FIT_STEP,
             MIN_FIT_ITERATIONS,
+            0,
         };
     }
 
@@ -117,24 +128,26 @@ namespace TradingBot {
             MAX_FIT_WINDOW,
             MAX_FIT_STEP,
             MAX_FIT_ITERATIONS,
+            1,
         };
     }
 
     template <class Strat>
     bool AutoFitStrategy<Strat>::checkParamSet(const ParamSet& paramSet) const {
-        if (paramSet.size() != 2) {
+        if (paramSet.size() != 4) {
             return false;
         }
 
         const int* fitWindow = std::get_if<int>(&paramSet[0]);
         const int* fitStep = std::get_if<int>(&paramSet[1]);
         const int* fitIterations = std::get_if<int>(&paramSet[2]);
+        const int* forceStop = std::get_if<int>(&paramSet[3]);
 
-        if (fitWindow == nullptr || fitStep == nullptr || fitIterations == nullptr) {
+        if (fitWindow == nullptr || fitStep == nullptr || fitIterations == nullptr || forceStop == nullptr) {
             return false;
         }
 
-        if (*fitWindow < 1 || *fitStep < 0 || *fitIterations < 1) {
+        if (*fitWindow < 1 || *fitStep < 0 || *fitIterations < 1 || *forceStop < 0 || *forceStop > 1) {
             return false;
         }
 

@@ -25,10 +25,14 @@ namespace TradingBot {
         virtual Helpers::VectorView<Candle> getCandles() const override;
         void finish();
         void restart();
+        double getFitness() const;
+
     private:
         Helpers::VectorView<Candle> candles;
         int current = -1;
         bool saveHistory;
+        double maxBalance = 0;
+        double maxDrawdown = 0;
     };
 
 } // namespace TradingBot

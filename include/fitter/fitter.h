@@ -28,6 +28,7 @@ namespace TradingBot {
             .assetA = 0,
             .assetB = 0
         };
+        double bestFitness = 0;
 
         std::vector<std::thread> threadPool;
         std::vector<std::atomic<bool>> threadStatus;
@@ -126,13 +127,14 @@ namespace TradingBot {
             paramSet
         );
         strategy.run();
-        Balance balance = market.getBalance();
+        double fitness = market.getFitness();
 
         {
             std::lock_guard<std::mutex> lock(bestMutex);
-            if (bestBalance < balance) {
-                bestBalance = balance;
+            if (bestFitness < fitness) {
+                bestBalance = market.getBalance();
                 bestParameters = paramSet;
+                bestFitness = fitness;
             }
         }
 

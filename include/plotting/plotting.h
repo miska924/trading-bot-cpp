@@ -14,7 +14,7 @@ namespace TradingBot {
     
     void plot(
         std::string fileName,
-        const std::vector<TradingBot::Candle>& candles,
+        const Helpers::VectorView<TradingBot::Candle>& candles,
         const std::vector<TradingBot::Order>& orders,
         const std::vector<TradingBot::Balance>& balances
     );

@@ -11,7 +11,7 @@ namespace TradingBot {
     
     void plot(
         std::string fileName,
-        const std::vector<TradingBot::Candle>& candles,
+        const Helpers::VectorView<TradingBot::Candle>& candles,
         const std::vector<TradingBot::Order>& orders,
         const std::vector<TradingBot::Balance>& balances
     ) {
@@ -22,9 +22,9 @@ namespace TradingBot {
         std::vector<double> candleCloses, candleTimes;
         candleCloses.reserve(candles.size());
         candleTimes.reserve(candles.size());
-        for (const TradingBot::Candle& candle : candles) {
-            candleCloses.push_back(candle.close);
-            candleTimes.push_back(candle.time);
+        for (size_t i = 0; i < candles.size(); ++i) {
+            candleCloses.push_back(candles[i].close);
+            candleTimes.push_back(candles[i].time);
         }
 
         std::vector<double> balanceHistory, balanceTimes;

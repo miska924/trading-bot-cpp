@@ -88,6 +88,9 @@ namespace TradingBot {
         if (saveHistory) {
             balanceHistory.push_back(balance);
         }
+
+        maxBalance = std::max(maxBalance, balance.asAssetA());
+        maxDrawdown = std::max(maxDrawdown, maxBalance - balance.asAssetA());
     
         return true;
     }
@@ -124,6 +127,9 @@ namespace TradingBot {
         update();
     }
 
+    double BacktestMarket::getFitness() const {
+        return balance.asAssetA() - maxDrawdown;
+    }
 
     Helpers::VectorView<Candle> BacktestMarket::getCandles() const {
         if (current == candles.size()) {
