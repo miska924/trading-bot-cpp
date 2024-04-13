@@ -42,6 +42,8 @@ namespace TradingBot {
         int fitStep;
         int nextFit = 0;
         bool forceStop;
+
+        bool reliable = false;
         Strat strategy;
         int fitIterations = DEFAULT_FIT_ITERATIONS;
     };
@@ -87,19 +89,23 @@ namespace TradingBot {
             nextFit = market->time() + fitStep * market->getCandleTimeDelta();
 
             const Helpers::VectorView<Candle>& allCandles = market->getCandles();
-            Helpers::VectorView<Candle> candles = allCandles.subView(
-                allCandles.size() - fitWindow,
-                allCandles.size()
+            StrategyFitter<Strat> fitter(
+                allCandles.subView(
+                    allCandles.size() - fitWindow,
+                    allCandles.size()
+                )
             );
-
-            StrategyFitter<Strat> fitter(candles);
             fitter.fit(fitIterations);
 
-            ParamSet params = fitter.getBestParameters();
-            strategy = Strat(market, params);
+            reliable = fitter.isReliable();
+            if (reliable) {
+                strategy = Strat(market, fitter.getBestParameters());
+            }
         }
 
-        strategy.step();
+        if (reliable) {
+            strategy.step();
+        }
     }
 
     template <class Strat>

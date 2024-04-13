@@ -3,6 +3,7 @@
 #include <matplot/matplot.h>
 
 #include "markets/market.h"
+#include "strategies/strategy.h"
 
 
 namespace TradingBot {
@@ -17,6 +18,12 @@ namespace TradingBot {
         const Helpers::VectorView<TradingBot::Candle>& candles,
         const std::vector<TradingBot::Order>& orders,
         const std::vector<TradingBot::Balance>& balances
+    );
+
+    void heatmap(
+        std::string fileName,
+        const std::vector<ParamSet>& paramSets,
+        const std::vector<double>& fitnesses
     );
 
 } // namespace TradingBot

@@ -103,4 +103,47 @@ namespace TradingBot {
 
     }
 
+    void heatmap(
+        std::string fileName,
+        const std::vector<ParamSet>& paramSets,
+        const std::vector<double>& fitnesses
+    ) {
+        if (!checkGnuplot()) {
+            return;
+        }
+
+        std::vector<double> x, y;
+        x.reserve(paramSets.size());
+        y.reserve(paramSets.size());
+        std::map<std::pair<double, double>, double> vals;
+        double mx = -1e9;
+        for (size_t i = 0; i < paramSets.size(); ++i) {
+            x.push_back(std::get<int>(paramSets[i][0]));
+            y.push_back(std::get<int>(paramSets[i][1]));
+            vals[{std::get<int>(paramSets[i][0]), std::get<int>(paramSets[i][1])}] = fitnesses[i];
+            mx = std::max(mx, fitnesses[i]);
+        }
+        std::sort(x.begin(), x.end());
+        std::sort(y.begin(), y.end());
+        x.resize(std::unique(x.begin(), x.end()) - x.begin());
+        y.resize(std::unique(y.begin(), y.end()) - y.begin());
+
+        std::vector<std::vector<double>> values;
+        for (size_t i = 0; i < x.size(); ++i) {
+            values.push_back(std::vector<double>(y.size()));
+            for (size_t j = 0; j < y.size(); ++j) {
+                auto it = vals.find({x[i], y[j]});
+                values[i][j] = (it != vals.end()) ? it->second : std::nan("");
+            }
+        }
+
+        auto fig = matplot::figure(true);
+        auto ax = fig->current_axes();
+        ax->heatmap(values);
+        ax->colormap(values);
+
+        fig->size(DEFAULT_PLOT_HEIGHT, DEFAULT_PLOT_HEIGHT);
+        fig->save(fileName);
+    }
+
 } // namespace TradingBot

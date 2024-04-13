@@ -167,6 +167,7 @@ namespace TradingBot {
         paramSet = _paramSet;
         int fast = std::get<int>(_paramSet[0]);
         int slow = std::get<int>(_paramSet[1]);
+        hold = std::get<int>(_paramSet[2]);
         assert(fast < slow);
         fastEMA = EMAFeature(fast);
         slowEMA = EMAFeature(slow);

@@ -28,23 +28,30 @@ namespace TradingBot {
             .assetA = 0,
             .assetB = 0
         };
-        double bestFitness = 0;
+        double bestFitness = -1e18;
 
         std::vector<std::thread> threadPool;
-        std::vector<std::atomic<bool>> threadStatus;
+        std::vector<bool*> threadStatus;
         std::mutex bestMutex;
+        int bestIndex = -1;
         int numThreads;
 
+        bool saveFitnesses;
+        std::vector<double> fitnesses;
+        std::vector<ParamSet> paramSets;
     public:
         StrategyFitter(
-            const Helpers::VectorView<Candle>& candles
+            const Helpers::VectorView<Candle>& candles,
+            bool saveFitnesses = false
         );
         ~StrategyFitter();
-        void singleRun(const ParamSet& parameters, std::atomic<bool>& threadStatus);
+        void singleRun(const ParamSet& parameters, bool* threadStatus, std::vector<double>& fitnesses, int index);
         void fit(int iterationsLimit = DEFAULT_ITERATIONS_LIMIT);
         ParamSet getBestParameters();
         Balance getBestBalance();
         void plotBestStrategy(const std::string& fileName);
+        void heatmapFitnesses(const std::string& fileName);
+        bool isReliable() const;
     };
 
     template <class Strat>
@@ -100,13 +107,20 @@ namespace TradingBot {
 
     template<class Strat>
     StrategyFitter<Strat>::StrategyFitter(
-        const Helpers::VectorView<Candle>& candles
-    ) : candles(candles) {
+        const Helpers::VectorView<Candle>& candles,
+        bool saveFitnesses
+    ) : candles(candles), saveFitnesses(saveFitnesses) {
         numThreads = std::thread::hardware_concurrency();
-        if (numThreads == 0) {
-            numThreads = 8;
+        if (numThreads <= 1) {
+            numThreads = 2;
         }
-        threadStatus = std::vector<std::atomic<bool>>(numThreads);
+        --numThreads;
+
+        threadStatus.reserve(numThreads);
+        for (int i = 0; i < numThreads; ++i) {
+            threadStatus.push_back(new bool(false));
+        }
+
         threadPool.reserve(numThreads);
     }
 
@@ -117,10 +131,14 @@ namespace TradingBot {
                 thread.join();
             }
         }
+
+        for (auto& status : threadStatus) {
+            delete status;
+        }
     }
 
     template<class Strat>
-    void StrategyFitter<Strat>::singleRun(const ParamSet& paramSet, std::atomic<bool>& threadStatus) {
+    void StrategyFitter<Strat>::singleRun(const ParamSet& paramSet, bool* threadStatus, std::vector<double>& fitnesses, int index) {
         BacktestMarket market = BacktestMarket(candles, false);
         Strat strategy = Strat(
             &market,
@@ -131,14 +149,18 @@ namespace TradingBot {
 
         {
             std::lock_guard<std::mutex> lock(bestMutex);
-            if (bestFitness < fitness) {
+            if (saveFitnesses) {
+                fitnesses.push_back(fitness);
+            }
+            if (bestFitness < fitness || (bestFitness == fitness && index < bestIndex)) {
+                bestIndex = index;
                 bestBalance = market.getBalance();
                 bestParameters = paramSet;
                 bestFitness = fitness;
             }
         }
 
-        threadStatus = true;
+        *threadStatus = true;
     }
 
 
@@ -150,7 +172,15 @@ namespace TradingBot {
             double(iterationsLimit),
             1.0 / s.getDefaultParamSet().size()
         ));
-        std::vector<ParamSet> paramSets;
+        
+        paramSets.clear();
+        paramSets.reserve(singleParamIterations * s.getDefaultParamSet().size());
+
+        if (saveFitnesses) {
+            fitnesses.clear();
+            fitnesses.reserve(singleParamIterations * s.getDefaultParamSet().size());
+        }
+
         ParamSet paramSet;
 
         generateParamSets(
@@ -162,13 +192,16 @@ namespace TradingBot {
             paramSet
         );
 
-        for (const ParamSet& paramSet : paramSets) {
+        for (size_t j = 0; j < paramSets.size(); ++j) {
+            const ParamSet& paramSet = paramSets[j];
             if (threadPool.size() < numThreads) {
                 threadPool.emplace_back(
                     &StrategyFitter::singleRun,
                     this,
                     paramSet,
-                    std::ref(threadStatus[threadPool.size()])
+                    threadStatus[threadPool.size()],
+                    std::ref(fitnesses),
+                    j
                 );
                 continue;
             }
@@ -176,18 +209,20 @@ namespace TradingBot {
             bool started = false;
             while (!started) {
                 for (size_t i = 0; i < numThreads; i++) {
-                    if (!threadStatus[i]) {
+                    if (!*threadStatus[i]) {
                         continue;
                     }
                     if (threadPool[i].joinable()) {
                         threadPool[i].join();
                     }
-                    threadStatus[i] = false;
+                    *threadStatus[i] = false;
                     threadPool[i] = std::move(std::thread(
                         &StrategyFitter::singleRun,
                         this,
                         paramSet,
-                        std::ref(threadStatus[i])
+                        threadStatus[i],
+                        std::ref(fitnesses),
+                        j
                     ));
                     
                     started = true;
@@ -228,6 +263,16 @@ namespace TradingBot {
             market.getOrderHistory(),
             market.getBalanceHistory()
         );
+    }
+
+    template <class Strat>
+    void StrategyFitter<Strat>::heatmapFitnesses(const std::string& fileName) {
+        heatmap(fileName, paramSets, fitnesses);
+    }
+
+    template <class Strat>
+    bool StrategyFitter<Strat>::isReliable() const {
+        return bestFitness > Balance().asAssetA();
     }
 
 } // namespace TradingBot

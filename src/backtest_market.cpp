@@ -90,7 +90,9 @@ namespace TradingBot {
         }
 
         maxBalance = std::max(maxBalance, balance.asAssetA());
-        maxDrawdown = std::max(maxDrawdown, maxBalance - balance.asAssetA());
+        double drawdown = maxBalance - balance.asAssetA();
+        maxDrawdown = std::max(maxDrawdown, drawdown);
+        sumSquaredDrawdown += drawdown * drawdown;
     
         return true;
     }
@@ -129,6 +131,7 @@ namespace TradingBot {
 
     double BacktestMarket::getFitness() const {
         return balance.asAssetA() - maxDrawdown;
+        // return balance.asAssetA() - maxDrawdown - std::sqrt(sumSquaredDrawdown / (current + 1));
     }
 
     Helpers::VectorView<Candle> BacktestMarket::getCandles() const {

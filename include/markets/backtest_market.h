@@ -31,8 +31,10 @@ namespace TradingBot {
         Helpers::VectorView<Candle> candles;
         int current = -1;
         bool saveHistory;
+
         double maxBalance = 0;
         double maxDrawdown = 0;
+        double sumSquaredDrawdown = 0;
     };
 
 } // namespace TradingBot
