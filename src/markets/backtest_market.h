@@ -1,8 +1,8 @@
 #pragma once
 
-#include <time.h>
-#include <string>
 #include <optional>
+#include <string>
+#include <time.h>
 
 #include "markets/market.h"
 
@@ -17,7 +17,7 @@ namespace TradingBot {
 
     class BacktestMarket : public Market {
     public:
-        BacktestMarket(const Helpers::VectorView<Candle>& candles, bool saveHistory = true);
+        BacktestMarket(const Helpers::VectorView<Candle>& candles, bool saveHistory = true, bool verbose = false);
         ~BacktestMarket() = default;
         time_t time() const override;
         virtual bool order(Order order) override;
@@ -32,6 +32,7 @@ namespace TradingBot {
         Helpers::VectorView<Candle> candles;
         int current = -1;
         bool saveHistory;
+        bool verbose;
         Order lastOrder = {.side = OrderSide::RESET};
 
         double maxBalance = 0;

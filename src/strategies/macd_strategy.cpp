@@ -2,54 +2,32 @@
 
 #include <assert.h>
 
+#include "helpers/vector_view.h"
 #include "markets/backtest_market.h"
 #include "helpers/vector_view.h"
 
 
 namespace TradingBot {
 
-    MACDStrategy::MACDStrategy(Market* _market, int fastPeriod, int slowPeriod) {
-        assert(fastPeriod < slowPeriod);
-        market = _market;
-        slowEMA = EMAFeature(slowPeriod);
-        fastEMA = EMAFeature(fastPeriod);
-        previousSlowEMA = EMAFeature(slowPeriod, 1);
-        previousFastEMA = EMAFeature(fastPeriod, 1);
+    MACDStrategy::MACDStrategy(Market* market, int fastPeriod, int slowPeriod) {
         paramSet = {
             fastPeriod,
-            slowPeriod
+            slowPeriod,
         };
+        assert(checkParamSet(paramSet));
+        this->market = market;
+        slowEMA = EMAFeature(slowPeriod);
+        fastEMA = EMAFeature(fastPeriod);
     }
 
-    MACDStrategy::MACDStrategy(Market* _market, const ParamSet& _paramSet) {
-        market = _market;
-        paramSet = _paramSet;
-        int fast = std::get<int>(_paramSet[0]);
-        int slow = std::get<int>(_paramSet[1]);
-        assert(fast < slow);
+    MACDStrategy::MACDStrategy(Market* market, const ParamSet& paramSet) {
+        assert(checkParamSet(paramSet));
+        this->market = market;
+        this->paramSet = paramSet;
+        int fast = std::get<int>(paramSet[0]);
+        int slow = std::get<int>(paramSet[1]);
         fastEMA = EMAFeature(fast);
         slowEMA = EMAFeature(slow);
-        previousFastEMA = EMAFeature(fast, 1);
-        previousSlowEMA = EMAFeature(slow, 1);
-    }
-
-    ParamSet MACDStrategy::getDefaultParamSet() const {
-        return {
-            DEFAULT_MACD_FAST_PERIOD,
-            DEFAULT_MACD_SLOW_PERIOD,
-        };
-    }
-    ParamSet MACDStrategy::getMinParamSet() const {
-        return {
-            MIN_MACD_FAST_PERIOD,
-            MIN_MACD_SLOW_PERIOD,
-        };
-    }
-    ParamSet MACDStrategy::getMaxParamSet() const {
-        return {
-            MAX_MACD_FAST_PERIOD,
-            MAX_MACD_SLOW_PERIOD,
-        };
     }
 
     bool MACDStrategy::checkParamSet(const ParamSet& paramSet) const {
@@ -71,10 +49,15 @@ namespace TradingBot {
 
     void MACDStrategy::step() {
         Helpers::VectorView<Candle> candles = market->getCandles();
+
+        if (candles.size() <= slowEMA.getPeriod()) {
+            return;
+        }
+
         std::optional<double> fastOptional = fastEMA(candles);
         std::optional<double> slowOptional = slowEMA(candles);
-        std::optional<double> previousFastOptional = previousFastEMA(candles);
-        std::optional<double> previousSlowOptional = previousSlowEMA(candles);
+        std::optional<double> previousFastOptional = fastEMA(candles.subView(0, candles.size() - 1));
+        std::optional<double> previousSlowOptional = slowEMA(candles.subView(0, candles.size() - 1));
         if (!fastOptional || !slowOptional || !previousFastOptional || !previousSlowOptional) {
             return;
         }
@@ -93,99 +76,58 @@ namespace TradingBot {
         }
     }
 
-    MACDHoldSlowStrategy::MACDHoldSlowStrategy(Market* _market, int fastPeriod, int slowPeriod) {
-        assert(fastPeriod < slowPeriod);
-        market = _market;
-        slowEMA = EMAFeature(slowPeriod);
-        fastEMA = EMAFeature(fastPeriod);
-        previousSlowEMA = EMAFeature(slowPeriod, 1);
-        previousFastEMA = EMAFeature(fastPeriod, 1);
+    MACDHoldSlowStrategy::MACDHoldSlowStrategy(Market* market, int fastPeriod, int slowPeriod) {
         paramSet = {
             fastPeriod,
-            slowPeriod
+            slowPeriod,
         };
+        hold = slowPeriod;
+        assert(checkParamSet(paramSet));
+        this->market = market;
+        slowEMA = EMAFeature(slowPeriod);
+        fastEMA = EMAFeature(fastPeriod);
     }
 
-    MACDHoldSlowStrategy::MACDHoldSlowStrategy(Market* _market, const ParamSet& _paramSet) {
-        market = _market;
-        paramSet = _paramSet;
-        int fast = std::get<int>(_paramSet[0]);
-        int slow = std::get<int>(_paramSet[1]);
-        assert(fast < slow);
+    MACDHoldSlowStrategy::MACDHoldSlowStrategy(Market* market, const ParamSet& paramSet) {
+        assert(checkParamSet(paramSet));
+        this->market = market;
+        this->paramSet = paramSet;
+        int fast = std::get<int>(paramSet[0]);
+        int slow = std::get<int>(paramSet[1]);
+        hold = slow;
         fastEMA = EMAFeature(fast);
         slowEMA = EMAFeature(slow);
-        previousFastEMA = EMAFeature(fast, 1);
-        previousSlowEMA = EMAFeature(slow, 1);
-    }
-
-    void MACDHoldSlowStrategy::step() {
-        if (market->time() < waitUntill) {
-            return;
-        }
-        if (market->getBalance().assetB != 0) {
-            market->order({.side = OrderSide::RESET});
-        }
-
-        Helpers::VectorView<Candle> candles = market->getCandles();
-
-        std::optional<double> fastOptional = fastEMA(candles);
-        std::optional<double> slowOptional = slowEMA(candles);
-        std::optional<double> previousFastOptional = previousFastEMA(candles);
-        std::optional<double> previousSlowOptional = previousSlowEMA(candles);
-        
-        if (
-            !fastOptional ||
-            !slowOptional ||
-            !previousFastOptional ||
-            !previousSlowOptional
-        ) {
-            return;
-        }
-
-        double fast = *fastOptional;
-        double slow = *slowOptional;
-        double previousFast = *previousFastOptional;
-        double previousSlow = *previousSlowOptional;
-
-        time_t wait = slowEMA.getPeriod() * market->getCandleTimeDelta();
-
-        if (fast > slow && previousFast < previousSlow) {
-            market->order({.side = OrderSide::BUY, .amount = 1});
-            waitUntill = market->time() + wait;
-        } else if (fast < slow && previousFast > previousSlow) {
-            market->order({.side = OrderSide::SELL, .amount = 1});
-            waitUntill = market->time() + wait;
-        }
     }
 
     MACDHoldFixedStrategy::MACDHoldFixedStrategy(
-        Market* _market,
-        const ParamSet& _paramSet
+        Market* market,
+        const ParamSet& paramSet
     ) {
-        market = _market;
-        paramSet = _paramSet;
-        int fast = std::get<int>(_paramSet[0]);
-        int slow = std::get<int>(_paramSet[1]);
-        hold = std::get<int>(_paramSet[2]);
-        assert(fast < slow);
+        assert(checkParamSet(paramSet));
+        this->market = market;
+        this->paramSet = paramSet;
+        int fast = std::get<int>(paramSet[0]);
+        int slow = std::get<int>(paramSet[1]);
+        hold = std::get<int>(paramSet[2]);
         fastEMA = EMAFeature(fast);
         slowEMA = EMAFeature(slow);
-        previousFastEMA = EMAFeature(fast, 1);
-        previousSlowEMA = EMAFeature(slow, 1);
     }
 
     MACDHoldFixedStrategy::MACDHoldFixedStrategy(
-        Market* _market,
+        Market* market,
         int fastPeriod,
         int slowPeriod,
         int holdCandles
     ) : hold(holdCandles) {
-        assert(fastPeriod < slowPeriod);
-        market = _market;
+        paramSet = {
+            fastPeriod,
+            slowPeriod,
+            holdCandles,
+        };
+        assert(checkParamSet(paramSet));
+        this->market = market;
         slowEMA = EMAFeature(slowPeriod);
         fastEMA = EMAFeature(fastPeriod);
-        previousSlowEMA = EMAFeature(slowPeriod, 1);
-        previousFastEMA = EMAFeature(fastPeriod, 1);
     }
 
     void MACDHoldFixedStrategy::step() {
@@ -197,11 +139,14 @@ namespace TradingBot {
         }
 
         Helpers::VectorView<Candle> candles = market->getCandles();
+        if (candles.size() <= slowEMA.getPeriod()) {
+            return;
+        }
 
         std::optional<double> fastOptional = fastEMA(candles);
         std::optional<double> slowOptional = slowEMA(candles);
-        std::optional<double> previousFastOptional = previousFastEMA(candles);
-        std::optional<double> previousSlowOptional = previousSlowEMA(candles);
+        std::optional<double> previousFastOptional = fastEMA(candles.subView(0, candles.size() - 1));
+        std::optional<double> previousSlowOptional = slowEMA(candles.subView(0, candles.size() - 1));
         
         if (
             !fastOptional ||
@@ -227,32 +172,26 @@ namespace TradingBot {
         }
     }
 
-    ParamSet MACDHoldFixedStrategy::getDefaultParamSet() const {
-        return {
-            DEFAULT_MACD_FAST_PERIOD,
-            DEFAULT_MACD_SLOW_PERIOD,
-            DEFAULT_MACD_HOLD_CANDLES,
-        };
-    }
-
-    ParamSet MACDHoldFixedStrategy::getMinParamSet() const {
-        return {
-            MIN_MACD_FAST_PERIOD,
-            MIN_MACD_SLOW_PERIOD,
-            MIN_MACD_HOLD_CANDLES,
-        };
-    }
-
-    ParamSet MACDHoldFixedStrategy::getMaxParamSet() const {
-        return {
-            MAX_MACD_FAST_PERIOD,
-            MAX_MACD_SLOW_PERIOD,
-            MAX_MACD_HOLD_CANDLES,
-        };
-    }
-
     bool MACDHoldFixedStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 3) {
+            return false;
+        }
+
+        const int* fast = std::get_if<int>(&paramSet[0]);
+        const int* slow = std::get_if<int>(&paramSet[1]);
+        const int* hold = std::get_if<int>(&paramSet[2]);
+        if (fast == nullptr || slow == nullptr || hold == nullptr) {
+            return false;
+        }
+        if (*fast >= *slow || *fast < 1 || *hold < 1) {
+            return false;
+        }
+
+        return true;
+    }
+
+    bool MACDHoldSlowStrategy::checkParamSet(const ParamSet& paramSet) const {
+        if (paramSet.size() != 2) {
             return false;
         }
 
@@ -261,7 +200,7 @@ namespace TradingBot {
         if (fast == nullptr || slow == nullptr) {
             return false;
         }
-        if (*fast >= *slow) {
+        if (*fast >= *slow || *fast < 1) {
             return false;
         }
 

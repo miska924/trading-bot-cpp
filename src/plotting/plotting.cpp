@@ -1,7 +1,7 @@
 #include "plotting/plotting.h"
 
-#include <cstdlib>
 #include <assert.h>
+#include <cstdlib>
 
 
 namespace TradingBot {
@@ -118,7 +118,7 @@ namespace TradingBot {
         for (size_t i = 0; i < values.getShape()[0]; ++i) {
             v.push_back(std::vector<double>(values.getShape()[1]));
             for (size_t j = 0; j < values.getShape()[1]; ++j) {
-                v[i][j] = values[{i, j}];
+                v[i][j] = values[{i, j}] == -1e18 ? std::nan("") : values[{i, j}];
             }
         }
 

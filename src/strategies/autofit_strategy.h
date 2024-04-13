@@ -1,9 +1,10 @@
 #pragma once
 
-#include "strategies/strategy.h"
 #include "fitter/fitter.h"
-#include "markets/market.h"
 #include "markets/backtest_market.h"
+#include "markets/market.h"
+#include "strategies/strategy.h"
+
 
 namespace TradingBot {
 
@@ -30,13 +31,11 @@ namespace TradingBot {
             int fitStep = DEFAULT_FIT_STEP,
             int fitIterations = DEFAULT_FIT_ITERATIONS,
             bool forceStop = false,
+            double fitAroundThreshold = Balance().asAssetA(),
             const ParamSet& paramSetMin = {},
             const ParamSet& paramSetMax = {}
         );
         virtual void step() override;
-        virtual ParamSet getDefaultParamSet() const override;
-        virtual ParamSet getMinParamSet() const override;
-        virtual ParamSet getMaxParamSet() const override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
 
     protected:
@@ -44,6 +43,7 @@ namespace TradingBot {
         int fitStep;
         int nextFit = 0;
         bool forceStop;
+        double fitAroundThreshold;
 
         ParamSet paramSetMin;
         ParamSet paramSetMax;
@@ -68,6 +68,7 @@ namespace TradingBot {
         fitStep = std::get<int>(paramSet[1]);
         fitIterations = std::get<int>(paramSet[2]);
         forceStop = std::get<int>(paramSet[3]);
+        fitAroundThreshold = std::get<double>(paramSet[4]);
     }
 
     template <class Strat>
@@ -77,12 +78,14 @@ namespace TradingBot {
         int fitStep,
         int fitIterations,
         bool forceStop,
+        double fitAroundThreshold,
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax
     ) : fitWindow(fitWindow),
         fitStep(fitStep),
         fitIterations(fitIterations),
         forceStop(forceStop),
+        fitAroundThreshold(fitAroundThreshold),
         paramSetMin(paramSetMin),
         paramSetMax(paramSetMax)
     {
@@ -90,7 +93,8 @@ namespace TradingBot {
             fitWindow,
             fitStep,
             fitIterations,
-            forceStop
+            forceStop,
+            fitAroundThreshold,
         };
         assert(checkParamSet(paramSet));
 
@@ -117,7 +121,8 @@ namespace TradingBot {
                     allCandles.size()
                 ),
                 paramSetMin,
-                paramSetMax
+                paramSetMax,
+                fitAroundThreshold
             );
             fitter.fit(fitIterations);
 
@@ -133,38 +138,8 @@ namespace TradingBot {
     }
 
     template <class Strat>
-    ParamSet AutoFitStrategy<Strat>::getDefaultParamSet() const {
-        return {
-            DEFAULT_FIT_WINDOW,
-            DEFAULT_FIT_STEP,
-            DEFAULT_FIT_ITERATIONS,
-            0,
-        };
-    }
-
-    template <class Strat>
-    ParamSet AutoFitStrategy<Strat>::getMinParamSet() const {
-        return {
-            MIN_FIT_WINDOW,
-            MIN_FIT_STEP,
-            MIN_FIT_ITERATIONS,
-            0,
-        };
-    }
-
-    template <class Strat>
-    ParamSet AutoFitStrategy<Strat>::getMaxParamSet() const {
-        return {
-            MAX_FIT_WINDOW,
-            MAX_FIT_STEP,
-            MAX_FIT_ITERATIONS,
-            1,
-        };
-    }
-
-    template <class Strat>
     bool AutoFitStrategy<Strat>::checkParamSet(const ParamSet& paramSet) const {
-        if (paramSet.size() != 4) {
+        if (paramSet.size() != 5) {
             return false;
         }
 
@@ -172,6 +147,10 @@ namespace TradingBot {
         const int* fitStep = std::get_if<int>(&paramSet[1]);
         const int* fitIterations = std::get_if<int>(&paramSet[2]);
         const int* forceStop = std::get_if<int>(&paramSet[3]);
+        const double* fitAroundThreshold = std::get_if<double>(&paramSet[4]);
+        if (fitAroundThreshold == nullptr) {
+            return false;
+        }
 
         if (fitWindow == nullptr || fitStep == nullptr || fitIterations == nullptr || forceStop == nullptr) {
             return false;

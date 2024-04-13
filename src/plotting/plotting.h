@@ -2,9 +2,9 @@
 
 #include <matplot/matplot.h>
 
+#include "helpers/multidim_vector.h"
 #include "markets/market.h"
 #include "strategies/strategy.h"
-#include "helpers/multidim_vector.h"
 
 
 namespace TradingBot {

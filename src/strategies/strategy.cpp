@@ -18,18 +18,6 @@ namespace TradingBot {
         return paramSet;
     }
 
-    ParamSet Strategy::getDefaultParamSet() const {
-        return {};
-    }
-
-    ParamSet Strategy::getMinParamSet() const {
-        return {};
-    }
-
-    ParamSet Strategy::getMaxParamSet() const {
-        return {};
-    }
-
     bool Strategy::checkParamSet(const ParamSet& paramSet) const {
         return true;
     }

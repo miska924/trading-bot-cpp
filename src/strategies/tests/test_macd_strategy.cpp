@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 
-#include "strategies/macd_strategy.h"
 #include "markets/backtest_market.h"
 #include "plotting/plotting.h"
+#include "strategies/macd_strategy.h"
 
 
 TEST(MACDStrategyTest, TestMACDStrategy) {

@@ -21,7 +21,7 @@ namespace TradingBot {
     class StrategyFitter {
     private:
         Helpers::VectorView<Candle> candles;
-        double aroundFitnessThreshold;
+        double fitAroundThreshold;
         bool reliable = false;
 
         int numThreads;
@@ -53,7 +53,7 @@ namespace TradingBot {
             const Helpers::VectorView<Candle>& candles,
             const ParamSet& paramSetMin,
             const ParamSet& paramSetMax,
-            double aroundFitnessThreshold = Balance().asAssetA()
+            double fitAroundThreshold = Balance().asAssetA()
         );
         ~StrategyFitter();
         void singleRun(const ParamSet& parameters, bool* threadStatus, int index);
@@ -116,11 +116,11 @@ namespace TradingBot {
         const Helpers::VectorView<Candle>& candles,
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax,
-        double aroundFitnessThreshold
+        double fitAroundThreshold
     ) : candles(candles),
         paramSetMin(paramSetMin),
         paramSetMax(paramSetMax),
-        aroundFitnessThreshold(aroundFitnessThreshold)
+        fitAroundThreshold(fitAroundThreshold)
     {
         numThreads = std::thread::hardware_concurrency();
         if (numThreads <= 1) {
@@ -167,27 +167,55 @@ namespace TradingBot {
         *threadStatus = true;
     }
 
+    // template<class Strat>
+    // bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
+    //     std::vector<size_t> index = fitnessMatrix.getIndex(i);
+
+    //     for (size_t j = 0; j < index.size(); ++j) {
+    //         if (0 < index[j]) {
+    //             --index[j];
+    //             if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] < threshold) {
+    //                 return false;
+    //             }
+    //             ++index[j];
+    //         }
+    //         if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
+    //             ++index[j];
+    //             if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] < threshold) {
+    //                 return false;
+    //             }
+    //             --index[j];
+    //         }
+    //     }
+    //     return true;
+    // }
+
     template<class Strat>
     bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
         std::vector<size_t> index = fitnessMatrix.getIndex(i);
 
+        double sum = 0;
+        int count = 0;
+
         for (size_t j = 0; j < index.size(); ++j) {
             if (0 < index[j]) {
                 --index[j];
-                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] < threshold) {
-                    return false;
+                if (!paramSetsMatrix[index].empty()) {
+                    sum += fitnessMatrix[index];
+                    ++count;
                 }
                 ++index[j];
             }
             if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
                 ++index[j];
-                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] < threshold) {
-                    return false;
+                if (!paramSetsMatrix[index].empty()) {
+                    sum += fitnessMatrix[index];
+                    ++count;
                 }
                 --index[j];
             }
         }
-        return true;
+        return sum / count > threshold;
     }
 
     template<class Strat>
@@ -264,7 +292,7 @@ namespace TradingBot {
             }
 
             bool better = fitnessMatrix[i] > bestFitness;
-            bool currentReliable = checkFitnessAround(i, aroundFitnessThreshold);
+            bool currentReliable = checkFitnessAround(i, fitAroundThreshold);
             
             if ((!reliable && better) || (!reliable && currentReliable) || (reliable && currentReliable && better)) {
                 bestParameters = paramSetsMatrix[i];
