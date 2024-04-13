@@ -23,13 +23,15 @@ namespace TradingBot {
     class AutoFitStrategy : public Strategy {
     public:
         AutoFitStrategy() = default;
-        AutoFitStrategy(Market* market, const ParamSet& paramSet);
+        AutoFitStrategy(Market* market, const ParamSet& paramSet, const ParamSet& paramSetMin, const ParamSet& paramSetMax);
         AutoFitStrategy(
             Market* market,
             int fitWindow = DEFAULT_FIT_WINDOW,
             int fitStep = DEFAULT_FIT_STEP,
             int fitIterations = DEFAULT_FIT_ITERATIONS,
-            bool forceStop = false
+            bool forceStop = false,
+            const ParamSet& paramSetMin = {},
+            const ParamSet& paramSetMax = {}
         );
         virtual void step() override;
         virtual ParamSet getDefaultParamSet() const override;
@@ -43,13 +45,23 @@ namespace TradingBot {
         int nextFit = 0;
         bool forceStop;
 
+        ParamSet paramSetMin;
+        ParamSet paramSetMax;
+
         bool reliable = false;
         Strat strategy;
         int fitIterations = DEFAULT_FIT_ITERATIONS;
     };
 
     template <class Strat>
-    AutoFitStrategy<Strat>::AutoFitStrategy(Market* market, const ParamSet& paramSet) {
+    AutoFitStrategy<Strat>::AutoFitStrategy(
+        Market* market,
+        const ParamSet& paramSet,
+        const ParamSet& paramSetMin,
+        const ParamSet& paramSetMax
+    ) : paramSetMin(paramSetMin), paramSetMax(paramSetMax) {
+        assert(checkParamSet(paramSet));
+
         this->market = market;
         this->paramSet = paramSet;
         fitWindow = std::get<int>(paramSet[0]);
@@ -64,15 +76,25 @@ namespace TradingBot {
         int fitWindow,
         int fitStep,
         int fitIterations,
-        bool forceStop
-    ) : fitWindow(fitWindow), fitStep(fitStep), fitIterations(fitIterations), forceStop(forceStop) {
-        this->market = market;
+        bool forceStop,
+        const ParamSet& paramSetMin,
+        const ParamSet& paramSetMax
+    ) : fitWindow(fitWindow),
+        fitStep(fitStep),
+        fitIterations(fitIterations),
+        forceStop(forceStop),
+        paramSetMin(paramSetMin),
+        paramSetMax(paramSetMax)
+    {
         paramSet = {
             fitWindow,
             fitStep,
             fitIterations,
             forceStop
         };
+        assert(checkParamSet(paramSet));
+
+        this->market = market;
     }
 
     template <class Strat>
@@ -82,7 +104,7 @@ namespace TradingBot {
         }
         
         if (nextFit <= market->time() && (forceStop || market->getBalance().assetB == 0)) {
-            if (forceStop) {
+            if (forceStop && market->getBalance().assetB != 0) {
                 market->order(Order{.side = OrderSide::RESET});
             }
 
@@ -93,7 +115,9 @@ namespace TradingBot {
                 allCandles.subView(
                     allCandles.size() - fitWindow,
                     allCandles.size()
-                )
+                ),
+                paramSetMin,
+                paramSetMax
             );
             fitter.fit(fitIterations);
 

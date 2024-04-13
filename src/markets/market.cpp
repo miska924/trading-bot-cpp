@@ -37,6 +37,13 @@ namespace TradingBot {
         return balance;
     }
 
+    const Order& Market::getLastOrder() const {
+        if (orderHistory.empty()) {
+            return lastOrder;
+        }
+        return orderHistory.back();
+    }
+
     time_t Market::getCandleTimeDelta() const {
         return candleTimeDelta;
     }

@@ -4,6 +4,7 @@
 
 #include "markets/market.h"
 #include "strategies/strategy.h"
+#include "helpers/multidim_vector.h"
 
 
 namespace TradingBot {
@@ -22,8 +23,7 @@ namespace TradingBot {
 
     void heatmap(
         std::string fileName,
-        const std::vector<ParamSet>& paramSets,
-        const std::vector<double>& fitnesses
+        const Helpers::MultidimVector<double>& values
     );
 
 } // namespace TradingBot

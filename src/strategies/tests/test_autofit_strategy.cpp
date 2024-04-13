@@ -13,13 +13,18 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
     TradingBot::BacktestMarket market(candles);
-    TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(&market, 1000, 1000, 100, 1);
+    TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
+        &market,
+        {1000, 1000, 100, 1},
+        {1, 1},
+        {1000, 1000}
+    );
     strategy.run();
 
     TradingBot::plot("TestAutoFitStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        43.561167466069463
+        543.02429835695716
     );
 }

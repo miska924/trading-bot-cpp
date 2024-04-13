@@ -74,6 +74,7 @@ namespace TradingBot {
             balanceHistory.back() = balance;
             saveOrder(order);
         }
+        lastOrder = order;
         
         return true;
     }
@@ -139,6 +140,18 @@ namespace TradingBot {
             return candles;
         }
         return candles.subView(0, current + 1);
+    }
+
+
+    const Order& BacktestMarket::getLastOrder() const {
+        if (!saveHistory) {
+            return lastOrder;
+        }
+
+        if (orderHistory.empty()) {
+            return lastOrder;
+        }
+        return orderHistory.back();
     }
 
 } // namespace TradingBot

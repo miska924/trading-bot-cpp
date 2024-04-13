@@ -2,6 +2,7 @@
 
 #include <variant>
 #include <vector>
+#include <iostream>
 
 #include "markets/market.h"
 
@@ -9,6 +10,8 @@
 namespace TradingBot {
 
     using ParamSet = std::vector<std::variant<int, double>>;
+
+    std::ostream& operator<<(std::ostream& os, const ParamSet& paramSet);
 
     class Strategy {
     public:

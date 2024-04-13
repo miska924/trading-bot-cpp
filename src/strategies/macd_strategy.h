@@ -64,11 +64,11 @@ namespace TradingBot {
         int waitUntill = 0;
     };
 
-    class MACDHoldFixedCandlesStrategy : public MACDHoldSlowStrategy {
+    class MACDHoldFixedStrategy : public MACDHoldSlowStrategy {
     public:
-        MACDHoldFixedCandlesStrategy() = default;
-        MACDHoldFixedCandlesStrategy(Market* _market, const ParamSet& parameters);
-        MACDHoldFixedCandlesStrategy(
+        MACDHoldFixedStrategy() = default;
+        MACDHoldFixedStrategy(Market* _market, const ParamSet& parameters);
+        MACDHoldFixedStrategy(
             Market* _market,
             int fastPeriod = DEFAULT_MACD_FAST_PERIOD,
             int slowPeriod = DEFAULT_MACD_SLOW_PERIOD,

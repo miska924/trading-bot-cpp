@@ -158,7 +158,7 @@ namespace TradingBot {
         }
     }
 
-    MACDHoldFixedCandlesStrategy::MACDHoldFixedCandlesStrategy(
+    MACDHoldFixedStrategy::MACDHoldFixedStrategy(
         Market* _market,
         const ParamSet& _paramSet
     ) {
@@ -174,7 +174,7 @@ namespace TradingBot {
         previousSlowEMA = EMAFeature(slow, 1);
     }
 
-    MACDHoldFixedCandlesStrategy::MACDHoldFixedCandlesStrategy(
+    MACDHoldFixedStrategy::MACDHoldFixedStrategy(
         Market* _market,
         int fastPeriod,
         int slowPeriod,
@@ -188,7 +188,7 @@ namespace TradingBot {
         previousFastEMA = EMAFeature(fastPeriod, 1);
     }
 
-    void MACDHoldFixedCandlesStrategy::step() {
+    void MACDHoldFixedStrategy::step() {
         if (market->time() < waitUntill) {
             return;
         }
@@ -227,7 +227,7 @@ namespace TradingBot {
         }
     }
 
-    ParamSet MACDHoldFixedCandlesStrategy::getDefaultParamSet() const {
+    ParamSet MACDHoldFixedStrategy::getDefaultParamSet() const {
         return {
             DEFAULT_MACD_FAST_PERIOD,
             DEFAULT_MACD_SLOW_PERIOD,
@@ -235,7 +235,7 @@ namespace TradingBot {
         };
     }
 
-    ParamSet MACDHoldFixedCandlesStrategy::getMinParamSet() const {
+    ParamSet MACDHoldFixedStrategy::getMinParamSet() const {
         return {
             MIN_MACD_FAST_PERIOD,
             MIN_MACD_SLOW_PERIOD,
@@ -243,7 +243,7 @@ namespace TradingBot {
         };
     }
 
-    ParamSet MACDHoldFixedCandlesStrategy::getMaxParamSet() const {
+    ParamSet MACDHoldFixedStrategy::getMaxParamSet() const {
         return {
             MAX_MACD_FAST_PERIOD,
             MAX_MACD_SLOW_PERIOD,
@@ -251,7 +251,7 @@ namespace TradingBot {
         };
     }
 
-    bool MACDHoldFixedCandlesStrategy::checkParamSet(const ParamSet& paramSet) const {
+    bool MACDHoldFixedStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 3) {
             return false;
         }

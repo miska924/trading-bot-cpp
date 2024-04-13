@@ -12,34 +12,34 @@ const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testData
 
 
 TEST(TestFitter, TestMACDStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDStrategy> fitter(candles);
+    TradingBot::StrategyFitter<TradingBot::MACDStrategy> fitter(candles, {1, 1}, {1000, 1000});
     fitter.fit(100);
     fitter.plotBestStrategy("TestMACDStrategyFit.png");
 
     EXPECT_EQ(
-        fitter.getBestBalance().asAssetA(),
+        fitter.getBestBalance(),
         43.224088366646342
     );
 }
 
 TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(candles);
+    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(candles, {1, 1}, {1000, 1000});
     fitter.fit(100);
     fitter.plotBestStrategy("TestMACDHoldSlowStrategyFit.png");
 
     EXPECT_EQ(
-        fitter.getBestBalance().asAssetA(),
+        fitter.getBestBalance(),
         475.13031729549942
     );
 }
 
-TEST(TestFitter, TestMACDHoldFixedCandlesStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDHoldFixedCandlesStrategy> fitter(candles);
+TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
+    TradingBot::StrategyFitter<TradingBot::MACDHoldFixedStrategy> fitter(candles, {1, 1, 1}, {1000, 1000, 1000});
     fitter.fit(100);
-    fitter.plotBestStrategy("TestMACDHoldFixedCandlesStrategyFit.png");
+    fitter.plotBestStrategy("TestMACDHoldFixedStrategyFit.png");
     
     EXPECT_EQ(
-        fitter.getBestBalance().asAssetA(),
+        fitter.getBestBalance(),
         222.84979384295079
     );
 }
