@@ -12,4 +12,8 @@ namespace TradingBot {
         return false;
     }
 
+    Helpers::VectorView<Candle> DummyMarket::getCandles() const {
+        return Helpers::VectorView<Candle>(candles);
+    }
+
 } // namespace TradingBot

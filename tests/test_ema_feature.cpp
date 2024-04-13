@@ -6,10 +6,13 @@
 
 const double EPS = 1e-5;
 
+std::string testDataFileName = "../../test_data/data.csv";
+std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+
+
 TEST(EMAFeatureTest, TestEMAFeatureDefault) {
-    std::string testDataFileName = "../../test_data/data.csv";
     TradingBot::EMAFeature ema = TradingBot::EMAFeature();
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(testDataFileName);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
     for (int i = 0; i < TradingBot::DEFAULT_EMA_PERIOD - 1; ++i) {
         EXPECT_EQ(ema(market.getCandles()).has_value(), false);
         market.update();
@@ -20,9 +23,8 @@ TEST(EMAFeatureTest, TestEMAFeatureDefault) {
 
 TEST(EMAFeatureTest, TestEMAFeature30) {
     int period = 30;
-    std::string testDataFileName = "../../test_data/data.csv";
     TradingBot::EMAFeature ema = TradingBot::EMAFeature(period);
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(testDataFileName);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
     for (int i = 0; i < period - 1; ++i) {
         EXPECT_EQ(ema(market.getCandles()).has_value(), false);
         market.update();

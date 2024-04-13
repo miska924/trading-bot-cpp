@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "features/feature.h"
+#include "helpers/vector_view.h"
 
 
 namespace TradingBot {
@@ -12,7 +13,9 @@ namespace TradingBot {
     class EMAFeature : public Feature {
     public:
         EMAFeature(int period = DEFAULT_EMA_PERIOD, int lag = 0);
-        virtual std::optional<double> operator()(const std::vector<Candle>& candles) const override;
+        int getPeriod() const;
+        int getLag() const;
+        virtual std::optional<double> operator()(const Helpers::VectorView<Candle>& candles) const override;
     private:
         int period;
         int lag;

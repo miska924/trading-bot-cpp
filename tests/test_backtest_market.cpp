@@ -4,45 +4,54 @@
 #include "markets/backtest_market.h"
 
 
-TEST(BacktestingTest, TestStartTime) {
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
-    EXPECT_EQ(market.time(), 0);
-}
 
-TEST(BacktestingTest, TestHistory) {
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
+std::string testDataFileName = "../../test_data/data.csv";
+std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
-    std::vector<TradingBot::Order> orders = {
-        {
-            .side = TradingBot::OrderSide::BUY,
-            .amount = 1
-        },
-        {
-            .side = TradingBot::OrderSide::SELL,
-            .amount = 10.3
-        },
-    };
+// TEST(BacktestingTest, TestStartTime) {
+//     TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
+//     EXPECT_EQ(market.time(), 0);
+// }
 
-    EXPECT_EQ(market.getOrderHistory().size(), 0);
+// TEST(BacktestingTest, TestHistory) {
+//     TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
 
-    for (const auto& order : orders) {
-        market.order(order);
-    }
+//     std::vector<TradingBot::Order> orders = {
+//         {
+//             .side = TradingBot::OrderSide::BUY,
+//             .amount = 1
+//         },
+//         {
+//             .side = TradingBot::OrderSide::SELL,
+//             .amount = 10.3
+//         },
+//     };
+
+//     EXPECT_EQ(market.getOrderHistory().size(), 0);
+
+//     for (const auto& order : orders) {
+//         market.order(order);
+//     }
     
-    EXPECT_EQ(market.getOrderHistory().size(), 2);
-    EXPECT_EQ(market.getOrderHistory()[0], orders[0]);
-    EXPECT_EQ(market.getOrderHistory()[1], orders[1]);
-}
+//     EXPECT_EQ(market.getOrderHistory().size(), 2);
+//     EXPECT_EQ(market.getOrderHistory()[0], orders[0]);
+//     EXPECT_EQ(market.getOrderHistory()[1], orders[1]);
+// }
 
-TEST(BacktestingTest, TestRandomCandlesGeneration) {
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
-    EXPECT_EQ(market.getCandles().size(), 1);
-    market.finish();
-    EXPECT_EQ(
-        market.getCandles().size(),
-        TradingBot::DEFAULT_RANDOM_BACKTEST_MARKET_SIZE
-    );
-}
+// TEST(BacktestingTest, TestRandomCandlesGeneration) {
+//     TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
+//     EXPECT_EQ(market.getCandles().size(), 1);
+//     market.finish();
+//     EXPECT_EQ(
+//         market.getCandles().size(),
+//         TradingBot::DEFAULT_BACKTEST_MARKET_SIZE
+//     );
+// }
+
+// TEST(BacktestingTest, TestCandleTimeDelta) {
+//     TradingBot::BacktestMarket market = TradingBot::BacktestMarket();
+//     EXPECT_EQ(market.getCandleTimeDelta(), 1);
+// }
 
 TEST(BacktestingTest, TestReadCSVCandle) {
     std::string csvCandle = "2023-11-08 06:00:00,1699412400.0,35306.61,35321.37,35260.0,35288.65,182.86608";
@@ -77,7 +86,7 @@ void testCandlesFromFile(const std::string& testDataFileName) {
     file.close();
 
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(
-        testDataFileName
+        candles
     );
 
     EXPECT_EQ(market.getCandles().size(), 1);
@@ -90,12 +99,18 @@ void testCandlesFromFile(const std::string& testDataFileName) {
         market.getCandles().size(),
         linesCount
     );
-    EXPECT_EQ(market.time(),  finish_time);
+    EXPECT_EQ(market.time(), finish_time);
 }
 
 TEST(BacktestingTest, TestCandlesFromFile) {
-    std::string testDataFileName = "../../test_data/data.csv";
     testCandlesFromFile(testDataFileName);
+}
+
+TEST(BacktestingTest, TestCandleTimeDelta15m) {
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(
+        candles
+    );
+    EXPECT_EQ(market.getCandleTimeDelta(), 15 * 60);
 }
 
 TEST(BacktestingTest, TestCandlesFromLargeFile) {

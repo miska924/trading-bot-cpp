@@ -1,11 +1,13 @@
 #include "features/ema_feature.h"
 
+#include <iostream>
+
 
 namespace TradingBot {
 
     EMAFeature::EMAFeature(int period, int lag) : period(period), lag(lag) {}
 
-    std::optional<double> ema(const std::vector<Candle>& candles, int period, int lag) {
+    std::optional<double> ema(const Helpers::VectorView<Candle>& candles, int period, int lag) {
         if (period + lag > candles.size()) {
             return {};
         }
@@ -19,8 +21,16 @@ namespace TradingBot {
         return ema;
     }
 
-    std::optional<double> EMAFeature::operator()(const std::vector<Candle>& candles) const {
+    std::optional<double> EMAFeature::operator()(const Helpers::VectorView<Candle>& candles) const {
         return ema(candles, period, lag);
+    }
+
+    int EMAFeature::getPeriod() const {
+        return period;
+    }
+
+    int EMAFeature::getLag() const {
+        return lag;
     }
 
 } // namespace TradingBot

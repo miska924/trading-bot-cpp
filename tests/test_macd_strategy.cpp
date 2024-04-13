@@ -1,4 +1,3 @@
-#include <matplot/matplot.h>
 #include <gtest/gtest.h>
 
 #include "strategies/macd_strategy.h"
@@ -8,28 +7,21 @@
 
 TEST(MACDStrategyTest, TestMACDStrategy) {
     std::string testDataFileName = "../../test_data/data.csv";
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(testDataFileName);
+    std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
     int startTime = market.time();
     TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market);
     strategy.run();
-    TradingBot::plot("TestMACDStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
-    EXPECT_EQ(market.getOrderHistory().size(), 54 * 2);
+    TradingBot::plot("TestMACDStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
+    EXPECT_EQ(market.getOrderHistory().size(), 108);
 }
 
 TEST(MACDStrategyTest, TestMACDStrategyLarge) {
     std::string testDataFileName = "../../test_data/btcusdt_15m_3y.csv";
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(testDataFileName);
-    TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market, 50, 400);
+    std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
+    TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market, 20, 40);
     strategy.run();
-    TradingBot::plot("TestMACDStrategyLarge.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
-    EXPECT_EQ(market.getOrderHistory().size(), 978 * 2);
+    TradingBot::plot("TestMACDStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
+    EXPECT_EQ(market.getOrderHistory().size(), 12844);
 }
-
-// TEST(MACDStrategyTestLarge, TestMACDStrategyLargest) {
-//     std::string testDataFileName = "../../test_data/btcusdt_1m_3y.csv";
-//     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(testDataFileName);
-//     TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market, 750, 6000);
-//     strategy.run();
-//     TradingBot::plot("TestMACDStrategyLargest.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
-//     EXPECT_EQ(market.getOrderHistory().size(), 3140 * 2);
-// }

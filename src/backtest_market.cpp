@@ -33,82 +33,112 @@ namespace TradingBot {
         return candle;
     }
 
-    time_t BacktestMarket::time() const {
-        if (candles.empty()) {
-            return 0;
-        }
-        return candles.back().time;
-    }
-
-    bool BacktestMarket::order(Order order) {
-        order.time = time();
-        order.price = candles.back().close;
-
-        if (order.side == OrderSide::RESET) {
-            balance.assetA += balance.assetB * order.price;
-            balance.assetB = 0;
-        } else if (order.side == OrderSide::BUY) {
-            balance.assetB += order.amount * balance.assetA / order.price;
-            balance.assetA -= order.amount * balance.assetA;
-        } else if (order.side == OrderSide::SELL) {
-            balance.assetB -= order.amount * balance.assetA / order.price;
-            balance.assetA += order.amount * balance.assetA;
-        }
-
-        balance.update(order.price, order.time);
-        balanceHistory.back() = balance;
-        
-        saveOrder(order);
-        return true;
-    }
-
-    bool BacktestMarket::update() {
-        if (futureCandles.empty()) {
-            return false;
-        }
-        candles.push_back(futureCandles.back());
-        futureCandles.pop_back();
-
-        balance.update(candles.back().close, time());
-        balanceHistory.push_back(balance);
-    
-        return true;
-    }
-
-    BacktestMarket::BacktestMarket(size_t size) {
-        futureCandles.resize(size);
-        time_t time = size;
-        // fill in reverse order
-        for (Candle& candle : futureCandles) {
-            candle.time = --time;
-            candle.open = rand();
-            candle.close = rand();
-            candle.high = rand();
-            candle.low = rand();
-            candle.volume = rand();
-        }
-        update();
-    }
-
-    BacktestMarket::BacktestMarket(std::string dataFileName) {
+    std::vector<Candle> readCSVFile(std::string dataFileName) {
         std::ifstream file(dataFileName);
+        std::vector<Candle> candles;
 
         std::string line;
         std::getline(file, line); // skip header
         while (std::getline(file, line)) {
             Candle candle = readCSVCandle(line);
-            futureCandles.push_back(candle);
+            candles.push_back(candle);
         }
-        std::reverse(futureCandles.begin(), futureCandles.end());
+        return candles;
+    }
+
+    time_t BacktestMarket::time() const {
+        if (current == -1) {
+            return 0;
+        }
+        return candles[current].time;
+    }
+
+    bool BacktestMarket::order(Order order) {
+        assert(current != -1 && current < candles.size());
+        order.time = time();
+        order.price = candles[current].close;
+
+        if (order.side == OrderSide::RESET) {
+            balance.assetA += balance.assetB * order.price * (1.0 - DEFAULT_FEE);
+            balance.assetB = 0;
+        } else if (order.side == OrderSide::BUY) {
+            balance.assetB += order.amount * balance.assetA / order.price * (1.0 - DEFAULT_FEE);
+            balance.assetA -= order.amount * balance.assetA;
+        } else if (order.side == OrderSide::SELL) {
+            balance.assetB -= order.amount * balance.assetA / order.price;
+            balance.assetA += order.amount * balance.assetA * (1.0 - DEFAULT_FEE);
+        }
+
+        balance.update(order.price, order.time);
+        if (saveHistory) {
+            balanceHistory.back() = balance;
+            saveOrder(order);
+        }
+        
+        return true;
+    }
+
+    bool BacktestMarket::update() {
+        if (current + 1 >= candles.size()) {
+            return false;
+        }
+        ++current;
+
+        balance.update(candles[current].close, time());
+        if (saveHistory) {
+            balanceHistory.push_back(balance);
+        }
+
+        maxBalance = std::max(maxBalance, balance.asAssetA());
+        double drawdown = maxBalance - balance.asAssetA();
+        maxDrawdown = std::max(maxDrawdown, drawdown);
+        sumSquaredDrawdown += drawdown * drawdown;
+    
+        return true;
+    }
+
+    BacktestMarket::BacktestMarket(
+        const Helpers::VectorView<Candle>& candles,
+        bool saveHistory
+    ) : candles(candles), saveHistory(saveHistory) {
+        current = -1;
+
+        if (candles.size() > 1) {
+            candleTimeDelta = candles[1].time - candles[0].time;
+        } else {
+            candleTimeDelta = 0;
+        }
+
         update();
     }
 
     void BacktestMarket::finish() {
-        if (futureCandles.empty()){
-            return;
+        current = int(candles.size()) - 1;
+    }
+
+    void BacktestMarket::restart() {
+        finish();
+
+        balance = Balance();
+        if (saveHistory) {
+            balanceHistory.clear();
+            orderHistory.clear();
         }
-        candles.insert(candles.end(), futureCandles.rbegin(), futureCandles.rend());
-        futureCandles.clear();
+
+        current = -1;
+        update();
+    }
+
+    double BacktestMarket::getFitness() const {
+        return balance.asAssetA() - maxDrawdown;
+        // return balance.asAssetA() - maxDrawdown - std::sqrt(sumSquaredDrawdown / (current + 1));
+    }
+
+    Helpers::VectorView<Candle> BacktestMarket::getCandles() const {
+        if (current == candles.size()) {
+            return candles;
+        }
+        return candles.subView(0, current + 1);
     }
 
 } // namespace TradingBot
