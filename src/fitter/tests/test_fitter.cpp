@@ -2,12 +2,12 @@
 
 #include "strategies/macd_strategy.h"
 #include "fitter/fitter.h"
+#include "helpers/test_data.h"
 
 
 const double EPS = 1e-5;
 
-// const std::string testDataFileName = "../../test_data/data.csv";
-const std::string testDataFileName = "../../test_data/btcusdt_15m_3y.csv";
+const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
 const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
 
