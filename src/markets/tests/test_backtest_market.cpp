@@ -5,7 +5,7 @@
 
 
 
-std::string testDataFileName = "../../test_data/data.csv";
+std::string testDataFileName = "../../../../test_data/data.csv";
 std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
 // TEST(BacktestingTest, TestStartTime) {
@@ -114,6 +114,6 @@ TEST(BacktestingTest, TestCandleTimeDelta15m) {
 }
 
 TEST(BacktestingTest, TestCandlesFromLargeFile) {
-    std::string testDataFileName = "../../test_data/data.csv";
+    std::string testDataFileName = "../../../../test_data/data.csv";
     testCandlesFromFile(testDataFileName);
 }

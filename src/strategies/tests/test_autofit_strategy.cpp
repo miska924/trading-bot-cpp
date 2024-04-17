@@ -9,7 +9,7 @@
 const double EPS = 1e-5;
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
-    std::string testDataFileName = "../../test_data/btcusdt_15m_3y.csv";
+    std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
     TradingBot::BacktestMarket market(candles);

@@ -13,4 +13,5 @@ target_link_libraries(
     plotting
     ema_feature
     feature
+    vector_view
 )

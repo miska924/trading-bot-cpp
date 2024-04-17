@@ -6,7 +6,7 @@
 
 
 TEST(MACDStrategyTest, TestMACDStrategy) {
-    std::string testDataFileName = "../../test_data/data.csv";
+    std::string testDataFileName = "../../../../test_data/data.csv";
     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
     int startTime = market.time();
@@ -17,7 +17,7 @@ TEST(MACDStrategyTest, TestMACDStrategy) {
 }
 
 TEST(MACDStrategyTest, TestMACDStrategyLarge) {
-    std::string testDataFileName = "../../test_data/btcusdt_15m_3y.csv";
+    std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
     TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market, 20, 40);

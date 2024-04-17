@@ -7,7 +7,7 @@
 
 
 int main() {
-    const std::string testDataFileName = "../../test_data/btcusdt_15m_3y.csv";
+    const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
     TradingBot::BacktestMarket market(candles);
 

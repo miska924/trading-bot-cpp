@@ -3,7 +3,6 @@
 #include <assert.h>
 
 #include "markets/backtest_market.h"
-#include "plotting/plotting.h"
 #include "helpers/vector_view.h"
 
 
