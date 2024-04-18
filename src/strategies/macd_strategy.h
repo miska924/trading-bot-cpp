@@ -1,11 +1,11 @@
 #pragma once
 
-#include <thread>
 #include <atomic>
 #include <mutex>
+#include <thread>
 
-#include "strategies/strategy.h"
 #include "features/ema_feature.h"
+#include "strategies/strategy.h"
 
 
 namespace TradingBot {
@@ -37,19 +37,31 @@ namespace TradingBot {
             int slowPeriod = DEFAULT_MACD_SLOW_PERIOD
         );
         virtual void step() override;
-        virtual ParamSet getDefaultParamSet() const override;
-        virtual ParamSet getMinParamSet() const override;
-        virtual ParamSet getMaxParamSet() const override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
 
     protected:
         EMAFeature fastEMA;
         EMAFeature slowEMA;
-        EMAFeature previousFastEMA;
-        EMAFeature previousSlowEMA;
     };
 
-    class MACDHoldSlowStrategy : public MACDStrategy {
+    class MACDHoldFixedStrategy : public MACDStrategy {
+    public:
+        MACDHoldFixedStrategy() = default;
+        MACDHoldFixedStrategy(Market* _market, const ParamSet& parameters);
+        MACDHoldFixedStrategy(
+            Market* _market,
+            int fastPeriod = DEFAULT_MACD_FAST_PERIOD,
+            int slowPeriod = DEFAULT_MACD_SLOW_PERIOD,
+            int holdCandles = DEFAULT_MACD_HOLD_CANDLES
+        );
+        virtual void step() override;
+        virtual bool checkParamSet(const ParamSet& paramSet) const override;
+    protected:
+        int hold = 1;
+        int waitUntill = 0;
+    };
+
+    class MACDHoldSlowStrategy : public MACDHoldFixedStrategy {
     public:
         MACDHoldSlowStrategy() = default;
         MACDHoldSlowStrategy(Market* _market, const ParamSet& parameters);
@@ -58,29 +70,8 @@ namespace TradingBot {
             int fastPeriod = DEFAULT_MACD_FAST_PERIOD,
             int slowPeriod = DEFAULT_MACD_SLOW_PERIOD
         );
-        virtual void step() override;
-    protected:
-        int hold = 1;
-        int waitUntill = 0;
+        virtual bool checkParamSet(const ParamSet& paramSet) const override;
     };
 
-    class MACDHoldFixedCandlesStrategy : public MACDHoldSlowStrategy {
-    public:
-        MACDHoldFixedCandlesStrategy() = default;
-        MACDHoldFixedCandlesStrategy(Market* _market, const ParamSet& parameters);
-        MACDHoldFixedCandlesStrategy(
-            Market* _market,
-            int fastPeriod = DEFAULT_MACD_FAST_PERIOD,
-            int slowPeriod = DEFAULT_MACD_SLOW_PERIOD,
-            int holdCandles = DEFAULT_MACD_HOLD_CANDLES
-        );
-        virtual void step() override;
-        virtual ParamSet getDefaultParamSet() const override;
-        virtual ParamSet getMinParamSet() const override;
-        virtual ParamSet getMaxParamSet() const override;
-        virtual bool checkParamSet(const ParamSet& paramSet) const override;
-    protected:
-        int hold = 1;
-    };
 
 } // namespace TradingBot

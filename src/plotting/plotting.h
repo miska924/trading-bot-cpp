@@ -2,6 +2,7 @@
 
 #include <matplot/matplot.h>
 
+#include "helpers/multidim_vector.h"
 #include "markets/market.h"
 #include "strategies/strategy.h"
 
@@ -22,8 +23,7 @@ namespace TradingBot {
 
     void heatmap(
         std::string fileName,
-        const std::vector<ParamSet>& paramSets,
-        const std::vector<double>& fitnesses
+        const Helpers::MultidimVector<double>& values
     );
 
 } // namespace TradingBot

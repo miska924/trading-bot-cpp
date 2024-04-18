@@ -1,15 +1,16 @@
 #pragma once
 
-#include <vector>
-#include <thread>
 #include <atomic>
-#include <mutex>
 #include <math.h>
+#include <mutex>
+#include <thread>
+#include <vector>
 
-#include "strategies/strategy.h"
+#include "helpers/multidim_vector.h"
 #include "markets/backtest_market.h"
 #include "markets/market.h"
 #include "plotting/plotting.h"
+#include "strategies/strategy.h"
 
 
 namespace TradingBot {
@@ -19,53 +20,60 @@ namespace TradingBot {
     template<class Strat>
     class StrategyFitter {
     private:
-        const Helpers::VectorView<Candle>& candles;
-        int sumL;
-        int sumR;
+        Helpers::VectorView<Candle> candles;
+        double fitAroundThreshold;
+        bool reliable = false;
 
-        ParamSet bestParameters;
-        Balance bestBalance = {
-            .assetA = 0,
-            .assetB = 0
-        };
-        double bestFitness = -1e18;
-
+        int numThreads;
         std::vector<std::thread> threadPool;
         std::vector<bool*> threadStatus;
-        std::mutex bestMutex;
-        int bestIndex = -1;
-        int numThreads;
+        std::mutex updateFitnessMutex;
 
-        bool saveFitnesses;
-        std::vector<double> fitnesses;
-        std::vector<ParamSet> paramSets;
+        int singleParamIterations;
+
+        ParamSet paramSetMin;
+        ParamSet paramSetMax;
+
+        Helpers::MultidimVector<double> fitnessMatrix;
+        Helpers::MultidimVector<ParamSet> paramSetsMatrix;
+
+        ParamSet bestParameters;
+        double bestBalance = -1e18;
+        double bestFitness = -1e18;
+
+        void generateParamSets(
+            const Strat& s,
+            ParamSet& paramSet,
+            std::vector<size_t>& index
+        );
+
+        bool checkFitnessAround(size_t i, double threshold) const;
     public:
         StrategyFitter(
             const Helpers::VectorView<Candle>& candles,
-            bool saveFitnesses = false
+            const ParamSet& paramSetMin,
+            const ParamSet& paramSetMax,
+            double fitAroundThreshold = Balance().asAssetA()
         );
         ~StrategyFitter();
-        void singleRun(const ParamSet& parameters, bool* threadStatus, std::vector<double>& fitnesses, int index);
+        void singleRun(const ParamSet& parameters, bool* threadStatus, int index);
         void fit(int iterationsLimit = DEFAULT_ITERATIONS_LIMIT);
         ParamSet getBestParameters();
-        Balance getBestBalance();
-        void plotBestStrategy(const std::string& fileName);
+        double getBestBalance();
+        bool plotBestStrategy(const std::string& fileName);
         void heatmapFitnesses(const std::string& fileName);
         bool isReliable() const;
     };
 
     template <class Strat>
-    void generateParamSets(
-        const Strat& emptyStrat,
-        const ParamSet& paramSetMin,
-        const ParamSet& paramSetMax,
-        int singleParamIterations,
-        std::vector<ParamSet>& paramSets,
-        ParamSet& paramSet
+    void StrategyFitter<Strat>::generateParamSets(
+        const Strat& s,
+        ParamSet& paramSet,
+        std::vector<size_t>& index
     ) {
         if (paramSet.size() == paramSetMin.size()) {
-            if (emptyStrat.checkParamSet(paramSet)) {
-                paramSets.push_back(paramSet);
+            if (s.checkParamSet(paramSet)) {
+                paramSetsMatrix[index] = paramSet;
             }
             return;
         }
@@ -75,7 +83,6 @@ namespace TradingBot {
         int* intMax = std::get_if<int>(&max);
         double* doubleMin = std::get_if<double>(&min);
         double* doubleMax = std::get_if<double>(&max);
-
 
         int intStepSize;
         double doubleStepSize;
@@ -87,20 +94,19 @@ namespace TradingBot {
             doubleStepSize = (*doubleMax - *doubleMin) / (singleParamIterations - 1);
         }
 
-        for (int i = 0; i < singleParamIterations + 1; ++i) {
+        for (int i = 0; i < singleParamIterations; ++i) {
             if (intMin != nullptr) {
                 paramSet.push_back(std::min(*intMin + intStepSize * i, *intMax));
             } else {
                 paramSet.push_back(std::min(*doubleMin + doubleStepSize * i, *doubleMax));
             }
+            index.push_back(i);
             generateParamSets(
-                emptyStrat,
-                paramSetMin,
-                paramSetMax,
-                singleParamIterations,
-                paramSets,
-                paramSet
+                s,
+                paramSet,
+                index
             );
+            index.pop_back();
             paramSet.pop_back();
         }
     }
@@ -108,8 +114,14 @@ namespace TradingBot {
     template<class Strat>
     StrategyFitter<Strat>::StrategyFitter(
         const Helpers::VectorView<Candle>& candles,
-        bool saveFitnesses
-    ) : candles(candles), saveFitnesses(saveFitnesses) {
+        const ParamSet& paramSetMin,
+        const ParamSet& paramSetMax,
+        double fitAroundThreshold
+    ) : candles(candles),
+        paramSetMin(paramSetMin),
+        paramSetMax(paramSetMax),
+        fitAroundThreshold(fitAroundThreshold)
+    {
         numThreads = std::thread::hardware_concurrency();
         if (numThreads <= 1) {
             numThreads = 2;
@@ -138,7 +150,7 @@ namespace TradingBot {
     }
 
     template<class Strat>
-    void StrategyFitter<Strat>::singleRun(const ParamSet& paramSet, bool* threadStatus, std::vector<double>& fitnesses, int index) {
+    void StrategyFitter<Strat>::singleRun(const ParamSet& paramSet, bool* threadStatus, int index) {
         BacktestMarket market = BacktestMarket(candles, false);
         Strat strategy = Strat(
             &market,
@@ -148,59 +160,97 @@ namespace TradingBot {
         double fitness = market.getFitness();
 
         {
-            std::lock_guard<std::mutex> lock(bestMutex);
-            if (saveFitnesses) {
-                fitnesses.push_back(fitness);
-            }
-            if (bestFitness < fitness || (bestFitness == fitness && index < bestIndex)) {
-                bestIndex = index;
-                bestBalance = market.getBalance();
-                bestParameters = paramSet;
-                bestFitness = fitness;
-            }
+            std::lock_guard<std::mutex> lock(updateFitnessMutex);
+            fitnessMatrix[index] = fitness;
         }
 
         *threadStatus = true;
     }
 
+    template<class Strat>
+    bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
+        std::vector<size_t> index = fitnessMatrix.getIndex(i);
+
+        for (size_t j = 0; j < index.size(); ++j) {
+            if (0 < index[j]) {
+                --index[j];
+                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] > threshold) {
+                    return true;
+                }
+                ++index[j];
+            }
+            if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
+                ++index[j];
+                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] > threshold) {
+                    return true;
+                }
+                --index[j];
+            }
+        }
+        return false;
+    }
+
+    // template<class Strat>
+    // bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
+    //     std::vector<size_t> index = fitnessMatrix.getIndex(i);
+
+    //     double sum = 0;
+    //     int count = 0;
+
+    //     for (size_t j = 0; j < index.size(); ++j) {
+    //         if (0 < index[j]) {
+    //             --index[j];
+    //             if (!paramSetsMatrix[index].empty()) {
+    //                 sum += fitnessMatrix[index];
+    //                 ++count;
+    //             }
+    //             ++index[j];
+    //         }
+    //         if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
+    //             ++index[j];
+    //             if (!paramSetsMatrix[index].empty()) {
+    //                 sum += fitnessMatrix[index];
+    //                 ++count;
+    //             }
+    //             --index[j];
+    //         }
+    //     }
+    //     return sum / count > threshold;
+    // }
 
     template<class Strat>
     void StrategyFitter<Strat>::fit(int iterationsLimit) {
-        BacktestMarket m = BacktestMarket(candles, false);
-        Strat s = Strat(&m);
-        int singleParamIterations = std::floor(std::pow(
+        singleParamIterations = std::floor(std::pow(
             double(iterationsLimit),
-            1.0 / s.getDefaultParamSet().size()
+            1.0 / paramSetMin.size()
         ));
         
-        paramSets.clear();
-        paramSets.reserve(singleParamIterations * s.getDefaultParamSet().size());
-
-        if (saveFitnesses) {
-            fitnesses.clear();
-            fitnesses.reserve(singleParamIterations * s.getDefaultParamSet().size());
-        }
+        std::vector<size_t> index(paramSetMin.size(), singleParamIterations);
+        paramSetsMatrix = index;
+        fitnessMatrix = {index, -1e18};
 
         ParamSet paramSet;
 
+        index.clear();
+        Strat s = Strat(nullptr);
         generateParamSets(
             s,
-            s.getMinParamSet(),
-            s.getMaxParamSet(),
-            singleParamIterations,
-            paramSets,
-            paramSet
+            paramSet,
+            index
         );
 
-        for (size_t j = 0; j < paramSets.size(); ++j) {
-            const ParamSet& paramSet = paramSets[j];
+        for (size_t j = 0; j < paramSetsMatrix.size(); ++j) {
+            const ParamSet& paramSet = paramSetsMatrix[j];
+            if (paramSet.empty()) {
+                continue;
+            }
+
             if (threadPool.size() < numThreads) {
                 threadPool.emplace_back(
                     &StrategyFitter::singleRun,
                     this,
                     paramSet,
                     threadStatus[threadPool.size()],
-                    std::ref(fitnesses),
                     j
                 );
                 continue;
@@ -221,7 +271,6 @@ namespace TradingBot {
                         this,
                         paramSet,
                         threadStatus[i],
-                        std::ref(fitnesses),
                         j
                     ));
                     
@@ -236,6 +285,31 @@ namespace TradingBot {
                 thread.join();
             }
         }
+
+        for (size_t i = 0; i < paramSetsMatrix.size(); ++i) {
+            if (paramSetsMatrix[i].empty()) {
+                continue;
+            }
+
+            bool better = fitnessMatrix[i] > bestFitness;
+            bool currentReliable = checkFitnessAround(i, fitAroundThreshold);
+            
+            if ((!reliable && better) || (!reliable && currentReliable) || (reliable && currentReliable && better)) {
+                bestParameters = paramSetsMatrix[i];
+                bestFitness = fitnessMatrix[i];
+                reliable |= currentReliable;
+            }
+        }
+        assert(!bestParameters.empty());
+
+        BacktestMarket market = BacktestMarket(candles, false);
+        Strat bestStrategy = Strat(
+            &market,
+            bestParameters
+        );
+        bestStrategy.run();
+        bestBalance = market.getBalance().asAssetA();
+        
     }
 
     template <class Strat>
@@ -244,12 +318,16 @@ namespace TradingBot {
     }
 
     template <class Strat>
-    Balance StrategyFitter<Strat>::getBestBalance() {
+    double StrategyFitter<Strat>::getBestBalance() {
         return bestBalance;
     }
 
     template <class Strat>
-    void StrategyFitter<Strat>::plotBestStrategy(const std::string& fileName) {
+    bool StrategyFitter<Strat>::plotBestStrategy(const std::string& fileName) {
+        if (bestParameters.empty()) {
+            return false;
+        }
+
         BacktestMarket market = BacktestMarket(candles, true);
         Strat bestStrategy = Strat(
             &market,
@@ -263,16 +341,17 @@ namespace TradingBot {
             market.getOrderHistory(),
             market.getBalanceHistory()
         );
+        return true;
     }
 
     template <class Strat>
     void StrategyFitter<Strat>::heatmapFitnesses(const std::string& fileName) {
-        heatmap(fileName, paramSets, fitnesses);
+        heatmap(fileName, fitnessMatrix);
     }
 
     template <class Strat>
     bool StrategyFitter<Strat>::isReliable() const {
-        return bestFitness > Balance().asAssetA();
+        return reliable;
     }
 
 } // namespace TradingBot

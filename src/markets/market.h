@@ -58,10 +58,13 @@ namespace TradingBot {
         const std::vector<Order>& getOrderHistory() const;
         const std::vector<Balance>& getBalanceHistory() const;
         Balance getBalance() const;
+        virtual const Order& getLastOrder() const;
         time_t getCandleTimeDelta() const;
     protected:
         void saveOrder(Order order);
         Balance balance;
+        Order lastOrder = {.side = OrderSide::RESET};
+
         std::vector<Balance> balanceHistory;
         std::vector<Order> orderHistory;
         time_t candleTimeDelta;

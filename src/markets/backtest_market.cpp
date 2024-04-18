@@ -1,11 +1,11 @@
 #include "markets/backtest_market.h"
 
-#include <fstream>
-#include <sstream>
-#include <random>
-#include <optional>
-#include <iostream>
 #include <algorithm>
+#include <fstream>
+#include <iostream>
+#include <optional>
+#include <random>
+#include <sstream>
 
 
 namespace TradingBot {
@@ -74,6 +74,7 @@ namespace TradingBot {
             balanceHistory.back() = balance;
             saveOrder(order);
         }
+        lastOrder = order;
         
         return true;
     }
@@ -93,14 +94,26 @@ namespace TradingBot {
         double drawdown = maxBalance - balance.asAssetA();
         maxDrawdown = std::max(maxDrawdown, drawdown);
         sumSquaredDrawdown += drawdown * drawdown;
+
+        if (verbose) {
+            if (current % 1000 == 0) {
+                std::cerr << std::endl;
+                std::cerr << "progress:     " << double(current * 100) / candles.size() << "%" << std::endl;
+                std::cerr << "candles:      " << current << "/" << candles.size() << std::endl;
+                std::cerr << "balance:      " << balance.asAssetA() << std::endl;
+                std::cerr << "max drawdown: " << maxDrawdown << std::endl;
+                std::cerr << "max balance:  " << maxBalance << std::endl;
+            }
+        }
     
         return true;
     }
 
     BacktestMarket::BacktestMarket(
         const Helpers::VectorView<Candle>& candles,
-        bool saveHistory
-    ) : candles(candles), saveHistory(saveHistory) {
+        bool saveHistory,
+        bool verbose
+    ) : candles(candles), saveHistory(saveHistory), verbose(verbose) {
         current = -1;
 
         if (candles.size() > 1) {
@@ -139,6 +152,18 @@ namespace TradingBot {
             return candles;
         }
         return candles.subView(0, current + 1);
+    }
+
+
+    const Order& BacktestMarket::getLastOrder() const {
+        if (!saveHistory) {
+            return lastOrder;
+        }
+
+        if (orderHistory.empty()) {
+            return lastOrder;
+        }
+        return orderHistory.back();
     }
 
 } // namespace TradingBot

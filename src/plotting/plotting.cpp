@@ -1,5 +1,6 @@
 #include "plotting/plotting.h"
 
+#include <assert.h>
 #include <cstdlib>
 
 
@@ -105,42 +106,26 @@ namespace TradingBot {
 
     void heatmap(
         std::string fileName,
-        const std::vector<ParamSet>& paramSets,
-        const std::vector<double>& fitnesses
+        const Helpers::MultidimVector<double>& values
     ) {
+        assert(values.getShape().size() == 2);
+
         if (!checkGnuplot()) {
             return;
         }
 
-        std::vector<double> x, y;
-        x.reserve(paramSets.size());
-        y.reserve(paramSets.size());
-        std::map<std::pair<double, double>, double> vals;
-        double mx = -1e9;
-        for (size_t i = 0; i < paramSets.size(); ++i) {
-            x.push_back(std::get<int>(paramSets[i][0]));
-            y.push_back(std::get<int>(paramSets[i][1]));
-            vals[{std::get<int>(paramSets[i][0]), std::get<int>(paramSets[i][1])}] = fitnesses[i];
-            mx = std::max(mx, fitnesses[i]);
-        }
-        std::sort(x.begin(), x.end());
-        std::sort(y.begin(), y.end());
-        x.resize(std::unique(x.begin(), x.end()) - x.begin());
-        y.resize(std::unique(y.begin(), y.end()) - y.begin());
-
-        std::vector<std::vector<double>> values;
-        for (size_t i = 0; i < x.size(); ++i) {
-            values.push_back(std::vector<double>(y.size()));
-            for (size_t j = 0; j < y.size(); ++j) {
-                auto it = vals.find({x[i], y[j]});
-                values[i][j] = (it != vals.end()) ? it->second : std::nan("");
+        std::vector<std::vector<double>> v;
+        for (size_t i = 0; i < values.getShape()[0]; ++i) {
+            v.push_back(std::vector<double>(values.getShape()[1]));
+            for (size_t j = 0; j < values.getShape()[1]; ++j) {
+                v[i][j] = values[{i, j}] == -1e18 ? std::nan("") : values[{i, j}];
             }
         }
 
         auto fig = matplot::figure(true);
         auto ax = fig->current_axes();
-        ax->heatmap(values);
-        ax->colormap(values);
+        ax->heatmap(v);
+        ax->colormap(v);
 
         fig->size(DEFAULT_PLOT_HEIGHT, DEFAULT_PLOT_HEIGHT);
         fig->save(fileName);
