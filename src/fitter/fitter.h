@@ -167,56 +167,56 @@ namespace TradingBot {
         *threadStatus = true;
     }
 
-    // template<class Strat>
-    // bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
-    //     std::vector<size_t> index = fitnessMatrix.getIndex(i);
-
-    //     for (size_t j = 0; j < index.size(); ++j) {
-    //         if (0 < index[j]) {
-    //             --index[j];
-    //             if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] < threshold) {
-    //                 return false;
-    //             }
-    //             ++index[j];
-    //         }
-    //         if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
-    //             ++index[j];
-    //             if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] < threshold) {
-    //                 return false;
-    //             }
-    //             --index[j];
-    //         }
-    //     }
-    //     return true;
-    // }
-
     template<class Strat>
     bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
         std::vector<size_t> index = fitnessMatrix.getIndex(i);
 
-        double sum = 0;
-        int count = 0;
-
         for (size_t j = 0; j < index.size(); ++j) {
             if (0 < index[j]) {
                 --index[j];
-                if (!paramSetsMatrix[index].empty()) {
-                    sum += fitnessMatrix[index];
-                    ++count;
+                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] > threshold) {
+                    return true;
                 }
                 ++index[j];
             }
             if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
                 ++index[j];
-                if (!paramSetsMatrix[index].empty()) {
-                    sum += fitnessMatrix[index];
-                    ++count;
+                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] > threshold) {
+                    return true;
                 }
                 --index[j];
             }
         }
-        return sum / count > threshold;
+        return false;
     }
+
+    // template<class Strat>
+    // bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
+    //     std::vector<size_t> index = fitnessMatrix.getIndex(i);
+
+    //     double sum = 0;
+    //     int count = 0;
+
+    //     for (size_t j = 0; j < index.size(); ++j) {
+    //         if (0 < index[j]) {
+    //             --index[j];
+    //             if (!paramSetsMatrix[index].empty()) {
+    //                 sum += fitnessMatrix[index];
+    //                 ++count;
+    //             }
+    //             ++index[j];
+    //         }
+    //         if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
+    //             ++index[j];
+    //             if (!paramSetsMatrix[index].empty()) {
+    //                 sum += fitnessMatrix[index];
+    //                 ++count;
+    //             }
+    //             --index[j];
+    //         }
+    //     }
+    //     return sum / count > threshold;
+    // }
 
     template<class Strat>
     void StrategyFitter<Strat>::fit(int iterationsLimit) {
