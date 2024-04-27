@@ -1,5 +1,7 @@
 #pragma once
 
+#include <grpc/grpc.h>
+
 #include "markets/market.h"
 #include "markets/tinkoff/tinkoff_api.h"
 

@@ -25,6 +25,7 @@ target_link_libraries(
   market
   vector_view
   tinkoff_api
+  grpc++
 )
 
 add_subdirectory(tinkoff)

@@ -1,17 +1,21 @@
-cmake_minimum_required(VERSION 3.27)
+cmake_minimum_required(VERSION 3.5)
 project(TradingBot VERSION 1.0 LANGUAGES CXX)
 
 # Указываем стандарт C++
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+set(ABSL_PROPAGATE_CXX_STD ON)
+set(ABSL_ENABLE_INSTALL ON)
 
 
 include(FetchContent)
+set(FETCHCONTENT_QUIET OFF)
 
 FetchContent_Declare(
   matplotplusplus
   GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
   GIT_TAG origin/master
+  DOWNLOAD_EXTRACT_TIMESTAMP ON
 )
 FetchContent_GetProperties(matplotplusplus)
 if(NOT matplotplusplus_POPULATED)
@@ -22,12 +26,26 @@ endif()
 FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
+  DOWNLOAD_EXTRACT_TIMESTAMP ON
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+FetchContent_Declare(
+  gRPC
+  GIT_REPOSITORY https://github.com/grpc/grpc
+  GIT_TAG        v1.63.0
+  DOWNLOAD_EXTRACT_TIMESTAMP ON
+)
+set(gRPC_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(
+  gRPC
+)
+
+
 enable_testing()
 include(GoogleTest)
+
 
 include_directories(src)
 
