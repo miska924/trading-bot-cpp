@@ -42,11 +42,25 @@ FetchContent_MakeAvailable(
   gRPC
 )
 
+set(PROTO_PATH "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-src/third_party/protobuf/src")
+set(Protobuf_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-src/third_party/protobuf/src")
+set(Protobuf_PROTOC_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-build/third_party/protobuf/protoc")
+message(STATUS "Protobuf_PROTOC_EXECUTABLE: ${Protobuf_PROTOC_EXECUTABLE}")
+set(Protobuf_LIBRARY "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-build/third_party/protobuf/src/libprotobuf.a")
+set(Protobuf_LIBRARIES "${Protobuf_LIBRARY}")
+set(Protobuf_INCLUDE_DIRS "${Protobuf_INCLUDE_DIR}")
+set(GRPC_CPP_PLUGIN_EXECUTABLE "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-build/grpc_cpp_plugin")
+
+set(ABSL_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-src/third_party/abseil-cpp/")
+set(GRPC_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/_deps/grpc-src/include")
+
 
 enable_testing()
 include(GoogleTest)
 
-
+include_directories(${ABSL_INCLUDE_DIR})
+include_directories(${Protobuf_INCLUDE_DIR})
+include_directories(${GRPC_INCLUDE_DIR})
 include_directories(src)
 
 add_subdirectory(src)

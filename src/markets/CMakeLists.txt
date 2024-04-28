@@ -26,6 +26,7 @@ target_link_libraries(
   vector_view
   tinkoff_api
   grpc++
+  tinkoff_contracts
 )
 
 add_subdirectory(tinkoff)
