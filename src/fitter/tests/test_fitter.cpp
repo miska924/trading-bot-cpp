@@ -34,6 +34,30 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
     );
 }
 
+TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
+    int BEGIN = 5000;
+    int TRAIN = 10000;
+    int STEP1 = 2000;
+    int STEP2 = 1000;
+    Helpers::VectorView<TradingBot::Candle> train(candles, BEGIN, BEGIN + TRAIN);
+    Helpers::VectorView<TradingBot::Candle> test(candles, BEGIN + TRAIN, BEGIN + TRAIN + STEP1);
+    Helpers::VectorView<TradingBot::Candle> test2(candles, BEGIN + TRAIN + STEP1, BEGIN + TRAIN + STEP1 + STEP2);
+    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(train, {1, 1}, {1000, 1000});
+    fitter.fit(100);
+    fitter.plotBestStrategy("TestMACDHoldSlowStrategyFit.png");
+    fitter.heatmapFitnesses("TestMACDHoldSlowStrategyFitHeatmap.png");
+
+    EXPECT_EQ(
+        fitter.getBestBalance(),
+        174.67593979808686
+    );
+
+    fitter.test(test);
+    fitter.heatmapTestFitnesses("TestMACDHoldSlowStrategyFitHeatmapTest.png");
+    fitter.test(test2);
+    fitter.heatmapTestFitnesses("TestMACDHoldSlowStrategyFitHeatmapTest2.png");
+}
+
 TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
     TradingBot::StrategyFitter<TradingBot::MACDHoldFixedStrategy> fitter(candles, {1, 1, 1}, {1000, 1000, 1000});
     fitter.fit(100);

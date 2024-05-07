@@ -16,7 +16,6 @@ namespace TradingBot {
         const std::vector<TradingBot::Order>& orders,
         const std::vector<TradingBot::Balance>& balances
     ) {
-        return;
         if (!checkGnuplot()) {
             return;
         }
@@ -109,7 +108,6 @@ namespace TradingBot {
         std::string fileName,
         const Helpers::MultidimVector<double>& values
     ) {
-        return;
         assert(values.getShape().size() == 2);
 
         if (!checkGnuplot()) {
