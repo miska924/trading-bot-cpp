@@ -12,13 +12,13 @@ namespace TradingBot {
 
     class EMAFeature : public Feature {
     public:
-        EMAFeature(int period = DEFAULT_EMA_PERIOD, int lag = 0);
+        EMAFeature(int period = DEFAULT_EMA_PERIOD);
         int getPeriod() const;
-        int getLag() const;
-        virtual std::optional<double> operator()(const Helpers::VectorView<Candle>& candles) const override;
+        virtual double operator()(const Helpers::VectorView<Candle>& candles, bool incremental = false) override;
     private:
         int period;
-        int lag;
+        double smooth;
+        double lastValue = 0;
     };
 
 } // namespace TradingBot

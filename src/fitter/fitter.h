@@ -94,12 +94,33 @@ namespace TradingBot {
             doubleStepSize = (*doubleMax - *doubleMin) / (singleParamIterations - 1);
         }
 
+        int prevInt = 0;
+        double prevDouble = 0;
+        bool first = true;
         for (int i = 0; i < singleParamIterations; ++i) {
+            bool ok = false;
             if (intMin != nullptr) {
-                paramSet.push_back(std::min(*intMin + intStepSize * i, *intMax));
+                int value = std::min(*intMin + intStepSize * i, *intMax);
+                if (first || value != prevInt) {
+                    paramSet.push_back(value);
+                    prevInt = value;
+                    first = false;
+                    ok = true;
+                }
             } else {
-                paramSet.push_back(std::min(*doubleMin + doubleStepSize * i, *doubleMax));
+                double value = std::min(*doubleMin + doubleStepSize * i, *doubleMax);
+                if (first || value != prevDouble) {
+                    paramSet.push_back(value);
+                    prevDouble = value;
+                    first = false;
+                    ok = true;
+                }
             }
+
+            if (!ok) {
+                continue;
+            }
+
             index.push_back(i);
             generateParamSets(
                 s,
@@ -123,10 +144,10 @@ namespace TradingBot {
         fitAroundThreshold(fitAroundThreshold)
     {
         numThreads = std::thread::hardware_concurrency();
-        if (numThreads <= 1) {
-            numThreads = 2;
-        }
         --numThreads;
+        if (numThreads < 1) {
+            numThreads = 1;
+        }
 
         threadStatus.reserve(numThreads);
         for (int i = 0; i < numThreads; ++i) {
@@ -169,25 +190,28 @@ namespace TradingBot {
 
     template<class Strat>
     bool StrategyFitter<Strat>::checkFitnessAround(size_t i, double threshold) const {
+        if (fitnessMatrix[i] <= threshold) {
+            return false;
+        }
         std::vector<size_t> index = fitnessMatrix.getIndex(i);
 
         for (size_t j = 0; j < index.size(); ++j) {
             if (0 < index[j]) {
                 --index[j];
-                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] > threshold) {
-                    return true;
+                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] <= threshold) {
+                    return false;
                 }
                 ++index[j];
             }
             if (index[j] + 1 < fitnessMatrix.getShape()[j]) {
                 ++index[j];
-                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] > threshold) {
-                    return true;
+                if (!paramSetsMatrix[index].empty() && fitnessMatrix[index] <= threshold) {
+                    return false;
                 }
                 --index[j];
             }
         }
-        return false;
+        return true;
     }
 
     // template<class Strat>

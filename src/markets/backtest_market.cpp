@@ -143,8 +143,8 @@ namespace TradingBot {
     }
 
     double BacktestMarket::getFitness() const {
-        return balance.asAssetA() - maxDrawdown;
-        // return balance.asAssetA() - maxDrawdown - std::sqrt(sumSquaredDrawdown / (current + 1));
+        // return balance.asAssetA() - maxDrawdown;
+        return balance.asAssetA() - (std::sqrt(sumSquaredDrawdown / (current)) + maxDrawdown) / 2;
     }
 
     Helpers::VectorView<Candle> BacktestMarket::getCandles() const {

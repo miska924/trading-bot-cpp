@@ -13,7 +13,7 @@ TEST(MACDStrategyTest, TestMACDStrategy) {
     TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market);
     strategy.run();
     TradingBot::plot("TestMACDStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
-    EXPECT_EQ(market.getOrderHistory().size(), 108);
+    EXPECT_EQ(market.getOrderHistory().size(), 76);
 }
 
 TEST(MACDStrategyTest, TestMACDStrategyLarge) {
@@ -23,5 +23,5 @@ TEST(MACDStrategyTest, TestMACDStrategyLarge) {
     TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market, 20, 40);
     strategy.run();
     TradingBot::plot("TestMACDStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
-    EXPECT_EQ(market.getOrderHistory().size(), 12844);
+    EXPECT_EQ(market.getOrderHistory().size(), 6908);
 }

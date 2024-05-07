@@ -51,21 +51,21 @@ namespace TradingBot {
         Helpers::VectorView<Candle> candles = market->getCandles();
 
         if (candles.size() <= slowEMA.getPeriod()) {
+            fast = slow = 0;
             return;
         }
 
-        std::optional<double> fastOptional = fastEMA(candles);
-        std::optional<double> slowOptional = slowEMA(candles);
-        std::optional<double> previousFastOptional = fastEMA(candles.subView(0, candles.size() - 1));
-        std::optional<double> previousSlowOptional = slowEMA(candles.subView(0, candles.size() - 1));
-        if (!fastOptional || !slowOptional || !previousFastOptional || !previousSlowOptional) {
-            return;
+        double previousFast;
+        double previousSlow;
+        if (fast && slow) {
+            previousFast = fast;
+            previousSlow = slow;
+        } else {
+            previousFast = fastEMA(candles.subView(0, candles.size() - 1));
+            previousSlow = slowEMA(candles.subView(0, candles.size() - 1));
         }
-
-        double fast = *fastOptional;
-        double slow = *slowOptional;
-        double previousFast = *previousFastOptional;
-        double previousSlow = *previousSlowOptional;
+        fast = fastEMA(candles, true);
+        slow = slowEMA(candles, true);
 
         if (fast > slow && previousFast < previousSlow) {
             market->order({.side = OrderSide::RESET});
@@ -131,36 +131,33 @@ namespace TradingBot {
     }
 
     void MACDHoldFixedStrategy::step() {
-        if (market->time() < waitUntill) {
+        Helpers::VectorView<Candle> candles = market->getCandles();
+        if (candles.size() <= slowEMA.getPeriod()) {
+            fast = slow = 0;
             return;
         }
+
+        if (market->time() < waitUntill) {
+            fast = fastEMA(candles, true);
+            slow = slowEMA(candles, true);
+            return;
+        }
+        
         if (market->getBalance().assetB != 0) {
             market->order({.side = OrderSide::RESET});
         }
 
-        Helpers::VectorView<Candle> candles = market->getCandles();
-        if (candles.size() <= slowEMA.getPeriod()) {
-            return;
+        double previousFast;
+        double previousSlow;
+        if (fast && slow) {
+            previousFast = fast;
+            previousSlow = slow;
+        } else {
+            previousFast = fastEMA(candles.subView(0, candles.size() - 1));
+            previousSlow = slowEMA(candles.subView(0, candles.size() - 1));
         }
-
-        std::optional<double> fastOptional = fastEMA(candles);
-        std::optional<double> slowOptional = slowEMA(candles);
-        std::optional<double> previousFastOptional = fastEMA(candles.subView(0, candles.size() - 1));
-        std::optional<double> previousSlowOptional = slowEMA(candles.subView(0, candles.size() - 1));
-        
-        if (
-            !fastOptional ||
-            !slowOptional ||
-            !previousFastOptional ||
-            !previousSlowOptional
-        ) {
-            return;
-        }
-
-        double fast = *fastOptional;
-        double slow = *slowOptional;
-        double previousFast = *previousFastOptional;
-        double previousSlow = *previousSlowOptional;
+        fast = fastEMA(candles, true);
+        slow = slowEMA(candles, true);
 
         time_t wait = hold * market->getCandleTimeDelta();
         if (fast > slow && previousFast < previousSlow) {

@@ -18,7 +18,7 @@ TEST(TestFitter, TestMACDStrategyFit) {
 
     EXPECT_EQ(
         fitter.getBestBalance(),
-        43.224088366646342
+        156.02999080723393
     );
 }
 
@@ -30,7 +30,7 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
 
     EXPECT_EQ(
         fitter.getBestBalance(),
-        475.13031729549942
+        463.7644542941091
     );
 }
 
@@ -42,6 +42,6 @@ TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
     
     EXPECT_EQ(
         fitter.getBestBalance(),
-        169.10761815812944
+        160.82584865112196
     );
 }

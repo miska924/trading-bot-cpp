@@ -42,6 +42,8 @@ namespace TradingBot {
     protected:
         EMAFeature fastEMA;
         EMAFeature slowEMA;
+        double fast = 0;
+        double slow = 0;
     };
 
     class MACDHoldFixedStrategy : public MACDStrategy {
@@ -59,6 +61,8 @@ namespace TradingBot {
     protected:
         int hold = 1;
         int waitUntill = 0;
+        double fast = 0;
+        double slow = 0;
     };
 
     class MACDHoldSlowStrategy : public MACDHoldFixedStrategy {
