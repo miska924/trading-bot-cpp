@@ -1,36 +1,39 @@
 #include "features/ema_feature.h"
 
 #include <iostream>
+#include <math.h>
 
 
 namespace TradingBot {
 
-    EMAFeature::EMAFeature(int period, int lag) : period(period), lag(lag) {}
+    EMAFeature::EMAFeature(int period) : period(period), smooth(2.0 / (period + 1.0)) {}
 
-    std::optional<double> ema(const Helpers::VectorView<Candle>& candles, int period, int lag) {
-        if (period + lag > candles.size()) {
-            return {};
+    double ema(const Helpers::VectorView<Candle>& candles, int period, double smooth) {
+        int size = candles.size();
+        int begin = size - period;
+        double ema = 0;
+        double alphaPow = 1.0;
+        for (int i = size - 1; i >= begin; --i) {
+            ema += candles[i].close * alphaPow;
+            alphaPow *= (1.0 - smooth);
         }
-
-        double smooth = 2.0 / (period + 1.0);
-        size_t begin = candles.size() - period - lag;
-        double ema = candles[begin].close;
-        for (size_t i = begin + 1; i + lag < candles.size(); i++) {
-            ema = (candles[i].close - ema) * smooth + ema;
-        }
-        return ema;
+        return ema * smooth;
     }
 
-    std::optional<double> EMAFeature::operator()(const Helpers::VectorView<Candle>& candles) const {
-        return ema(candles, period, lag);
+    double EMAFeature::operator()(const Helpers::VectorView<Candle>& candles, bool incremental) {
+        if (!incremental || !lastValue) {
+            assert(period <= candles.size());
+            return lastValue = ema(candles, period, smooth);     
+        }
+        assert(period + 1 <= candles.size());
+        double diff = candles.back().close - lastValue;
+        double correction = pow(1.0 - smooth, period) * candles[candles.size() - period - 1].close;
+        return lastValue = lastValue + smooth * (diff - correction);
+        
     }
 
     int EMAFeature::getPeriod() const {
         return period;
-    }
-
-    int EMAFeature::getLag() const {
-        return lag;
     }
 
 } // namespace TradingBot

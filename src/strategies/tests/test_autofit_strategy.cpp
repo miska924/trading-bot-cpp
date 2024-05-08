@@ -15,7 +15,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     TradingBot::BacktestMarket market(candles);
     TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
         &market,
-        {1000, 1000, 100, 0, TradingBot::Balance().asAssetA()},
+        {1000, 0, 1000, 100, 0, TradingBot::Balance().asAssetA()},
         {1, 1},
         {1000, 1000}
     );
@@ -25,7 +25,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        121.47887400111658
+        149.48761196876683
     );
 }
 
@@ -33,7 +33,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
     TradingBot::BacktestMarket market(candles);
     TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
         &market,
-        {1000, 1000, 100, 1, TradingBot::Balance().asAssetA()},
+        {1000, 0, 1000, 100, 1, TradingBot::Balance().asAssetA()},
         {1, 1},
         {1000, 1000}
     );
@@ -43,6 +43,6 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        164.84977961015281
+        120.76172070600938
     );
 }

@@ -18,7 +18,7 @@ TEST(TestFitter, TestMACDStrategyFit) {
 
     EXPECT_EQ(
         fitter.getBestBalance(),
-        43.224088366646342
+        156.02999080723393
     );
 }
 
@@ -30,8 +30,32 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
 
     EXPECT_EQ(
         fitter.getBestBalance(),
-        475.13031729549942
+        463.7644542941091
     );
+}
+
+TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
+    int BEGIN = 5000;
+    int TRAIN = 10000;
+    int STEP1 = 2000;
+    int STEP2 = 1000;
+    Helpers::VectorView<TradingBot::Candle> train(candles, BEGIN, BEGIN + TRAIN);
+    Helpers::VectorView<TradingBot::Candle> test(candles, BEGIN + TRAIN, BEGIN + TRAIN + STEP1);
+    Helpers::VectorView<TradingBot::Candle> test2(candles, BEGIN + TRAIN + STEP1, BEGIN + TRAIN + STEP1 + STEP2);
+    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(train, {1, 1}, {1000, 1000});
+    fitter.fit(100);
+    fitter.plotBestStrategy("TestMACDHoldSlowStrategyFit.png");
+    fitter.heatmapFitnesses("TestMACDHoldSlowStrategyFitHeatmap.png");
+
+    EXPECT_EQ(
+        fitter.getBestBalance(),
+        174.67593979808686
+    );
+
+    fitter.test(test);
+    fitter.heatmapTestFitnesses("TestMACDHoldSlowStrategyFitHeatmapTest.png");
+    fitter.test(test2);
+    fitter.heatmapTestFitnesses("TestMACDHoldSlowStrategyFitHeatmapTest2.png");
 }
 
 TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
@@ -42,6 +66,6 @@ TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
     
     EXPECT_EQ(
         fitter.getBestBalance(),
-        169.10761815812944
+        160.82584865112196
     );
 }
