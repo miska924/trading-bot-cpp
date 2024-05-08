@@ -29,6 +29,8 @@ FetchContent_MakeAvailable(googletest)
 enable_testing()
 include(GoogleTest)
 
+find_package(CURL REQUIRED)
+
 include_directories(src)
 
 add_subdirectory(src)
