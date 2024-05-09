@@ -33,7 +33,7 @@ namespace TradingBot {
         return balanceHistory;
     }
 
-    Balance Market::getBalance() const {
+    Balance Market::getBalance() {
         return balance;
     }
 
@@ -42,6 +42,10 @@ namespace TradingBot {
             return lastOrder;
         }
         return orderHistory.back();
+    }
+
+    bool Market::finished() const {
+        return false;
     }
 
     time_t Market::getCandleTimeDelta() const {
