@@ -24,6 +24,7 @@ namespace TradingBot {
         virtual bool update() override;
         virtual Helpers::VectorView<Candle> getCandles() const override;
         virtual const Order& getLastOrder() const override;
+        virtual bool finished() const override;
         void finish();
         void restart();
         double getFitness() const;

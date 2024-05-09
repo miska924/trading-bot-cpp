@@ -24,7 +24,8 @@ target_link_libraries(
   tinkoff_market
   market
   vector_view
-  ${CURL_LIBRARIES}
+  http_connection
+  nlohmann_json
 )
 
 add_subdirectory(tests)

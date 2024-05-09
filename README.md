@@ -1,6 +1,10 @@
 # trading-bot-cpp
 
 ```bash
+sudo apt-get update
+sudo apt-get install -y g++ python3-pip ninja-build libcurl4-openssl-dev
+pip3 install cmake
+
 mkdir -p build && cd build
 cmake -G Ninja .. && cmake --build .
 ctest

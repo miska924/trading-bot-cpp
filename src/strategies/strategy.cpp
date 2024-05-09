@@ -23,9 +23,10 @@ namespace TradingBot {
     }
 
     void Strategy::run() {
-        do {
+        while (!market->finished()) {
             step();
-        } while (market->update());
+            while (!market->update()) {}
+        };
     }
 
 } // namespace TradingBot

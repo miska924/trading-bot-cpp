@@ -81,7 +81,7 @@ namespace TradingBot {
 
     bool BacktestMarket::update() {
         if (current + 1 >= candles.size()) {
-            return false;
+            return true;
         }
         ++current;
 
@@ -164,6 +164,10 @@ namespace TradingBot {
             return lastOrder;
         }
         return orderHistory.back();
+    }
+
+    bool BacktestMarket::finished() const {
+        return current + 1 >= candles.size();
     }
 
 } // namespace TradingBot
