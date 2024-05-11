@@ -41,6 +41,8 @@ namespace TradingBot {
             const std::string& assetKey,
             const std::string& currency
         );
+        void LoadCandlesHistory();
+        void CloseAllAccounts();
     };
 
 } // namespace TradingBot
