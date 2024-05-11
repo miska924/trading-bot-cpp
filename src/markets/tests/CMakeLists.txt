@@ -22,6 +22,8 @@ target_link_libraries(
   tinkoff_market
   market
   vector_view
+  macd_strategy
+  autofit_strategy
   CURL::libcurl
 )
 

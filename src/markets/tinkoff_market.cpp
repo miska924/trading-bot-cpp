@@ -1,23 +1,28 @@
 #include "markets/tinkoff_market.h"
 
 #include <iostream>
+#include <ctime>
 #include <stdexcept>
+#include <thread>
+#include <math.h>
 
 
 namespace TradingBot {
 
-    time_t ParseDateTime(const char* datetimeString)
+    time_t ParseDateTime(const char* datetimeString, const std::string& datetimeFormat)
     {
         struct tm tmStruct;
-        strptime(datetimeString, DATETIME_FORMAT.c_str(), &tmStruct);
+        strptime(datetimeString, datetimeFormat.c_str(), &tmStruct);
         return mktime(&tmStruct);
     }
     
-    std::string DateTime(time_t time)
+    std::string DateTime(time_t time,  const std::string& datetimeFormat)
     {
+        // std::cerr << "DateTime {" << std::endl;
         char buffer[90];
-        struct tm* timeinfo = localtime(&time);
-        strftime(buffer, sizeof(buffer), DATETIME_FORMAT.c_str(), timeinfo);
+        struct tm* timeinfo = gmtime(&time);
+        strftime(buffer, sizeof(buffer), datetimeFormat.c_str(), timeinfo);
+        // std::cerr << "}" << std::endl;
         return buffer;
     }
 
@@ -29,7 +34,10 @@ namespace TradingBot {
     }
 
     nlohmann::json TinkoffMarket::Post(const std::string& handler, const std::string& data) {
-        std::cerr << handler << "..." << nlohmann::json::parse(data).dump(2) << std::endl;
+        if (verbose) {
+            std::cerr << handler << "..." << nlohmann::json::parse(data).dump(2) << std::endl;
+        }
+
         std::string response;
         if (!connection.Post(
             TINKOFF_SB_API_URL + handler,
@@ -39,11 +47,19 @@ namespace TradingBot {
         )) {
             throw std::runtime_error(handler + " request failed");
         }
-        std::cerr << handler << ": " << response << std::endl;
-        return nlohmann::json::parse(response);
+
+        nlohmann::json result = nlohmann::json::parse(response);
+
+        if (verbose || result.contains("code") && result["code"] != 0) {
+            std::cerr << handler << ": " << response << std::endl;
+        }
+
+        return result;
     }
 
-    TinkoffMarket::TinkoffMarket() {
+    TinkoffMarket::TinkoffMarket(
+        size_t candlesCount, bool verbose
+    ) : verbose(verbose), candlesCount(candlesCount) {
         headers = {
             std::string("Authorization: Bearer ") + std::getenv("TINKOFF_SB_TOKEN"),
             "Content-Type: application/json",
@@ -76,7 +92,8 @@ namespace TradingBot {
             "}"
         )["instrument"];
 
-        LoadCandlesHistory();
+        candleTimeDelta = 15 * 60;
+        LoadCandlesHistory(candlesCount);
     }
 
     void TinkoffMarket::CloseAllAccounts() {
@@ -91,30 +108,53 @@ namespace TradingBot {
         }
     }
 
-    void TinkoffMarket::LoadCandlesHistory() {
+    bool TinkoffMarket::LoadCandlesHistory(size_t candlesCount) {
         time_t to = std::time(nullptr);
-        time_t from = to - 60 * 60;
+        time_t from = to - candleTimeDelta * candlesCount;
+        int partCount = (to - from + HISTORY_BATCH_SIZE * candleTimeDelta - 1) / (HISTORY_BATCH_SIZE * candleTimeDelta);
 
-        nlohmann::json historyResponse = Post(
-            "MarketDataService/GetCandles",
-            "{"
-            "    \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\","
-            "    \"interval\": \"CANDLE_INTERVAL_1_MIN\","
-            "    \"from\": \"" + DateTime(from) + "\","
-            "    \"to\": \"" + DateTime(to) + "\""
-        )["candles"];
+        bool updated = false;
+        for (size_t part = 0; part < partCount; ++part) {
+            std::cerr << DateTime(
+                    from + part * HISTORY_BATCH_SIZE * candleTimeDelta
+                ) << std::endl;
+            nlohmann::json historyResponse = Post(
+                "MarketDataService/GetCandles",
+                "{"
+                "    \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\","
+                "    \"interval\": \"CANDLE_INTERVAL_15_MIN\","
+                "    \"from\": \"" + DateTime(
+                    from + part * HISTORY_BATCH_SIZE * candleTimeDelta
+                ) + "\","
+                "    \"to\": \"" + DateTime(
+                    std::min(int(from + (part + 1) * HISTORY_BATCH_SIZE * candleTimeDelta), int(to))
+                ) + "\""
+                "}"
+            )["candles"];
 
-        for (const auto& candle: historyResponse) {      
-
-            candles.push_back(Candle{
-                .time = ParseDateTime(candle["time"].get<std::string>().c_str()),
-                .open = doubleFromTinfoffFormat(candle["open"]),
-                .high = doubleFromTinfoffFormat(candle["high"]),
-                .low = doubleFromTinfoffFormat(candle["low"]),
-                .close = doubleFromTinfoffFormat(candle["close"]),
-                .volume = std::stod(candle["volume"].get<std::string>())
-            });
+            for (const auto& candle: historyResponse) {
+                time_t candleTime = ParseDateTime(candle["time"].get<std::string>().c_str());
+                std::cerr << " --- " << DateTime(candleTime) << std::endl;
+                if (!candles.empty() && candles.back().time >= candleTime) {
+                    std::cerr << "skipping candle" << std::endl;
+                    continue;
+                }
+                if (!candle.contains("isComplete") || !candle["isComplete"].get<bool>()) {
+                    std::cerr << "not complete candle" << std::endl;
+                    continue;
+                }
+                updated = true;
+                candles.push_back(Candle{
+                    .time = candleTime,
+                    .open = doubleFromTinfoffFormat(candle["open"]),
+                    .high = doubleFromTinfoffFormat(candle["high"]),
+                    .low = doubleFromTinfoffFormat(candle["low"]),
+                    .close = doubleFromTinfoffFormat(candle["close"]),
+                    .volume = std::stod(candle["volume"].get<std::string>())
+                });
+            }
         }
+        return updated;
     }
 
     TinkoffMarket::~TinkoffMarket() {
@@ -176,10 +216,14 @@ namespace TradingBot {
     }
 
     bool TinkoffMarket::update() {
-        // проверить расписание и вернуть false, если сейчас не идут торги
-        // проверить, появилась ли полноценная новая свеча и вернуть false, если нет
-        // получить свечи
-        return true;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        if (!Post(
+            "MarketDataService/GetTradingStatus",
+            "{ \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\" }"
+        )["marketOrderAvailableFlag"]) {
+            return false;
+        }
+        return LoadCandlesHistory(10);
     }
 
     Helpers::VectorView<Candle> TinkoffMarket::getCandles() const {
