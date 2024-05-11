@@ -6,7 +6,7 @@
 TEST(TinkoffMarketTest, TestInit) {
     TradingBot::TinkoffMarket market;
     market.order({
-        .side=TradingBot::OrderSide::RESET
+        .side=TradingBot::OrderSide::BUY
     });
     TradingBot::Balance balance = market.getBalance();
     EXPECT_EQ(balance.assetA, TradingBot::Balance().assetA);
