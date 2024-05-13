@@ -58,15 +58,18 @@ namespace TradingBot {
         order.time = time();
         order.price = candles[current].close;
 
+        double all = balance.asAssetA();
+        double amount = order.amount * all;
+
         if (order.side == OrderSide::RESET) {
             balance.assetA += balance.assetB * order.price * (1.0 - DEFAULT_FEE);
             balance.assetB = 0;
         } else if (order.side == OrderSide::BUY) {
-            balance.assetB += order.amount * balance.assetA / order.price * (1.0 - DEFAULT_FEE);
-            balance.assetA -= order.amount * balance.assetA;
+            balance.assetB += amount / order.price * (1.0 - DEFAULT_FEE);
+            balance.assetA -= amount;
         } else if (order.side == OrderSide::SELL) {
-            balance.assetB -= order.amount * balance.assetA / order.price;
-            balance.assetA += order.amount * balance.assetA * (1.0 - DEFAULT_FEE);
+            balance.assetB -= amount / order.price;
+            balance.assetA += amount * (1.0 - DEFAULT_FEE);
         }
 
         balance.update(order.price, order.time);
