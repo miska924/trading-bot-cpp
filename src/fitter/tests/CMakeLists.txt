@@ -6,6 +6,8 @@ target_link_libraries(
   backtest_market
   market
   macd_strategy
+  averaging_strategy
+  atr_feature
   strategy
   ema_feature
   feature

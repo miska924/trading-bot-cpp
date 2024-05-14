@@ -14,6 +14,7 @@ namespace TradingBot {
         period = std::get<int>(paramSet[0]);
         waitCandles = std::get<int>(paramSet[1]);
         coeff = std::get<double>(paramSet[2]);
+        risk = std::get<double>(paramSet[3]);
 
         atr = ATRFeature(period);
     }
@@ -22,26 +23,28 @@ namespace TradingBot {
         Market* market,
         int period,
         int waitCandles,
-        double coeff
-    ) : period(period), waitCandles(waitCandles), coeff(coeff) {
-        paramSet = {period, waitCandles, coeff};
+        double coeff,
+        double risk
+    ) : period(period), waitCandles(waitCandles), coeff(coeff), risk(risk) {
+        paramSet = {period, waitCandles, coeff, risk};
         assert(checkParamSet(paramSet));
         this->market = market;
         atr = ATRFeature(period);
     }
 
     bool AveragingStrategy::checkParamSet(const ParamSet& paramSet) const {
-        if (paramSet.size() != 3) {
+        if (paramSet.size() != 4) {
             return false;
         }
 
         const int* period = std::get_if<int>(&paramSet[0]);
         const int* waitCandles = std::get_if<int>(&paramSet[1]);
         const double* coeff = std::get_if<double>(&paramSet[2]);
-        if (period == nullptr || coeff == nullptr || waitCandles == nullptr) {
+        const double* risk = std::get_if<double>(&paramSet[3]);
+        if (period == nullptr || coeff == nullptr || waitCandles == nullptr || risk == nullptr) {
             return false;
         }
-        if (*period < 1 || *waitCandles < 1 || *coeff < 0) {
+        if (*period < 1 || *waitCandles < 1 || *coeff < 0 || *risk < 0) {
             return false;
         }
 
@@ -59,7 +62,12 @@ namespace TradingBot {
             inCombo = false;
         }
 
-        double atrValue = atr(candles.subView(0, period));
+        if (atrValue && !noUpdateCount) {
+            atrValue = atr(candles, false);
+        } else {
+            atrValue = atr(candles);
+            noUpdateCount = period;
+        }
 
         if (inCombo) {
             if (lastOrder.side == OrderSide::BUY) {
