@@ -16,8 +16,8 @@ namespace TradingBot {
             bool incremental = false
         ) override;
     private:
-        double atr(const Helpers::VectorView<Candle>& candles, int period);
-        double savedSum;
+        double atr(const Helpers::VectorView<Candle>& candles);
+        double savedSum = 0;
         int period;
         double lastValue = 0;
     };

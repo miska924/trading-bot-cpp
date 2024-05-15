@@ -42,6 +42,8 @@ target_link_libraries(
   matplot
   autofit_strategy
   vector_view
+  averaging_strategy
+  atr_feature
 )
 
 target_link_libraries(

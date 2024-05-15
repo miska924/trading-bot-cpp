@@ -33,7 +33,7 @@ namespace TradingBot {
             int fitStep = DEFAULT_FIT_STEP,
             int fitIterations = DEFAULT_FIT_ITERATIONS,
             bool forceStop = false,
-            double fitAroundThreshold = Balance().asAssetA(),
+            double fitAroundThreshold = 1,
             const ParamSet& paramSetMin = {},
             const ParamSet& paramSetMax = {}
         );
@@ -68,7 +68,7 @@ namespace TradingBot {
         this->market = market;
         this->paramSet = paramSet;
         fitWindow = std::get<int>(paramSet[0]);
-        testWindow =std::get<int>(paramSet[1]);
+        testWindow = std::get<int>(paramSet[1]);
         fitStep = std::get<int>(paramSet[2]);
         fitIterations = std::get<int>(paramSet[3]);
         forceStop = std::get<int>(paramSet[4]);
@@ -86,7 +86,8 @@ namespace TradingBot {
         double fitAroundThreshold,
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax
-    ) : fitWindow(fitWindow),
+    ) :
+        fitWindow(fitWindow),
         testWindow(testWindow),
         fitStep(fitStep),
         fitIterations(fitIterations),
@@ -115,7 +116,7 @@ namespace TradingBot {
         }
         
         if (nextFit <= market->time() && (forceStop || market->getBalance().assetB == 0)) {
-            if (forceStop && market->getBalance().assetB != 0) {
+            if (market->getBalance().assetB != 0) {
                 market->order(Order{.side = OrderSide::RESET});
             }
 
@@ -138,25 +139,25 @@ namespace TradingBot {
                 if (!testWindow) {
                     reliable = true;
                     strategy = Strat(market, fitter.getBestParameters());
-                }
+                } else {
+                    BacktestMarket testMarket = BacktestMarket(
+                        allCandles.subView(
+                            allCandles.size() - testWindow,
+                            allCandles.size()
+                        ),
+                        false
+                    );
+                    Strat testStrategy = Strat(
+                        &testMarket,
+                        fitter.getBestParameters()
+                    );
+                    testStrategy.run();
+                    double fitness = testMarket.getFitness();
 
-                BacktestMarket testMarket = BacktestMarket(
-                    allCandles.subView(
-                        allCandles.size() - testWindow,
-                        allCandles.size()
-                    ),
-                    false
-                );
-                Strat testStrategy = Strat(
-                    &testMarket,
-                    fitter.getBestParameters()
-                );
-                testStrategy.run();
-                double fitness = testMarket.getFitness();
-
-                if (fitness > fitAroundThreshold) {
-                    reliable = true;
-                    strategy = Strat(market, fitter.getBestParameters());
+                    if (fitness > fitAroundThreshold) {
+                        reliable = true;
+                        strategy = Strat(market, fitter.getBestParameters());
+                    }
                 }
             }
         }

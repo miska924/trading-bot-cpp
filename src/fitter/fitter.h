@@ -56,7 +56,7 @@ namespace TradingBot {
             const ParamSet& paramSetMin,
             const ParamSet& paramSetMax,
             int repeats = 1,
-            double fitAroundThreshold = Balance().asAssetA()
+            double fitAroundThreshold = 1
         );
         ~StrategyFitter();
 
@@ -104,27 +104,27 @@ namespace TradingBot {
         double doubleStepSize;
         if (intMin != nullptr) {
             if (*intMin == *intMax) {
-                index.push_back(*intMin);
+                paramSet.push_back(*intMin);
                 generateParamSets(
                     s,
                     paramSet,
                     index
                 );
-                index.pop_back();
+                paramSet.pop_back();
                 return;
             }
             intStepSize = (
                 (*intMax - *intMin) + singleParamIterations - 2
             ) / (singleParamIterations - 1);
         } else {
-            if (*doubleMin == *doubleMin) {
-                index.push_back(*doubleMin);
+            if (*doubleMin == *doubleMax) {
+                paramSet.push_back(*doubleMin);
                 generateParamSets(
                     s,
                     paramSet,
                     index
                 );
-                index.pop_back();
+                paramSet.pop_back();
                 return;
             }
             doubleStepSize = (*doubleMax - *doubleMin) / (singleParamIterations - 1);
@@ -360,7 +360,7 @@ namespace TradingBot {
             1.0 / fitParams
         ));
         
-        std::vector<size_t> index(paramSetMin.size(), singleParamIterations);
+        std::vector<size_t> index(fitParams, singleParamIterations);
         paramSetsMatrix = index;
         fitnessMatrix = {index, -1e18};
         testFitnessMatrix = {index, -1e18};
@@ -381,7 +381,6 @@ namespace TradingBot {
             if (paramSetsMatrix[i].empty()) {
                 continue;
             }
-
             bool better = fitnessMatrix[i] > bestFitness;
             bool currentReliable = checkFitnessAround(i, fitAroundThreshold);
             

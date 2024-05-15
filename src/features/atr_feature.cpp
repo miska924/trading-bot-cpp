@@ -5,7 +5,7 @@
 
 namespace TradingBot {
 
-    double ATRFeature::atr(const Helpers::VectorView<Candle>& candles, int period) {
+    double ATRFeature::atr(const Helpers::VectorView<Candle>& candles) {
         int size = candles.size();
         int begin = size - period;
         double sum = 0;
@@ -22,7 +22,7 @@ namespace TradingBot {
     double ATRFeature::operator()(const Helpers::VectorView<Candle>& candles, bool incremental) {
         if (!incremental || !lastValue) {
             assert(period <= candles.size());
-            return lastValue = atr(candles, period);
+            return lastValue = atr(candles);
         }
         assert(period < candles.size());
         double add = candles.back().high - candles.back().low;

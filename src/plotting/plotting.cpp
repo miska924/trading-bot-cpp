@@ -65,21 +65,21 @@ namespace TradingBot {
         auto fig = matplot::figure(true);
 
         auto ax1 = fig->add_subplot(2, 1, 1);
+
         ax1->hold(matplot::on);
         ax1->plot(candleTimes, candleCloses);
 
-
-        auto reset = ax1->scatter(resetOrderTimes, resetOrderPrices);
-        reset->marker_face_color("gray");
-        reset->color("none");
-
-        auto buy = ax1->scatter(buyOrderTimes, buyOrderPrices);
+        auto buy = ax1->scatter(buyOrderTimes, buyOrderPrices, 10);
         buy->marker_face_color("#00AA00");
         buy->color("none");
 
-        auto sell = ax1->scatter(sellOrderTimes, sellOrderPrices);
+        auto sell = ax1->scatter(sellOrderTimes, sellOrderPrices, 10);
         sell->marker_face_color("red");
         sell->color("none");
+
+        auto reset = ax1->scatter(resetOrderTimes, resetOrderPrices, 5);
+        reset->marker_face_color("black");
+        reset->color("none");
 
         auto ax2 = fig->add_subplot(2, 1, 2);
         ax1->shared_from_this();
