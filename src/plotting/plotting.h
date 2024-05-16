@@ -18,7 +18,8 @@ namespace TradingBot {
         std::string fileName,
         const Helpers::VectorView<TradingBot::Candle>& candles,
         const std::vector<TradingBot::Order>& orders,
-        const std::vector<TradingBot::Balance>& balances
+        const std::vector<TradingBot::Balance>& balances,
+        bool logBalance = false
     );
 
     void heatmap(
