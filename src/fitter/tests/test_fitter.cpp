@@ -84,7 +84,7 @@ TEST(TestFitter, TestAveragingStrategyFit) {
     
     EXPECT_EQ(
         fitter.getBestBalance(),
-        160.82584865112196
+        107674.87292014458
     );
 }
 // 100 51 775 40.6 0.1

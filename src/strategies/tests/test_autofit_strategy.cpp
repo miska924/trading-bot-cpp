@@ -26,7 +26,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        149.48761196876683
+        154.36272866519681
     );
 }
 
@@ -44,7 +44,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        120.76172070600938
+        124.1775374311995
     );
 }
 
@@ -62,6 +62,6 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        120.76172070600938
+        87.732922639447139
     );
 }

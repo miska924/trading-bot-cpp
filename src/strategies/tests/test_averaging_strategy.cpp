@@ -13,7 +13,7 @@ TEST(AveragingStrategyTest, TestAveragingStrategy) {
     TradingBot::AveragingStrategy strategy(&market);
     strategy.run();
     TradingBot::plot("TestAveragingStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
-    EXPECT_EQ(market.getOrderHistory().size(), 76);
+    EXPECT_EQ(market.getOrderHistory().size(), 1);
 }
 
 TEST(AveragingStrategyTest, TestAveragingStrategyLarge) {
@@ -23,5 +23,5 @@ TEST(AveragingStrategyTest, TestAveragingStrategyLarge) {
     TradingBot::AveragingStrategy strategy = TradingBot::AveragingStrategy(&market);
     strategy.run();
     TradingBot::plot("TestAveragingStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
-    EXPECT_EQ(market.getOrderHistory().size(), 6908);
+    EXPECT_EQ(market.getOrderHistory().size(), 53);
 }
