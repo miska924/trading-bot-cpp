@@ -80,11 +80,11 @@ TEST(TestFitter, TestAveragingStrategyFit) {
     std::cerr << fitter.getBestParameters() << std::endl;
     fitter.plotBestStrategy("TestAveragingStrategyFit.png");
     // fitter.heatmapFitnesses("TestAveragingStrategyFitHeatmap.png");
-    // cannot make heatmap because of too many parameters (3, but need 2)
+    // cannot make heatmap because of too few parameters (1, but need 2)
     
     EXPECT_EQ(
         fitter.getBestBalance(),
-        107674.87292014458
+        107674.87292014458 // it's actually overfitting i think
     );
 }
 // 100 51 775 40.6 0.1

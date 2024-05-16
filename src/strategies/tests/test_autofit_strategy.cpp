@@ -22,11 +22,29 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     );
     strategy.run();
 
-    TradingBot::plot("TestAutoFitStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    TradingBot::plot("TestAutoFitMACDHoldSlowStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
         154.36272866519681
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
+    TradingBot::BacktestMarket market(candles);
+    TradingBot::AutoFitStrategy<TradingBot::MACDHoldFixedStrategy> strategy(
+        &market,
+        {1000, 0, 1000, 1000, 0, 1.0},
+        {1, 1, 1},
+        {1000, 1000, 1000}
+    );
+    strategy.run();
+
+    TradingBot::plot("TestAutoFitMACDHoldFixedStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        156.97329832407993
     );
 }
 
@@ -40,7 +58,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
     );
     strategy.run();
 
-    TradingBot::plot("TestAutoFitStrategyForceStop.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    TradingBot::plot("TestAutoFitMACDHoldSlowStrategyForceStop.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -52,7 +70,7 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
     TradingBot::BacktestMarket market(candles);
     TradingBot::AutoFitStrategy<TradingBot::AveragingStrategy> strategy(
         &market,
-        {10000, 0, 10000, 10000, 0, 1.0},
+        {10000, 0, 1000, 1000, 0, 1.0},
         {1000, 40, 1000, 3.0, 0.1},
         {1000, 60, 1000, 40.0, 0.1}
     );
@@ -62,6 +80,6 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        87.732922639447139
+        124.16714631107786
     );
 }

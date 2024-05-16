@@ -14,7 +14,8 @@ namespace TradingBot {
         std::string fileName,
         const Helpers::VectorView<TradingBot::Candle>& candles,
         const std::vector<TradingBot::Order>& orders,
-        const std::vector<TradingBot::Balance>& balances
+        const std::vector<TradingBot::Balance>& balances,
+        bool logBalance
     ) {
         if (!checkGnuplot()) {
             return;
@@ -61,9 +62,7 @@ namespace TradingBot {
             }
         }
 
-        // Создаём фигуру и определяем размеры подграфов (2 ряда, 1 столбец, текущий подграф 1)
         auto fig = matplot::figure(true);
-
         auto ax1 = fig->add_subplot(2, 1, 1);
 
         ax1->hold(matplot::on);
@@ -84,7 +83,7 @@ namespace TradingBot {
         auto ax2 = fig->add_subplot(2, 1, 2);
         ax1->shared_from_this();
         ax2->hold(matplot::on);
-        ax2->plot(balanceTimes, balanceHistory);
+        ax2->loglog(balanceTimes, balanceHistory);
 
         ax1->position({
             WIDTH_MARGIN,

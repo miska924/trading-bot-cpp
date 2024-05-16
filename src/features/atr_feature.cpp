@@ -17,7 +17,7 @@ namespace TradingBot {
         return sqrt(sum / period);
     }
 
-    ATRFeature::ATRFeature(int period) : period(period) {}
+    ATRFeature::ATRFeature(int period, bool log) : period(period), log(log) {}
 
     double ATRFeature::operator()(const Helpers::VectorView<Candle>& candles, bool incremental) {
         if (!incremental || !lastValue) {
@@ -25,9 +25,16 @@ namespace TradingBot {
             return lastValue = atr(candles);
         }
         assert(period < candles.size());
-        double add = candles.back().high - candles.back().low;
         int removeId = candles.size() - period - 1;
-        double remove = candles[removeId].high - candles[removeId].low;
+        double add;
+        double remove;
+        if (log) {
+            add = std::log1p(candles.back().high) - std::log1p(candles.back().low);
+            remove = std::log1p(candles[removeId].high) - std::log1p(candles[removeId].low);
+        } else {
+            add = candles.back().high - candles.back().low;
+            remove = candles[removeId].high - candles[removeId].low;
+        }
         savedSum = (savedSum + add * add - remove * remove);
         return lastValue = sqrt(savedSum / period);
     }
