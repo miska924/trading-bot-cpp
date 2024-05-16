@@ -23,6 +23,7 @@ namespace TradingBot {
         Helpers::VectorView<Candle> candles;
         double fitAroundThreshold;
         bool reliable = false;
+        int repeat;
 
         int numThreads;
         std::vector<std::thread> threadPool;
@@ -54,7 +55,8 @@ namespace TradingBot {
             const Helpers::VectorView<Candle>& candles,
             const ParamSet& paramSetMin,
             const ParamSet& paramSetMax,
-            double fitAroundThreshold = Balance().asAssetA()
+            int repeats = 1,
+            double fitAroundThreshold = 1
         );
         ~StrategyFitter();
 
@@ -101,10 +103,30 @@ namespace TradingBot {
         int intStepSize;
         double doubleStepSize;
         if (intMin != nullptr) {
+            if (*intMin == *intMax) {
+                paramSet.push_back(*intMin);
+                generateParamSets(
+                    s,
+                    paramSet,
+                    index
+                );
+                paramSet.pop_back();
+                return;
+            }
             intStepSize = (
                 (*intMax - *intMin) + singleParamIterations - 2
             ) / (singleParamIterations - 1);
         } else {
+            if (*doubleMin == *doubleMax) {
+                paramSet.push_back(*doubleMin);
+                generateParamSets(
+                    s,
+                    paramSet,
+                    index
+                );
+                paramSet.pop_back();
+                return;
+            }
             doubleStepSize = (*doubleMax - *doubleMin) / (singleParamIterations - 1);
         }
 
@@ -151,11 +173,13 @@ namespace TradingBot {
         const Helpers::VectorView<Candle>& candles,
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax,
+        int repeat,
         double fitAroundThreshold
     ) : candles(candles),
         paramSetMin(paramSetMin),
         paramSetMax(paramSetMax),
-        fitAroundThreshold(fitAroundThreshold)
+        fitAroundThreshold(fitAroundThreshold),
+        repeat(repeat)
     {
         numThreads = std::thread::hardware_concurrency();
         --numThreads;
@@ -202,7 +226,7 @@ namespace TradingBot {
 
         {
             std::lock_guard<std::mutex> lock(updateFitnessMutex);
-            fitnessMatrix[index] = fitness;
+            fitnessMatrix[index] = std::min(fitness, fitnessMatrix[index]);
         }
 
         *threadStatus = true;
@@ -273,41 +297,44 @@ namespace TradingBot {
                 continue;
             }
 
-            if (threadPool.size() < numThreads) {
-                threadPool.emplace_back(
-                    &StrategyFitter::singleRun,
-                    this,
-                    std::cref(candles),
-                    paramSet,
-                    std::ref(fitnessMatrix),
-                    threadStatus[threadPool.size()],
-                    j
-                );
-                continue;
-            }
-
-            bool started = false;
-            while (!started) {
-                for (size_t i = 0; i < numThreads; i++) {
-                    if (!*threadStatus[i]) {
-                        continue;
-                    }
-                    if (threadPool[i].joinable()) {
-                        threadPool[i].join();
-                    }
-                    *threadStatus[i] = false;
-                    threadPool[i] = std::move(std::thread(
+            fitnessMatrix[j] = 1e18;
+            for (int k = 0; k < repeat; ++k) {
+                if (threadPool.size() < numThreads) {
+                    threadPool.emplace_back(
                         &StrategyFitter::singleRun,
                         this,
                         std::cref(candles),
                         paramSet,
                         std::ref(fitnessMatrix),
-                        threadStatus[i],
+                        threadStatus[threadPool.size()],
                         j
-                    ));
-                    
-                    started = true;
-                    break;
+                    );
+                    continue;
+                }
+
+                bool started = false;
+                while (!started) {
+                    for (size_t i = 0; i < numThreads; i++) {
+                        if (!*threadStatus[i]) {
+                            continue;
+                        }
+                        if (threadPool[i].joinable()) {
+                            threadPool[i].join();
+                        }
+                        *threadStatus[i] = false;
+                        threadPool[i] = std::move(std::thread(
+                            &StrategyFitter::singleRun,
+                            this,
+                            std::cref(candles),
+                            paramSet,
+                            std::ref(fitnessMatrix),
+                            threadStatus[i],
+                            j
+                        ));
+                        
+                        started = true;
+                        break;
+                    }
                 }
             }
         }
@@ -321,12 +348,19 @@ namespace TradingBot {
 
     template<class Strat>
     void StrategyFitter<Strat>::fit(int iterationsLimit) {
+        int fitParams = 0;
+        for (int i = 0; i < paramSetMin.size(); ++i) {
+            if (paramSetMin[i] < paramSetMax[i]) {
+                fitParams++;
+            }
+        }
+
         singleParamIterations = std::floor(std::pow(
             double(iterationsLimit),
-            1.0 / paramSetMin.size()
+            1.0 / fitParams
         ));
         
-        std::vector<size_t> index(paramSetMin.size(), singleParamIterations);
+        std::vector<size_t> index(fitParams, singleParamIterations);
         paramSetsMatrix = index;
         fitnessMatrix = {index, -1e18};
         testFitnessMatrix = {index, -1e18};
@@ -347,7 +381,6 @@ namespace TradingBot {
             if (paramSetsMatrix[i].empty()) {
                 continue;
             }
-
             bool better = fitnessMatrix[i] > bestFitness;
             bool currentReliable = checkFitnessAround(i, fitAroundThreshold);
             

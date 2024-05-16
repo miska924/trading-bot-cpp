@@ -11,8 +11,6 @@ namespace TradingBot {
 
     using ParamSet = std::vector<std::variant<int, double>>;
 
-    std::ostream& operator<<(std::ostream& os, const ParamSet& paramSet);
-
     class Strategy {
     public:
         virtual ~Strategy() = default;
@@ -26,3 +24,6 @@ namespace TradingBot {
     };
 
 } // namespace TradingBot
+
+
+std::ostream& operator<<(std::ostream& os, const TradingBot::ParamSet& paramSet);

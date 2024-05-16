@@ -3,17 +3,6 @@
 
 namespace TradingBot {
 
-    std::ostream& operator<<(std::ostream& os, const ParamSet& paramSet) {
-        for (const auto& param : paramSet) {
-            if (std::holds_alternative<int>(param)) {
-                os << std::get<int>(param) << " ";
-            } else {
-                os << std::get<double>(param) << " ";
-            }
-        }
-        return os;
-    }
-
     const ParamSet& Strategy::getParamSet() const {
         return paramSet;
     }
@@ -29,3 +18,15 @@ namespace TradingBot {
     }
 
 } // namespace TradingBot
+
+
+std::ostream& operator<<(std::ostream& os, const TradingBot::ParamSet& paramSet) {
+    for (const auto& param : paramSet) {
+        if (std::holds_alternative<int>(param)) {
+            os << std::get<int>(param) << " ";
+        } else {
+            os << std::get<double>(param) << " ";
+        }
+    }
+    return os;
+}

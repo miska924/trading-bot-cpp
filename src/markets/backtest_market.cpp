@@ -58,15 +58,18 @@ namespace TradingBot {
         order.time = time();
         order.price = candles[current].close;
 
+        double all = balance.asAssetA();
+        double amount = order.amount * all;
+
         if (order.side == OrderSide::RESET) {
             balance.assetA += balance.assetB * order.price * (1.0 - DEFAULT_FEE);
             balance.assetB = 0;
         } else if (order.side == OrderSide::BUY) {
-            balance.assetB += order.amount * balance.assetA / order.price * (1.0 - DEFAULT_FEE);
-            balance.assetA -= order.amount * balance.assetA;
+            balance.assetB += amount / order.price * (1.0 - DEFAULT_FEE);
+            balance.assetA -= amount;
         } else if (order.side == OrderSide::SELL) {
-            balance.assetB -= order.amount * balance.assetA / order.price;
-            balance.assetA += order.amount * balance.assetA * (1.0 - DEFAULT_FEE);
+            balance.assetB -= amount / order.price;
+            balance.assetA += amount * (1.0 - DEFAULT_FEE);
         }
 
         balance.update(order.price, order.time);
@@ -91,7 +94,7 @@ namespace TradingBot {
         }
 
         maxBalance = std::max(maxBalance, balance.asAssetA());
-        double drawdown = maxBalance - balance.asAssetA();
+        double drawdown = ((maxBalance - balance.asAssetA()) / maxBalance);
         maxDrawdown = std::max(maxDrawdown, drawdown);
         sumSquaredDrawdown += drawdown * drawdown;
 
@@ -144,7 +147,7 @@ namespace TradingBot {
 
     double BacktestMarket::getFitness() const {
         // return balance.asAssetA() - maxDrawdown;
-        return balance.asAssetA() - (std::sqrt(sumSquaredDrawdown / (current)) + maxDrawdown) / 2;
+        return balance.asAssetA() / Balance().asAssetA() - (std::sqrt(sumSquaredDrawdown / (current)));
     }
 
     Helpers::VectorView<Candle> BacktestMarket::getCandles() const {

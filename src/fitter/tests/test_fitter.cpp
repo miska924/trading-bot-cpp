@@ -1,8 +1,11 @@
 #include <gtest/gtest.h>
+#include <iostream>
 
 #include "fitter/fitter.h"
 #include "helpers/test_data.h"
+#include "strategies/strategy.h"
 #include "strategies/macd_strategy.h"
+#include "strategies/averaging_strategy.h"
 
 
 const double EPS = 1e-5;
@@ -69,3 +72,19 @@ TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
         160.82584865112196
     );
 }
+
+
+TEST(TestFitter, TestAveragingStrategyFit) {
+    TradingBot::StrategyFitter<TradingBot::AveragingStrategy> fitter(candles, {100, 51, 775, 40.6, 0.1}, {100, 51, 775, 40.6, 5.0}, 1);
+    fitter.fit(1000);
+    std::cerr << fitter.getBestParameters() << std::endl;
+    fitter.plotBestStrategy("TestAveragingStrategyFit.png");
+    // fitter.heatmapFitnesses("TestAveragingStrategyFitHeatmap.png");
+    // cannot make heatmap because of too many parameters (3, but need 2)
+    
+    EXPECT_EQ(
+        fitter.getBestBalance(),
+        107674.87292014458
+    );
+}
+// 100 51 775 40.6 0.1
