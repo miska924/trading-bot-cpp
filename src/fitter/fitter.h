@@ -376,6 +376,8 @@ namespace TradingBot {
         );
 
         perform(candles, fitnessMatrix);
+        bestFitness = -1e18;
+        reliable = false;
 
         for (size_t i = 0; i < paramSetsMatrix.size(); ++i) {
             if (paramSetsMatrix[i].empty()) {

@@ -55,6 +55,11 @@ namespace TradingBot {
 
     bool BacktestMarket::order(Order order) {
         assert(current != -1 && current < candles.size());
+
+        if (balance.asAssetA() == 0) {
+            return true;
+        }
+
         order.time = time();
         order.price = candles[current].close;
 
@@ -87,6 +92,22 @@ namespace TradingBot {
             return false;
         }
         ++current;
+
+        balance.update(candles[current].open, time());
+        if (balance.asAssetA() <= 0) {
+            balance.assetA = balance.assetB = 0;
+            return true;
+        }
+        balance.update(candles[current].high, time());
+        if (balance.asAssetA() <= 0) {
+            balance.assetA = balance.assetB = 0;
+            return true;
+        }
+        balance.update(candles[current].low, time());
+        if (balance.asAssetA() <= 0) {
+            balance.assetA = balance.assetB = 0;
+            return true;
+        }
 
         balance.update(candles[current].close, time());
         if (saveHistory) {
@@ -145,9 +166,9 @@ namespace TradingBot {
         update();
     }
 
-    double BacktestMarket::getFitness() const {
+    double BacktestMarket::getFitness(double drawdownCoeff) const {
         // return balance.asAssetA() - maxDrawdown;
-        return balance.asAssetA() / Balance().asAssetA() - (std::sqrt(sumSquaredDrawdown / (current)));
+        return balance.asAssetA() / Balance().asAssetA() - (std::sqrt(sumSquaredDrawdown / (current))) * drawdownCoeff;
     }
 
     Helpers::VectorView<Candle> BacktestMarket::getCandles() const {

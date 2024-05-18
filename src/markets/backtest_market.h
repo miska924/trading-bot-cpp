@@ -26,7 +26,7 @@ namespace TradingBot {
         virtual const Order& getLastOrder() const override;
         void finish();
         void restart();
-        double getFitness() const;
+        double getFitness(double drawdownCoeff = 1) const;
 
     private:
         Helpers::VectorView<Candle> candles;

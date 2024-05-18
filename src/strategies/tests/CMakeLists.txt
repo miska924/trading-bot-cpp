@@ -45,6 +45,7 @@ target_link_libraries(
   vector_view
   averaging_strategy
   atr_feature
+  hawks_process_strategy
 )
 
 target_link_libraries(

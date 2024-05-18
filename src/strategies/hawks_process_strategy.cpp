@@ -16,7 +16,7 @@ namespace TradingBot {
         preventDrawdown = std::get<int>(paramSet[4]);
         preventDrawdownCoeff = std::get<double>(paramSet[5]);
         atr = ATRFeature(atrPeriod, true);
-        checkPointBalance = market->getBalance().asAssetA();
+        // checkPointBalance = market->getBalance().asAssetA();
     }
 
     HawksProcessStrategy::HawksProcessStrategy(
@@ -39,7 +39,7 @@ namespace TradingBot {
         assert(checkParamSet(paramSet));
         this->market = market;
         atr = ATRFeature(atrPeriod, true);
-        checkPointBalance = market->getBalance().asAssetA();
+        // checkPointBalance = market->getBalance().asAssetA();
     }
 
     void HawksProcessStrategy::step() {
@@ -146,6 +146,9 @@ namespace TradingBot {
             return false;
         }
         if (*normRangePeriod < *normalRangeSmoothPeriod) {
+            return false;
+        }
+        if (*preventDrawdown == 0 && *preventDrawdownCoeff != 0) {
             return false;
         }
         return true;

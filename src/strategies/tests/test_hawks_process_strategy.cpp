@@ -58,3 +58,34 @@ TEST(HawksProcessStrategyTest, TestHawksProcessRiskStrategy) {
         46089.509270620249
     );
 }
+
+TEST(HawksProcessStrategyTest, TestHawksProcess1hStrategy) {
+    std::string testDataFileName = "../../../../test_data/btcusdt_1h_5y.csv";
+    std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+
+    TradingBot::BacktestMarket market(candles);
+    TradingBot::HawksProcessStrategy strategy(
+        &market,
+        366, /* atrPeriod */ 
+        366, /* normRangePeriod */ 
+        5, /* normalRangeSmoothPeriod */ 
+        1, /* risk */ 
+        1, /* preventDrawdown */ 
+        0.01 /* preventDrawdownCoeff */
+    );
+
+    strategy.run();
+
+    TradingBot::plot(
+        "TestHawksProcess1hStrategy.png",
+        market.getCandles().toVector(),
+        market.getOrderHistory(),
+        market.getBalanceHistory(),
+        false
+    );
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        46089.509270620249
+    );
+}

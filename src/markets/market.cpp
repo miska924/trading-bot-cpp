@@ -48,6 +48,10 @@ namespace TradingBot {
         return candleTimeDelta;
     }
 
+    void Market::payOut(double amount) {
+        balance.assetA -= amount;
+    }
+
     void Market::saveOrder(Order order) {
         orderHistory.push_back(order);
     }
