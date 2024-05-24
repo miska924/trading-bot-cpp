@@ -18,6 +18,7 @@ namespace TradingBot {
         virtual void step() = 0;
         virtual const ParamSet& getParamSet() const;
         virtual bool checkParamSet(const ParamSet& paramSet) const;
+        virtual size_t getParamSetSize() = 0;
     protected:
         Market* market;
         ParamSet paramSet;
