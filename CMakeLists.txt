@@ -25,6 +25,14 @@ FetchContent_Declare(
   # URL_HASH SHA256=<хэш-сумма>
 )
 FetchContent_MakeAvailable(nlohmann_json)
+
+FetchContent_Declare(fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG 10.2.1
+)
+FetchContent_MakeAvailable(fmt)
+
+
 # set(JSON_INCLUDE_DIR ${nlohmann_json_SOURCE_DIR})
 
 FetchContent_Declare(

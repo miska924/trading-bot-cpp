@@ -26,6 +26,7 @@ target_link_libraries(
   vector_view
   http_connection
   nlohmann_json
+  fmt
 )
 
 add_subdirectory(tests)

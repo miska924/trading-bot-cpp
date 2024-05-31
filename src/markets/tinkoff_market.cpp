@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <thread>
 #include <math.h>
+#include <fmt/core.h>
 
 
 namespace TradingBot {
@@ -26,23 +27,23 @@ namespace TradingBot {
         return buffer;
     }
 
-    double doubleFromTinfoffFormat(const nlohmann::json& dict) {
+    double doubleFromTinkoffFormat(const nlohmann::json& dict) {
         int units = std::atoi(dict["units"].get<std::string>().c_str());
         int nanoDigits = std::to_string(abs(dict["nano"].get<int>())).size();
         int nano = dict["nano"].get<int>();
         return units + double(nano) / pow(10, nanoDigits);
     }
 
-    nlohmann::json TinkoffMarket::Post(const std::string& handler, const std::string& data) {
+    nlohmann::json TinkoffMarket::Post(const std::string& handler, nlohmann::json data) {
         if (verbose) {
-            std::cerr << handler << "..." << nlohmann::json::parse(data).dump(2) << std::endl;
+            std::cerr << handler << "..." << data.dump(2) << std::endl;
         }
 
         std::string response;
         if (!connection.Post(
             TINKOFF_SB_API_URL + handler,
             headers,
-            data,
+            data.dump(),
             response
         )) {
             throw std::runtime_error(handler + " request failed");
@@ -74,22 +75,18 @@ namespace TradingBot {
 
         Post(
             "SandboxService/SandboxPayIn",
-            "{"
-            "    \"accountId\": \"" + accountId + "\","
-            "    \"amount\": {"
-            "       \"units\": \"10000\","
-            "       \"currency\": \"" + assetA + "\""
-            "   }"
-            "}"
+            {
+                {"accountId", accountId},
+                {"amount", {
+                    {"units", "10000"},
+                    {"currency", assetA}
+                }}
+            }
         );
 
         instrument = Post(
             "InstrumentsService/ShareBy",
-            "{"
-            "    \"idType\": \"INSTRUMENT_ID_TYPE_TICKER\","
-            "    \"id\": \"GAZP\","
-            "    \"classCode\": \"TQBR\""
-            "}"
+            GAZP_SHARE_BY
         )["instrument"];
 
         candleTimeDelta = 15 * 60;
@@ -103,7 +100,9 @@ namespace TradingBot {
             std::cerr << "account: " << account["id"].get<std::string>() << std::endl;
             Post(
                 "SandboxService/CloseSandboxAccount",
-                "{ \"accountId\": \"" + account["id"].get<std::string>() + "\" }"
+                {
+                    {"accountId", account["id"]}
+                }
             );
         }
     }
@@ -115,41 +114,49 @@ namespace TradingBot {
 
         bool updated = false;
         for (size_t part = 0; part < partCount; ++part) {
-            std::cerr << DateTime(
+            if (verbose) {
+                std::cerr << DateTime(
                     from + part * HISTORY_BATCH_SIZE * candleTimeDelta
                 ) << std::endl;
+            }
             nlohmann::json historyResponse = Post(
                 "MarketDataService/GetCandles",
-                "{"
-                "    \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\","
-                "    \"interval\": \"CANDLE_INTERVAL_15_MIN\","
-                "    \"from\": \"" + DateTime(
-                    from + part * HISTORY_BATCH_SIZE * candleTimeDelta
-                ) + "\","
-                "    \"to\": \"" + DateTime(
-                    std::min(int(from + (part + 1) * HISTORY_BATCH_SIZE * candleTimeDelta), int(to))
-                ) + "\""
-                "}"
+                {
+                    {"instrumentId", instrument["uid"]},
+                    {"interval", "CANDLE_INTERVAL_15_MIN"},
+                    {"from", DateTime(
+                        from + part * HISTORY_BATCH_SIZE * candleTimeDelta
+                    )},
+                    {"to", DateTime(
+                        std::min(int(from + (part + 1) * HISTORY_BATCH_SIZE * candleTimeDelta), int(to))
+                    )}
+                }
             )["candles"];
 
             for (const auto& candle: historyResponse) {
                 time_t candleTime = ParseDateTime(candle["time"].get<std::string>().c_str());
-                std::cerr << " --- " << DateTime(candleTime) << std::endl;
+                if (verbose) {
+                    std::cerr << " --- " << DateTime(candleTime) << std::endl;
+                }
                 if (!candles.empty() && candles.back().time >= candleTime) {
-                    std::cerr << "skipping candle" << std::endl;
+                    if (verbose) {
+                        std::cerr << "skipping candle" << std::endl;
+                    }
                     continue;
                 }
                 if (!candle.contains("isComplete") || !candle["isComplete"].get<bool>()) {
-                    std::cerr << "not complete candle" << std::endl;
+                    if (verbose) {
+                        std::cerr << "not complete candle" << std::endl;
+                    }
                     continue;
                 }
                 updated = true;
                 candles.push_back(Candle{
                     .time = candleTime,
-                    .open = doubleFromTinfoffFormat(candle["open"]),
-                    .high = doubleFromTinfoffFormat(candle["high"]),
-                    .low = doubleFromTinfoffFormat(candle["low"]),
-                    .close = doubleFromTinfoffFormat(candle["close"]),
+                    .open = doubleFromTinkoffFormat(candle["open"]),
+                    .high = doubleFromTinkoffFormat(candle["high"]),
+                    .low = doubleFromTinkoffFormat(candle["low"]),
+                    .close = doubleFromTinkoffFormat(candle["close"]),
                     .volume = std::stod(candle["volume"].get<std::string>())
                 });
             }
@@ -160,14 +167,12 @@ namespace TradingBot {
     TinkoffMarket::~TinkoffMarket() {
         std::string response;
         
-        if (!connection.Post(
-            TINKOFF_SB_API_URL + "SandboxService/CloseSandboxAccount",
-            headers,
-            "{ \"accountId\": \"" + accountId + "\" }",
-            response
-        )) {
-            std::cerr << "CloseAccount request failed" << std::endl;
-        }
+        Post(
+            "SandboxService/CloseSandboxAccount",
+            {
+                {"accountId", accountId}
+            }
+        );
     }
 
     bool TinkoffMarket::order(Order order) {
@@ -177,37 +182,35 @@ namespace TradingBot {
             }
             Post(
                 "OrdersService/PostOrder",
-                "{"
-                "    \"quantity\": \"" + std::to_string(abs(balance.assetB)) + "\","
-                "    \"direction\": \"" + (
-                    balance.assetB > 0 ? "ORDER_DIRECTION_SELL" : "ORDER_DIRECTION_BUY"
-                ) + "\","
-                "    \"accountId\": \"" + accountId + "\","
-                "    \"orderType\": \"ORDER_TYPE_MARKET\","
-                "    \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\""
-                "}"
+                {
+                    {"quantity", std::to_string(abs(balance.assetB))},
+                    {"direction", balance.assetB > 0 ? "ORDER_DIRECTION_SELL" : "ORDER_DIRECTION_BUY"},
+                    {"accountId", accountId},
+                    {"orderType", "ORDER_TYPE_MARKET"},
+                    {"instrumentId", instrument["uid"]}
+                }
             );
         } else if (order.side == OrderSide::BUY) {
             Post(
                 "OrdersService/PostOrder",
-                "{"
-                "    \"quantity\": \"1\","
-                "    \"direction\": \"ORDER_DIRECTION_BUY\","
-                "    \"accountId\": \"" + accountId + "\","
-                "    \"orderType\": \"ORDER_TYPE_MARKET\","
-                "    \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\""
-                "}"
+                {
+                    {"quantity", "1"},
+                    {"direction", "ORDER_DIRECTION_BUY"},
+                    {"accountId", accountId},
+                    {"orderType", "ORDER_TYPE_MARKET"},
+                    {"instrumentId", instrument["uid"]}
+                }
             );
         } else if (order.side == OrderSide::SELL) {
             Post(
                 "OrdersService/PostOrder",
-                "{"
-                "    \"quantity\": \"1\","
-                "    \"direction\": \"ORDER_DIRECTION_SELL\","
-                "    \"accountId\": \"" + accountId + "\","
-                "    \"orderType\": \"ORDER_TYPE_MARKET\","
-                "    \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\""
-                "}"
+                {
+                    {"quantity", "1"},
+                    {"direction", "ORDER_DIRECTION_SELL"},
+                    {"accountId", accountId},
+                    {"orderType", "ORDER_TYPE_MARKET"},
+                    {"instrumentId", instrument["uid"]}
+                }
             );
         }
         balance = getBalance();
@@ -219,7 +222,9 @@ namespace TradingBot {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         if (!Post(
             "MarketDataService/GetTradingStatus",
-            "{ \"instrumentId\": \"" + instrument["uid"].get<std::string>() + "\" }"
+            {
+                {"instrumentId", instrument["uid"]}
+            }
         )["marketOrderAvailableFlag"]) {
             return false;
         }
@@ -227,13 +232,13 @@ namespace TradingBot {
     }
 
     Helpers::VectorView<Candle> TinkoffMarket::getCandles() const {
-        return candles;
+        return std::vector(candles.begin(), candles.end());
     }
 
     double TinkoffMarket::GetCurrency(const nlohmann::json& positions, const std::string& assetKey, const std::string& asset) {
         for (const nlohmann::json& position : positions) {
             if (position[assetKey] == asset) {
-                return doubleFromTinfoffFormat(position);
+                return doubleFromTinkoffFormat(position);
             }
         }
         return 0;
@@ -242,7 +247,9 @@ namespace TradingBot {
     Balance TinkoffMarket::getBalance() {
         nlohmann::json positions = Post(
             "OperationsService/GetPositions",
-            "{ \"accountId\": \"" + accountId + "\" }"
+            {
+                {"brokerAccountId", accountId}
+            }
         );
 
         return {

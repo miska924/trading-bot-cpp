@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <deque>
 
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
@@ -11,6 +12,14 @@
 
 
 namespace TradingBot {
+
+    const nlohmann::json GAZP_SHARE_BY = {
+        {"idType", "INSTRUMENT_ID_TYPE_TICKER"},
+        {"id", "GAZP"},
+        {"classCode", "TQBR"}
+    };
+
+
     const std::string DATETIME_FORMAT_S = "%Y-%m-%dT%H:%M:%SZ";
     const std::string DATETIME_FORMAT_MS = "%Y-%m-%dT%H:%M:%S.%3NZ";
     const std::string TINKOFF_SB_API_URL = "https://sandbox-invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.";
@@ -32,7 +41,7 @@ namespace TradingBot {
         bool verbose;
         size_t candlesCount;
 
-        std::vector<Candle> candles;
+        std::deque<Candle> candles;
         std::vector<std::string> headers;
         Helpers::HttpConnection connection;
         std::string SBToken;
@@ -43,7 +52,7 @@ namespace TradingBot {
         std::string assetB;
         nlohmann::json instrument;
 
-        nlohmann::json Post(const std::string& handler, const std::string& data = "{}");
+        nlohmann::json Post(const std::string& handler, nlohmann::json data = nlohmann::json::object());
         double GetCurrency(
             const nlohmann::json& positions,
             const std::string& assetKey,

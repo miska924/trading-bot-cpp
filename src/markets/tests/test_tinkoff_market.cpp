@@ -6,21 +6,21 @@
 #include "plotting/plotting.h"
 
 
-// TEST(TinkoffMarketTest, TestInit) {
-//     TradingBot::TinkoffMarket market(1000, true);
-//     TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
-//         &market,
-//         {1000, 0, 1000, 100, 0, TradingBot::Balance().asAssetA()},
-//         {1, 1},
-//         {1000, 1000}
-//     );
-//     strategy.run();
-//     TradingBot::Balance balance = market.getBalance();
+TEST(TinkoffMarketTest, TestInit) {
+    TradingBot::TinkoffMarket market(1000, true);
+    TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
+        &market,
+        {1000, 0, 1000, 100, 0, TradingBot::Balance().asAssetA()},
+        {1, 1},
+        {1000, 1000}
+    );
+    strategy.run();
+    TradingBot::Balance balance = market.getBalance();
 
-//     EXPECT_EQ(market.getCandles().size(), 58);
-//     EXPECT_EQ(balance.assetA, TradingBot::Balance().assetA);
-//     EXPECT_EQ(balance.assetB, TradingBot::Balance().assetB);
-// }
+    EXPECT_EQ(market.getCandles().size(), 58);
+    EXPECT_EQ(balance.assetA, TradingBot::Balance().assetA);
+    EXPECT_EQ(balance.assetB, TradingBot::Balance().assetB);
+}
 
 
 TEST(TinkoffMarketTest, TestDateTime) {
