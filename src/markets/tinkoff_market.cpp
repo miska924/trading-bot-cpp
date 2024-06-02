@@ -1,4 +1,5 @@
 #include "markets/tinkoff_market.h"
+#include "helpers/date_time.h"
 
 #include <iostream>
 #include <ctime>
@@ -9,23 +10,6 @@
 
 
 namespace TradingBot {
-
-    time_t ParseDateTime(const char* datetimeString, const std::string& datetimeFormat)
-    {
-        struct tm tmStruct;
-        strptime(datetimeString, datetimeFormat.c_str(), &tmStruct);
-        return mktime(&tmStruct);
-    }
-    
-    std::string DateTime(time_t time,  const std::string& datetimeFormat)
-    {
-        // std::cerr << "DateTime {" << std::endl;
-        char buffer[90];
-        struct tm* timeinfo = gmtime(&time);
-        strftime(buffer, sizeof(buffer), datetimeFormat.c_str(), timeinfo);
-        // std::cerr << "}" << std::endl;
-        return buffer;
-    }
 
     double doubleFromTinkoffFormat(const nlohmann::json& dict) {
         int units = std::atoi(dict["units"].get<std::string>().c_str());
@@ -47,6 +31,10 @@ namespace TradingBot {
             response
         )) {
             throw std::runtime_error(handler + " request failed");
+        }
+
+        if (response.empty()) {
+            throw std::runtime_error(handler + " empty response");
         }
 
         nlohmann::json result = nlohmann::json::parse(response);
@@ -89,7 +77,7 @@ namespace TradingBot {
             GAZP_SHARE_BY
         )["instrument"];
 
-        candleTimeDelta = 15 * 60;
+        candleTimeDelta = 60;
         LoadCandlesHistory(candlesCount);
     }
 
@@ -97,7 +85,6 @@ namespace TradingBot {
         nlohmann::json accounts = Post("SandboxService/GetSandboxAccounts");
 
         for (const auto& account: accounts["accounts"]) {
-            std::cerr << "account: " << account["id"].get<std::string>() << std::endl;
             Post(
                 "SandboxService/CloseSandboxAccount",
                 {
@@ -108,58 +95,73 @@ namespace TradingBot {
     }
 
     bool TinkoffMarket::LoadCandlesHistory(size_t candlesCount) {
+        const bool init = candles.empty();
         time_t to = std::time(nullptr);
-        time_t from = to - candleTimeDelta * candlesCount;
+        time_t from = (init ? to - candleTimeDelta * this->candlesCount : candles.back().time);
         int partCount = (to - from + HISTORY_BATCH_SIZE * candleTimeDelta - 1) / (HISTORY_BATCH_SIZE * candleTimeDelta);
 
         bool updated = false;
-        for (size_t part = 0; part < partCount; ++part) {
-            if (verbose) {
-                std::cerr << DateTime(
-                    from + part * HISTORY_BATCH_SIZE * candleTimeDelta
-                ) << std::endl;
-            }
+        int part = 0;
+        bool wasNotCompletedCandle = false;
+        while ((init && candles.size() < this->candlesCount) || (!init && part < partCount)) {
             nlohmann::json historyResponse = Post(
                 "MarketDataService/GetCandles",
                 {
                     {"instrumentId", instrument["uid"]},
-                    {"interval", "CANDLE_INTERVAL_15_MIN"},
-                    {"from", DateTime(
-                        from + part * HISTORY_BATCH_SIZE * candleTimeDelta
+                    {"interval", "CANDLE_INTERVAL_1_MIN"},
+                    {"from", Helpers::DateTime(
+                        (init ? to - (part + 1) * HISTORY_BATCH_SIZE * candleTimeDelta : from + part * HISTORY_BATCH_SIZE * candleTimeDelta)
                     )},
-                    {"to", DateTime(
-                        std::min(int(from + (part + 1) * HISTORY_BATCH_SIZE * candleTimeDelta), int(to))
+                    {"to", Helpers::DateTime(
+                        int((init ? to - part * HISTORY_BATCH_SIZE * candleTimeDelta : from + (part + 1) * HISTORY_BATCH_SIZE * candleTimeDelta))
                     )}
                 }
             )["candles"];
 
-            for (const auto& candle: historyResponse) {
-                time_t candleTime = ParseDateTime(candle["time"].get<std::string>().c_str());
-                if (verbose) {
-                    std::cerr << " --- " << DateTime(candleTime) << std::endl;
+            if (historyResponse.empty()) {
+                ++part;
+                continue;
+            }
+
+            for (int i = (init ? historyResponse.size() - 1 : 0); (init ? i >= 0 : i < historyResponse.size()); (init ? --i : ++i)) {
+                if (init && candles.size() >= candlesCount) {
+                    break;
                 }
-                if (!candles.empty() && candles.back().time >= candleTime) {
-                    if (verbose) {
-                        std::cerr << "skipping candle" << std::endl;
-                    }
+                const auto& candle = historyResponse[i];
+                time_t candleTime = Helpers::ParseDateTime(candle["time"].get<std::string>().c_str());
+                if (!candles.empty() && (
+                    (init && candles.front().time <= candleTime) ||
+                    (!init && candles.back().time >= candleTime))) {
                     continue;
                 }
                 if (!candle.contains("isComplete") || !candle["isComplete"].get<bool>()) {
-                    if (verbose) {
-                        std::cerr << "not complete candle" << std::endl;
+                    if (!init) {
+                        wasNotCompletedCandle = true;
                     }
                     continue;
                 }
                 updated = true;
-                candles.push_back(Candle{
+                Candle pushCandle = {
                     .time = candleTime,
                     .open = doubleFromTinkoffFormat(candle["open"]),
                     .high = doubleFromTinkoffFormat(candle["high"]),
                     .low = doubleFromTinkoffFormat(candle["low"]),
                     .close = doubleFromTinkoffFormat(candle["close"]),
                     .volume = std::stod(candle["volume"].get<std::string>())
-                });
+                };
+                candles.push_back(pushCandle);
             }
+            ++part;
+        }
+        if (init) {
+            reverse(candles.begin(), candles.end());
+        }
+        if (this->candlesCount * 2 < candles.size()) {
+            int toRemove = candles.size() - this->candlesCount;
+            candles = std::vector(
+                candles.begin() + toRemove,
+                candles.end()
+            );
         }
         return updated;
     }
@@ -226,18 +228,18 @@ namespace TradingBot {
                 {"instrumentId", instrument["uid"]}
             }
         )["marketOrderAvailableFlag"]) {
-            return false;
+            return LoadCandlesHistory(10);
         }
         return LoadCandlesHistory(10);
     }
 
     Helpers::VectorView<Candle> TinkoffMarket::getCandles() const {
-        return std::vector(candles.begin(), candles.end());
+        return candles;
     }
 
     double TinkoffMarket::GetCurrency(const nlohmann::json& positions, const std::string& assetKey, const std::string& asset) {
         for (const nlohmann::json& position : positions) {
-            if (position[assetKey] == asset) {
+            if (position.contains(assetKey) && position[assetKey] == asset) {
                 return doubleFromTinkoffFormat(position);
             }
         }
@@ -248,11 +250,10 @@ namespace TradingBot {
         nlohmann::json positions = Post(
             "OperationsService/GetPositions",
             {
-                {"brokerAccountId", accountId}
+                {"accountId", accountId}
             }
         );
-
-        return {
+        return balance = {
             .assetA = GetCurrency(positions["money"], "currency", assetA),
             .assetB = GetCurrency(positions["securities"], "balance", assetB)
         };

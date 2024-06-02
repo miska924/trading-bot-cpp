@@ -14,7 +14,7 @@ const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testData
 
 
 TEST(TestFitter, TestMACDStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDStrategy> fitter(candles, {1, 1}, {1000, 1000});
+    TradingBot::StrategyFitter<TradingBot::MACDStrategy> fitter(candles, TradingBot::TEST_CANDLES_TIMEDELTA, {1, 1}, {1000, 1000});
     fitter.fit(100);
     fitter.plotBestStrategy("TestMACDStrategyFit.png");
     fitter.heatmapFitnesses("TestMACDStrategyFitHeatmap.png");
@@ -26,7 +26,7 @@ TEST(TestFitter, TestMACDStrategyFit) {
 }
 
 TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(candles, {1, 1}, {1000, 1000});
+    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(candles, TradingBot::TEST_CANDLES_TIMEDELTA, {1, 1}, {1000, 1000});
     fitter.fit(100);
     fitter.plotBestStrategy("TestMACDHoldSlowStrategyFit.png");
     fitter.heatmapFitnesses("TestMACDHoldSlowStrategyFitHeatmap.png");
@@ -45,7 +45,7 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
     Helpers::VectorView<TradingBot::Candle> train(candles, BEGIN, BEGIN + TRAIN);
     Helpers::VectorView<TradingBot::Candle> test(candles, BEGIN + TRAIN, BEGIN + TRAIN + STEP1);
     Helpers::VectorView<TradingBot::Candle> test2(candles, BEGIN + TRAIN + STEP1, BEGIN + TRAIN + STEP1 + STEP2);
-    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(train, {1, 1}, {1000, 1000});
+    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(train, TradingBot::TEST_CANDLES_TIMEDELTA, {1, 1}, {1000, 1000});
     fitter.fit(100);
     fitter.plotBestStrategy("TestMACDHoldSlowStrategyFit.png");
     fitter.heatmapFitnesses("TestMACDHoldSlowStrategyFitHeatmap.png");
@@ -62,7 +62,7 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
 }
 
 TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDHoldFixedStrategy> fitter(candles, {1, 1, 1}, {1000, 1000, 1000});
+    TradingBot::StrategyFitter<TradingBot::MACDHoldFixedStrategy> fitter(candles, TradingBot::TEST_CANDLES_TIMEDELTA, {1, 1, 1}, {1000, 1000, 1000});
     fitter.fit(100);
     fitter.plotBestStrategy("TestMACDHoldFixedStrategyFit.png");
     // cannot make heatmap because of too many parameters (3, but need 2)
@@ -75,7 +75,7 @@ TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
 
 
 TEST(TestFitter, TestAveragingStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::AveragingStrategy> fitter(candles, {100, 51, 775, 40.6, 0.1}, {100, 51, 775, 40.6, 5.0}, 1);
+    TradingBot::StrategyFitter<TradingBot::AveragingStrategy> fitter(candles, TradingBot::TEST_CANDLES_TIMEDELTA, {100, 51, 775, 40.6, 0.1}, {100, 51, 775, 40.6, 5.0}, 1);
     fitter.fit(1000);
     std::cerr << fitter.getBestParameters() << std::endl;
     fitter.plotBestStrategy("TestAveragingStrategyFit.png");

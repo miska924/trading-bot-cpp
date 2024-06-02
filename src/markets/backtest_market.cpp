@@ -114,17 +114,12 @@ namespace TradingBot {
 
     BacktestMarket::BacktestMarket(
         const Helpers::VectorView<Candle>& candles,
+        int candleTimeDelta,
         bool saveHistory,
         bool verbose
     ) : candles(candles), saveHistory(saveHistory), verbose(verbose) {
+        this->candleTimeDelta = candleTimeDelta;
         current = -1;
-
-        if (candles.size() > 1) {
-            candleTimeDelta = candles[1].time - candles[0].time;
-        } else {
-            candleTimeDelta = 0;
-        }
-
         update();
     }
 

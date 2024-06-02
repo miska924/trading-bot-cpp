@@ -128,6 +128,7 @@ namespace TradingBot {
                     allCandles.size() - testWindow - fitWindow,
                     allCandles.size() - testWindow
                 ),
+                market->getCandleTimeDelta(),
                 paramSetMin,
                 paramSetMax,
                 fitAroundThreshold
@@ -145,6 +146,7 @@ namespace TradingBot {
                             allCandles.size() - testWindow,
                             allCandles.size()
                         ),
+                        TEST_CANDLES_TIMEDELTA,
                         false
                     );
                     Strat testStrategy = Strat(

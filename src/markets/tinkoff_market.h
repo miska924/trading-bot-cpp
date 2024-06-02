@@ -19,14 +19,8 @@ namespace TradingBot {
         {"classCode", "TQBR"}
     };
 
-
-    const std::string DATETIME_FORMAT_S = "%Y-%m-%dT%H:%M:%SZ";
-    const std::string DATETIME_FORMAT_MS = "%Y-%m-%dT%H:%M:%S.%3NZ";
     const std::string TINKOFF_SB_API_URL = "https://sandbox-invest-public-api.tinkoff.ru/rest/tinkoff.public.invest.api.contract.v1.";
     const int HISTORY_BATCH_SIZE = 50;
-
-    time_t ParseDateTime(const char* datetimeString, const std::string& datetimeFormat = DATETIME_FORMAT_S);
-    std::string DateTime(time_t time,  const std::string& datetimeFormat = DATETIME_FORMAT_S);
 
     class TinkoffMarket : public Market {
     public:
@@ -41,7 +35,7 @@ namespace TradingBot {
         bool verbose;
         size_t candlesCount;
 
-        std::deque<Candle> candles;
+        std::vector<Candle> candles;
         std::vector<std::string> headers;
         Helpers::HttpConnection connection;
         std::string SBToken;

@@ -14,4 +14,5 @@ target_link_libraries(
     ema_feature
     feature
     vector_view
+    tinkoff_market
 )

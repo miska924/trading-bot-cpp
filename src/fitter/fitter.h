@@ -21,6 +21,7 @@ namespace TradingBot {
     class StrategyFitter {
     private:
         Helpers::VectorView<Candle> candles;
+        int candleTimeDelta;
         double fitAroundThreshold;
         bool reliable = false;
         int repeat;
@@ -53,6 +54,7 @@ namespace TradingBot {
     public:
         StrategyFitter(
             const Helpers::VectorView<Candle>& candles,
+            int candleTimeDelta,
             const ParamSet& paramSetMin,
             const ParamSet& paramSetMax,
             int repeats = 1,
@@ -171,11 +173,13 @@ namespace TradingBot {
     template<class Strat>
     StrategyFitter<Strat>::StrategyFitter(
         const Helpers::VectorView<Candle>& candles,
+        int candleTimeDelta,
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax,
         int repeat,
         double fitAroundThreshold
     ) : candles(candles),
+        candleTimeDelta(candleTimeDelta),
         paramSetMin(paramSetMin),
         paramSetMax(paramSetMax),
         fitAroundThreshold(fitAroundThreshold),
@@ -216,7 +220,7 @@ namespace TradingBot {
         bool* threadStatus,
         int index
     ) {
-        BacktestMarket market = BacktestMarket(candles, false);
+        BacktestMarket market = BacktestMarket(candles, candleTimeDelta, false);
         Strat strategy = Strat(
             &market,
             paramSet
@@ -392,7 +396,7 @@ namespace TradingBot {
         }
         assert(!bestParameters.empty());
 
-        BacktestMarket market = BacktestMarket(candles, false);
+        BacktestMarket market = BacktestMarket(candles, candleTimeDelta, false);
         Strat bestStrategy = Strat(
             &market,
             bestParameters
@@ -422,7 +426,7 @@ namespace TradingBot {
             return false;
         }
 
-        BacktestMarket market = BacktestMarket(candles, true);
+        BacktestMarket market = BacktestMarket(candles, TEST_CANDLES_TIMEDELTA, true);
         Strat bestStrategy = Strat(
             &market,
             bestParameters

@@ -12,7 +12,7 @@ std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileNa
 
 TEST(EMAFeatureTest, TestEMAFeatureDefault) {
     TradingBot::EMAFeature ema = TradingBot::EMAFeature();
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     for (int i = 0; i < TradingBot::DEFAULT_EMA_PERIOD - 1; ++i) {
         market.update();
     }
@@ -22,7 +22,7 @@ TEST(EMAFeatureTest, TestEMAFeatureDefault) {
 TEST(EMAFeatureTest, TestEMAFeature30) {
     int period = 30;
     TradingBot::EMAFeature ema = TradingBot::EMAFeature(period);
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     for (int i = 0; i < period - 1; ++i) {
         market.update();
     }

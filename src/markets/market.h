@@ -68,7 +68,7 @@ namespace TradingBot {
 
         std::vector<Balance> balanceHistory;
         std::vector<Order> orderHistory;
-        time_t candleTimeDelta;
+        int candleTimeDelta;
     };
 
 } // namespace TradingBot

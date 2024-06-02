@@ -9,7 +9,7 @@ TEST(HawksProcessStrategyTest, TestHawksProcessStrategy) {
     std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
-    TradingBot::BacktestMarket market(candles);
+    TradingBot::BacktestMarket market(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     TradingBot::HawksProcessStrategy strategy(&market);
 
     strategy.run();
@@ -32,7 +32,7 @@ TEST(HawksProcessStrategyTest, TestHawksProcessRiskStrategy) {
     std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
-    TradingBot::BacktestMarket market(candles);
+    TradingBot::BacktestMarket market(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     TradingBot::HawksProcessStrategy strategy(
         &market,
         10000, /* atrPeriod */ 

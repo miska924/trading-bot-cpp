@@ -27,6 +27,7 @@ target_link_libraries(
   http_connection
   nlohmann_json
   fmt
+  date_time
 )
 
 add_subdirectory(tests)
