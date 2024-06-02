@@ -5,7 +5,7 @@
 
 namespace TradingBot {
 
-    const double DUMMY_STRATEGY_BUY_AMOUNT = 1.0;
+    const double DUMMY_STRATEGY_TRADE_AMOUNT = 1.0;
 
     class DummyStrategy : public Strategy {
     public:

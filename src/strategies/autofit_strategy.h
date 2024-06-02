@@ -146,7 +146,7 @@ namespace TradingBot {
                             allCandles.size() - testWindow,
                             allCandles.size()
                         ),
-                        TEST_CANDLES_TIMEDELTA,
+                        market->getCandleTimeDelta(),
                         false
                     );
                     Strat testStrategy = Strat(

@@ -114,7 +114,7 @@ namespace TradingBot {
 
     BacktestMarket::BacktestMarket(
         const Helpers::VectorView<Candle>& candles,
-        int candleTimeDelta,
+        time_t candleTimeDelta,
         bool saveHistory,
         bool verbose
     ) : candles(candles), saveHistory(saveHistory), verbose(verbose) {

@@ -21,7 +21,7 @@ namespace TradingBot {
     class StrategyFitter {
     private:
         Helpers::VectorView<Candle> candles;
-        int candleTimeDelta;
+        time_t candleTimeDelta;
         double fitAroundThreshold;
         bool reliable = false;
         int repeat;
@@ -54,7 +54,7 @@ namespace TradingBot {
     public:
         StrategyFitter(
             const Helpers::VectorView<Candle>& candles,
-            int candleTimeDelta,
+            time_t candleTimeDelta,
             const ParamSet& paramSetMin,
             const ParamSet& paramSetMax,
             int repeats = 1,
@@ -173,7 +173,7 @@ namespace TradingBot {
     template<class Strat>
     StrategyFitter<Strat>::StrategyFitter(
         const Helpers::VectorView<Candle>& candles,
-        int candleTimeDelta,
+        time_t candleTimeDelta,
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax,
         int repeat,

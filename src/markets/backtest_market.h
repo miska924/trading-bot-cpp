@@ -19,7 +19,7 @@ namespace TradingBot {
 
     class BacktestMarket : public Market {
     public:
-        BacktestMarket(const Helpers::VectorView<Candle>& candles, int candleTimeDelta, bool saveHistory = true, bool verbose = false);
+        BacktestMarket(const Helpers::VectorView<Candle>& candles, time_t candleTimeDelta, bool saveHistory = true, bool verbose = false);
         ~BacktestMarket() = default;
         time_t time() const override;
         virtual bool order(Order order) override;

@@ -39,12 +39,14 @@ namespace TradingBot {
         assert(checkParamSet(paramSet));
         this->market = market;
         atr = ATRFeature(atrPeriod, true);
-        checkPointBalance = market->getBalance().asAssetA();
+        if (market) {
+            checkPointBalance = market->getBalance().asAssetA();
+        }
     }
 
     void HawksProcessStrategy::step() {
         Helpers::VectorView<Candle> candles = market->getCandles();
-        if (candles.size() < atrPeriod) {
+        if (candles.size() < atrPeriod + normRangePeriod) {
             return;
         }
 
@@ -56,14 +58,19 @@ namespace TradingBot {
                 return;
             }
         }
-            
-        double atrValue = atr(candles, true);
-        double logDiff = (std::log1p(candles.back().high) - std::log1p(candles.back().low));
-        double normRangeValue = logDiff / atrValue;
-        updateNormRange(normRangeValue, candles.size() - 1);
-
-        if (normRange.size() < normRangePeriod) {
-            return;
+        if (normRange.empty()) {
+            for (int i = 0; i < normRangePeriod; ++i) {
+                const auto subCandles = candles.subView(0, candles.size() - normRangePeriod + i + 1);
+                double atrValue = atr(subCandles, true);
+                double logDiff = (std::log1p(subCandles.back().high) - std::log1p(subCandles.back().low));
+                double normRangeValue = logDiff / atrValue;
+                updateNormRange(normRangeValue, subCandles.size() - 1);
+            }
+        } else {
+            double atrValue = atr(candles, true);
+            double logDiff = (std::log1p(candles.back().high) - std::log1p(candles.back().low));
+            double normRangeValue = logDiff / atrValue;
+            updateNormRange(normRangeValue, candles.size() - 1);
         }
 
         auto percentile05 = normRangeSorted.begin();
