@@ -84,7 +84,7 @@ namespace TradingBot {
 
     bool BacktestMarket::update() {
         if (current + 1 >= candles.size()) {
-            return false;
+            return true;
         }
         ++current;
 
@@ -114,17 +114,12 @@ namespace TradingBot {
 
     BacktestMarket::BacktestMarket(
         const Helpers::VectorView<Candle>& candles,
+        time_t candleTimeDelta,
         bool saveHistory,
         bool verbose
     ) : candles(candles), saveHistory(saveHistory), verbose(verbose) {
+        this->candleTimeDelta = candleTimeDelta;
         current = -1;
-
-        if (candles.size() > 1) {
-            candleTimeDelta = candles[1].time - candles[0].time;
-        } else {
-            candleTimeDelta = 0;
-        }
-
         update();
     }
 
@@ -167,6 +162,10 @@ namespace TradingBot {
             return lastOrder;
         }
         return orderHistory.back();
+    }
+
+    bool BacktestMarket::finished() const {
+        return current + 1 >= candles.size();
     }
 
 } // namespace TradingBot

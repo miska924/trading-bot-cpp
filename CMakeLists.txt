@@ -20,6 +20,22 @@ if(NOT matplotplusplus_POPULATED)
 endif()
 
 FetchContent_Declare(
+  nlohmann_json
+  URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+  # URL_HASH SHA256=<хэш-сумма>
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
+FetchContent_Declare(fmt
+  GIT_REPOSITORY https://github.com/fmtlib/fmt.git
+  GIT_TAG 10.2.1
+)
+FetchContent_MakeAvailable(fmt)
+
+
+# set(JSON_INCLUDE_DIR ${nlohmann_json_SOURCE_DIR})
+
+FetchContent_Declare(
   googletest
   URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
 )
@@ -28,6 +44,8 @@ FetchContent_MakeAvailable(googletest)
 
 enable_testing()
 include(GoogleTest)
+
+find_package(CURL REQUIRED)
 
 include_directories(src)
 

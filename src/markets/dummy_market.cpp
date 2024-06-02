@@ -9,7 +9,11 @@ namespace TradingBot {
     }
 
     bool DummyMarket::update() {
-        return false;
+        return true;
+    }
+
+    bool DummyMarket::finished() const {
+        return orderHistory.size();
     }
 
     Helpers::VectorView<Candle> DummyMarket::getCandles() const {

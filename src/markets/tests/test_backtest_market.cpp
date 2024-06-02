@@ -9,7 +9,7 @@ const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testData
 
 
 TEST(BacktestingTest, TestHistory) {
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
 
     std::vector<TradingBot::Order> orders = {
         {
@@ -34,7 +34,7 @@ TEST(BacktestingTest, TestHistory) {
 }
 
 TEST(BacktestingTest, TestCandlesSize) {
-    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles);
+    TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     EXPECT_EQ(market.getCandles().size(), 1);
     market.finish();
     EXPECT_EQ(
@@ -76,7 +76,8 @@ void testCandlesFromFile(const std::string& testDataFileName) {
     file.close();
 
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(
-        candles
+        candles,
+        TradingBot::TEST_CANDLES_TIMEDELTA
     );
 
     EXPECT_EQ(market.getCandles().size(), 1);
@@ -94,7 +95,8 @@ void testCandlesFromFile(const std::string& testDataFileName) {
 
 TEST(BacktestingTest, TestCandleTimeDelta15m) {
     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(
-        candles
+        candles,
+        TradingBot::TEST_CANDLES_TIMEDELTA
     );
     EXPECT_EQ(market.getCandleTimeDelta(), 15 * 60);
 }

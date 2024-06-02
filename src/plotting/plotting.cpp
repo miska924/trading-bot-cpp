@@ -83,7 +83,11 @@ namespace TradingBot {
         auto ax2 = fig->add_subplot(2, 1, 2);
         ax1->shared_from_this();
         ax2->hold(matplot::on);
-        ax2->loglog(balanceTimes, balanceHistory);
+        if (logBalance) {
+            ax2->loglog(balanceTimes, balanceHistory);
+        } else {
+            ax2->plot(balanceTimes, balanceHistory);
+        }
 
         ax1->position({
             WIDTH_MARGIN,

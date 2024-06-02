@@ -13,7 +13,7 @@ const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testData
 
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
-    TradingBot::BacktestMarket market(candles);
+    TradingBot::BacktestMarket market(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
         &market,
         {1000, 0, 1000, 100, 0, 1.0},
@@ -31,7 +31,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
-    TradingBot::BacktestMarket market(candles);
+    TradingBot::BacktestMarket market(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     TradingBot::AutoFitStrategy<TradingBot::MACDHoldFixedStrategy> strategy(
         &market,
         {1000, 0, 1000, 1000, 0, 1.0},
@@ -49,7 +49,7 @@ TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
-    TradingBot::BacktestMarket market(candles);
+    TradingBot::BacktestMarket market(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
         &market,
         {1000, 0, 1000, 100, 1, 1.0},
@@ -67,7 +67,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
-    TradingBot::BacktestMarket market(candles);
+    TradingBot::BacktestMarket market(candles, TradingBot::TEST_CANDLES_TIMEDELTA);
     TradingBot::AutoFitStrategy<TradingBot::AveragingStrategy> strategy(
         &market,
         {10000, 0, 1000, 1000, 0, 1.0},
@@ -80,6 +80,6 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        124.16714631107786
+        129.91322668618133
     );
 }

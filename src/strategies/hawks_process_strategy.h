@@ -27,7 +27,7 @@ namespace TradingBot {
         );
 
         HawksProcessStrategy(
-            Market* market,
+            Market* market = nullptr,
             int atrPeriod = DEFAULT_HAWKS_PROCESS_ATR_PERIOD,
             int normRangePeriod = DEFAULT_HAWKS_PROCESS_NORM_RANGE_PERIOD,
             int normalRangeSmoothPeriod = DEFAULT_HAWKS_PROCESS_NORM_RANGE_SMOOTH_PERIOD,

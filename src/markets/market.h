@@ -57,8 +57,9 @@ namespace TradingBot {
         virtual Helpers::VectorView<Candle> getCandles() const = 0;
         const std::vector<Order>& getOrderHistory() const;
         const std::vector<Balance>& getBalanceHistory() const;
-        Balance getBalance() const;
+        virtual Balance getBalance();
         virtual const Order& getLastOrder() const;
+        virtual bool finished() const;
         time_t getCandleTimeDelta() const;
     protected:
         void saveOrder(Order order);
