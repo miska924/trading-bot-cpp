@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 work_dir=/work_dir
 repo_dir=${work_dir}/trading-bot
-build_dir=/build
+build_dir=${repo_dir}/build
 app_dir=${build_dir}/app
 binary_path=${app_dir}/trading_bot_app
 
