@@ -1,0 +1,36 @@
+SHELL := /bin/bash
+
+work_dir=/work_dir
+repo_dir=${work_dir}/trading-bot
+build_dir=/build
+app_dir=${build_dir}/app
+binary_path=${app_dir}/trading_bot_app
+
+#====================================================================
+
+help:   ## Show this help.
+	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
+
+#====================================================================
+
+clean:  ## Remove all builds artifacts
+	rm -rf ${build_dir}
+
+configure:  ## Run cmake configuration
+	mkdir -p ${build_dir} && \
+	cmake \
+		-G Ninja \
+		-S ${repo_dir} \
+		-B ${build_dir}
+
+build:  ## Build trading bot
+	cmake --build ${build_dir}
+
+run:	## Run trading bot
+	${binary_path}
+
+run_gdb:	## Run trading bot via GDB
+	gdb --args ${binary_path}
+
+test:	## Run testing
+	ctest --test-dir ${build_dir} --output-on-failure
