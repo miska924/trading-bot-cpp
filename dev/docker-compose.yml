@@ -1,0 +1,12 @@
+version: "2.2"
+services:
+  trading_bot:
+    restart: always
+    build:
+      context: ../
+      dockerfile: ./docker/Dockerfile.dev
+    container_name: "trading_bot_$USER"
+    command: ["sleep", "infinity"]
+    volumes:
+      - ../:/work_dir/trading-bot
+      - ./build_Makefile:/work_dir/Makefile
