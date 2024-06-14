@@ -2,7 +2,7 @@ add_executable(test_fitter test_fitter.cpp)
 
 target_link_libraries(
   test_fitter
-  gtest_main
+  PRIVATE
   backtest_market
   market
   macd_strategy
@@ -13,9 +13,10 @@ target_link_libraries(
   feature
   fitter
   plotting
-  matplot
   vector_view
   test_data
+  Matplot++::matplot
+  GTest::gtest_main
 )
 
 gtest_discover_tests(test_fitter)

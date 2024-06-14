@@ -2,30 +2,28 @@ cmake_minimum_required(VERSION 3.27)
 project(TradingBot VERSION 1.0 LANGUAGES CXX)
 
 # Указываем стандарт C++
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
+
+find_package(Matplot++ REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(jsoncpp REQUIRED)
+find_package(Drogon REQUIRED)
+find_package(GTest REQUIRED)
+find_package(ZLIB REQUIRED)
+find_package(Trantor REQUIRED)
+find_package(OpenSSL REQUIRED)
 
 
-include(FetchContent)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-sanitize=address -fno-sanitize=undefined")
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-sanitize=address -fno-sanitize=undefined")
 
-FetchContent_Declare(
-  matplotplusplus
-  GIT_REPOSITORY https://github.com/alandefreitas/matplotplusplus
-  GIT_TAG origin/master
-)
-FetchContent_GetProperties(matplotplusplus)
-if(NOT matplotplusplus_POPULATED)
-    FetchContent_Populate(matplotplusplus)
-    add_subdirectory(${matplotplusplus_SOURCE_DIR} ${matplotplusplus_BINARY_DIR} EXCLUDE_FROM_ALL)
-endif()
+# set(ENV{LD_LIBRARY_PATH} "/usr/local/lib:$ENV{LD_LIBRARY_PATH}")
 
-FetchContent_Declare(
-  googletest
-  URL https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip
-)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(googletest)
-
 enable_testing()
 include(GoogleTest)
 
@@ -33,5 +31,4 @@ include_directories(src)
 
 add_subdirectory(src)
 add_subdirectory(app)
-
 
