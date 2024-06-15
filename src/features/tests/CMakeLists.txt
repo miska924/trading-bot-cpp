@@ -2,7 +2,7 @@ add_executable(test_ema_feature test_ema_feature.cpp)
 
 target_link_libraries(
   test_ema_feature
-  gtest_main
+  GTest::gtest_main
   market
   backtest_market
   feature

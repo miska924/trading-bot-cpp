@@ -2,6 +2,7 @@ add_library(plotting plotting.cpp)
 
 target_link_libraries(
   plotting
-  matplot
+  PRIVATE
+  Matplot++::matplot
   vector_view
 )

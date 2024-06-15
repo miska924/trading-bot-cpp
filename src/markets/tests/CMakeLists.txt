@@ -3,14 +3,14 @@ add_executable(test_backtest_market test_backtest_market.cpp)
 
 target_link_libraries(
   test_dummy_market
-  gtest_main
+  GTest::gtest_main
   dummy_market
   market
   vector_view
 )
 target_link_libraries(
   test_backtest_market
-  gtest_main
+  GTest::gtest_main
   backtest_market
   market
   vector_view
