@@ -10,11 +10,12 @@ namespace TradingBot {
     }
 
     void DummyStrategy::step() {
+        std::cerr << market->getBalance().price << std::endl;
         if (market->getBalance().assetB != 0) {
             market->order({.side = OrderSide::RESET});
         }
 
-        market->order({.side = OrderSide::BUY, .amount = DUMMY_STRATEGY_TRADE_AMOUNT});
+        market->order({.side = OrderSide::SELL, .amount = DUMMY_STRATEGY_TRADE_AMOUNT});
 
         // if (market->getCandles().size() % 2) {
         //     // market->order({.side = OrderSide::SELL, .amount = DUMMY_STRATEGY_TRADE_AMOUNT});

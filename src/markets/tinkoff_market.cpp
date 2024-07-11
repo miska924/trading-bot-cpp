@@ -48,7 +48,7 @@ namespace TradingBot {
             if (!connection.Post(
                 (mode == TinkoffMarketMode::SB ? TINKOFF_SB_API_URL : TINKOFF_API_URL) + handler,
                 headers,
-                data.dump(),
+                data.dump(2),
                 response
             )) {
                 if (verbose >= 2) {
@@ -107,8 +107,16 @@ namespace TradingBot {
                 }
             );
         } else {
-            // TODO: resolve from api
-            accountId = Post("UserService/GetAccounts")["accounts"][0]["id"];
+            bool got = false;
+            nlohmann::json resp = Post("UsersService/GetAccounts")["accounts"];
+            for (const auto& account : resp) {
+                if (account["type"] == "ACCOUNT_TYPE_TINKOFF") {
+                    accountId = account["id"];
+                    got = true;
+                    break;
+                }
+            }
+            assert(got);
         }
 
         instrument = Post(
@@ -119,6 +127,8 @@ namespace TradingBot {
                 {"classCode", "TQBR"}
             }
         )["instrument"];
+
+        std::cerr << std::endl << instrument.dump(2) << std::endl << std::endl;
 
         this->candleTimeDelta = timeDelta;
         candleTimeDeltaString = toTinkoffString(timeDelta);
@@ -242,18 +252,19 @@ namespace TradingBot {
             Post(
                 "OrdersService/PostOrder",
                 {
-                    {"quantity", std::to_string(abs(balance.assetB))},
+                    {"quantity", abs(balance.assetB) / instrument["lot"].get<int>()},
                     {"direction", balance.assetB > 0 ? "ORDER_DIRECTION_SELL" : "ORDER_DIRECTION_BUY"},
                     {"accountId", accountId},
                     {"orderType", "ORDER_TYPE_MARKET"},
                     {"instrumentId", instrument["uid"]}
                 }
             );
+            // exit(2);
         } else if (order.side == OrderSide::BUY) {
             Post(
                 "OrdersService/PostOrder",
                 {
-                    {"quantity", "1"},
+                    {"quantity", 1},
                     {"direction", "ORDER_DIRECTION_BUY"},
                     {"accountId", accountId},
                     {"orderType", "ORDER_TYPE_MARKET"},
@@ -264,7 +275,7 @@ namespace TradingBot {
             Post(
                 "OrdersService/PostOrder",
                 {
-                    {"quantity", "1"},
+                    {"quantity", 1},
                     {"direction", "ORDER_DIRECTION_SELL"},
                     {"accountId", accountId},
                     {"orderType", "ORDER_TYPE_MARKET"},
@@ -298,6 +309,9 @@ namespace TradingBot {
 
     double TinkoffMarket::GetCurrency(const nlohmann::json& positions, const std::string& assetKey, const std::string& asset) {
         for (const nlohmann::json& position : positions) {
+            if (assetKey == "balance") {
+                return std::atoi(position[assetKey].get<std::string>().c_str());
+            }
             if (position.contains(assetKey) && position[assetKey] == asset) {
                 return doubleFromTinkoffFormat(position);
             }
@@ -312,10 +326,18 @@ namespace TradingBot {
                 {"accountId", accountId}
             }
         );
-        return balance = {
+
+        std::cerr << std::endl << positions.dump(2) << std::endl << std::endl;
+
+        balance = {
             .assetA = GetCurrency(positions["money"], "currency", assetA),
             .assetB = GetCurrency(positions["securities"], "balance", assetB)
         };
+
+        std::cerr << std::endl << balance.assetB << std::endl << std::endl;
+        // exit(3);
+
+        return balance;
     }
 
 } // namespace TradingBot
