@@ -1,25 +1,26 @@
 #include <iostream>
 #include <vector>
 
+#include "markets/tinkoff_market.h"
 #include "markets/backtest_market.h"
 #include "strategies/autofit_strategy.h"
 #include "strategies/macd_strategy.h"
+#include "strategies/hawks_process_strategy.h"
+#include "strategies/averaging_strategy.h"
+#include "strategies/dummy_strategy.h"
+#include "plotting/plotting.h"
+#include "helpers/date_time.h"
 
 
 int main() {
-    const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
-    std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
-    TradingBot::BacktestMarket market(candles, true, true);
-
-    TradingBot::AutoFitStrategy<TradingBot::MACDHoldFixedStrategy> strategy(
-        &market,
-        {1000, 1000, 1000, 0, TradingBot::Balance().asAssetA() * 1.0},
-        {1, 1, 1},
-        {1000, 1000, 1000}
+    TradingBot::TinkoffMarket market(
+        400,
+        TradingBot::CandleTimeDelta::CANDLE_15_MIN,
+        "GAZP",
+        2
     );
-
+    TradingBot::DummyStrategy strategy(&market);
     strategy.run();
-    TradingBot::plot("BestStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
-
+    // test();
     return 0;
 }

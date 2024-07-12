@@ -18,7 +18,10 @@ namespace TradingBot {
         void clearHeaders();
 
         Json::Value get(const std::string& url);
-        Json::Value post(const std::string& url, const Json::Value& body);
+        Json::Value post(
+            const std::string& url,
+            const Json::Value& body = Json::Value(Json::ValueType::objectValue)
+        );
 
     private:
         Json::Value sendRequest(drogon::HttpRequestPtr req);

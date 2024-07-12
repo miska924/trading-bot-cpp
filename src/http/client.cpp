@@ -13,15 +13,15 @@
 namespace TradingBot {
 
     HttpClient::HttpClient(const std::string& endpoint) {
+        // [TODO] need singleton with drogon::app thread here
         client_ = drogon::HttpClient::newHttpClient(endpoint);
-        // Запуск event loop в отдельном потоке
+
         loopThread_ = std::thread([]() {
             drogon::app().run();
         });
     }
 
     HttpClient::~HttpClient() {
-        // Остановка event loop и завершение потока
         drogon::app().quit();
         if (loopThread_.joinable()) {
             loopThread_.join();
@@ -41,6 +41,16 @@ namespace TradingBot {
     }
 
 Json::Value HttpClient::sendRequest(drogon::HttpRequestPtr req) {
+    std::cerr << "REQUEST:" << std::endl;
+    std::cerr << req->getMethod() << std::endl;
+    std::cerr << req->getPath() << std::endl;
+    for (const auto& header : req->getHeaders()) {
+        std::cerr << header.first << ": " << header.second << std::endl;
+    }
+    std::cerr << req->getBody() << std::endl;
+    std::cerr << req->getContentType() << std::endl;
+    std::cerr << std::endl;
+
     auto promise = std::make_shared<std::promise<Json::Value>>();
     std::future<Json::Value> future = promise->get_future();
 
@@ -48,13 +58,15 @@ Json::Value HttpClient::sendRequest(drogon::HttpRequestPtr req) {
         if (result != drogon::ReqResult::Ok) {
             std::cerr << "Error while sending request to server! Result: " << result << std::endl;
             promise->set_value(Json::Value());
-            return;
+            throw std::runtime_error("Error while sending request to server! Result: " + std::to_string(int(result)));
         }
         if (response->statusCode() != 200) {
             std::cerr << "Error while sending request to server! Status code: " << response->statusCode() << std::endl;
-            promise->set_value(Json::Value());
-            return;
+            throw std::runtime_error("Error while sending request to server! Status code: "
+                + std::to_string(response->statusCode()) + " " + std::string(response->getBody()));
         }
+        std::cerr << "========================" << std::endl;
+        std::cerr << "'" << response->getBody() << "'" << std::endl;
         if (response->contentType() == drogon::CT_APPLICATION_JSON) {
             auto jsonObject = response->getJsonObject();
             if (jsonObject) {
@@ -64,7 +76,7 @@ Json::Value HttpClient::sendRequest(drogon::HttpRequestPtr req) {
             }
         } else {
             std::cerr << "Response is not in JSON format!" << std::endl;
-            promise->set_value(Json::Value());
+            throw std::runtime_error("Response is not in JSON format!");
         }
     });
 
@@ -84,15 +96,25 @@ Json::Value HttpClient::sendRequest(drogon::HttpRequestPtr req) {
     }
 
     Json::Value HttpClient::post(const std::string& url, const Json::Value& body) {
-        auto req = drogon::HttpRequest::newHttpRequest();
+        std::cerr << std::endl << url << std::endl << body.toStyledString() << std::endl;
+
+        auto req = drogon::HttpRequest::newHttpJsonRequest(body);
+        req->setPassThrough(true);
+        // req->clearHeaders();
         req->setMethod(drogon::Post);
         req->setPath(url);
-        req->setBody(body.toStyledString());
-        req->setContentTypeCode(drogon::CT_APPLICATION_JSON);
+        // req->setBody(body.toStyledString());
+        // req->setPathEncode(false);
+        // req->setCustomContentTypeString("application/json")
+        // req->setBody(body.toStyledString().c_str());
+        // req->setContentTypeString("application/json");
+        
 
         for (const auto& header : headers_) {
             req->addHeader(header.first, header.second);
         }
+
+        // std::cerr << ->toStyledString() << std::endl;
 
         return sendRequest(req);
     }
