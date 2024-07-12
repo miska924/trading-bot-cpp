@@ -3,10 +3,14 @@
 #include <map>
 #include <string>
 
-#include <drogon/HttpClient.h>
+#include <cpr/cpr.h>
+#include <jsoncpp/json/json.h>
 
 
 namespace TradingBot {
+
+    const int RETRY_COUNT = 3;
+    const int RETRY_DELAY_MS = 1000;
 
     class HttpClient {
     public:
@@ -24,11 +28,8 @@ namespace TradingBot {
         );
 
     private:
-        Json::Value sendRequest(drogon::HttpRequestPtr req);
-
-        drogon::HttpClientPtr client_;
         std::map<std::string, std::string> headers_;
-        std::thread loopThread_;
+        std::string endpoint;
     };
 
 } // namespace TradingBot

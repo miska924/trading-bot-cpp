@@ -1,6 +1,7 @@
 #include "markets/clients/tinkoff/client.h"
 
 #include "helpers/date_time.h"
+#include <iostream>
 
 
 namespace TradingBot {
@@ -8,7 +9,6 @@ namespace TradingBot {
     TinkoffClient::TinkoffClient(
         const std::string& token
     ): httpClient(TINKOFF_ENDPOINT) {
-        std::cerr << "TOKEN: " << token << std::endl;
         httpClient.setHeader("Content-Type", "application/json");
         httpClient.setHeader("Authorization", "Bearer " + token);
         httpClient.setHeader("Accept", "application/json");
@@ -23,7 +23,7 @@ namespace TradingBot {
         body["classCode"] = "TQBR";
 
         return httpClient.post(
-            TINKOFF_URL_PREFIX + "Instruments/ShareBy",
+            TINKOFF_URL_PREFIX + "InstrumentsService/ShareBy",
             body
         );
     }

@@ -13,8 +13,10 @@ namespace TradingBot {
 
     void Strategy::run() {
         do {
-            step();
-        } while (market->update());
+            if (market->update()) {
+                step();
+            }
+        } while (!market->finished());
     }
 
 } // namespace TradingBot

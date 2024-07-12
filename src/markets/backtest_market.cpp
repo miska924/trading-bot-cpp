@@ -82,6 +82,10 @@ namespace TradingBot {
         return true;
     }
 
+    bool BacktestMarket::finished() const {
+        return current + 1 >= candles.size();
+    }
+
     bool BacktestMarket::update() {
         if (current + 1 >= candles.size()) {
             return false;

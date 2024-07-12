@@ -22,8 +22,6 @@ namespace TradingBot {
         bool got = false;
         Json::Value accounts = tinkoffClient.UsersService_GetAccounts()["accounts"];
 
-        std::cerr << std::endl << accounts.toStyledString() << std::endl << std::endl;
-    
         for (const auto& account : accounts) {
             if (account["type"] == "ACCOUNT_TYPE_TINKOFF") {
                 result = account["id"].asString();
@@ -34,6 +32,7 @@ namespace TradingBot {
         if (!got) {
             throw std::runtime_error("TinkoffMarket: Tinkoff account with ACCOUNT_TYPE_TINKOFF not found");
         }
+        std::cerr << "accountId: " << result << std::endl;
         return result;
     }
 
@@ -56,6 +55,7 @@ namespace TradingBot {
         this->candleTimeDelta = timeDelta;
         candleTimeDeltaString = toString(timeDelta);
         LoadCandlesHistory();
+        updateBalance();
     }
 
     bool TinkoffMarket::LoadCandlesHistory() {
@@ -124,7 +124,7 @@ namespace TradingBot {
             );
         }
 
-        if (verbose >= 1) {
+        if (verbose >= 1 && updated) {
             std::cerr << "TinkoffMarket: candles loaded: " << candles.size() << std::endl;
         }
 
@@ -157,6 +157,7 @@ namespace TradingBot {
         }
         balance = getBalance();
         lastOrder = order;
+        updateBalance();
         return true;
     }
 
@@ -187,15 +188,10 @@ namespace TradingBot {
 
     void TinkoffMarket::updateBalance() {
         Json::Value positions = tinkoffClient.OperationsService_GetPositions(accountId);
-
-        std::cerr << std::endl << positions.toStyledString() << std::endl << std::endl;
-
         balance = {
             .assetA = getCurrency(positions["money"], "currency", assetA),
             .assetB = getCurrency(positions["securities"], "balance", assetB)
         };
-
-        std::cerr << std::endl << balance.assetB << std::endl << std::endl;
     }
 
     Balance TinkoffMarket::getBalance() const {

@@ -33,6 +33,10 @@ namespace TradingBot {
         return balanceHistory;
     }
 
+    bool Market::finished() const {
+        return false;
+    }
+
     Balance Market::getBalance() const {
         return balance;
     }

@@ -60,6 +60,7 @@ namespace TradingBot {
         virtual Balance getBalance() const;
         virtual const Order& getLastOrder() const;
         time_t getCandleTimeDelta() const;
+        virtual bool finished() const;
     protected:
         void saveOrder(Order order);
         Balance balance;

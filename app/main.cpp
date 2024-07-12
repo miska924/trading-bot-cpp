@@ -15,7 +15,7 @@
 int main() {
     TradingBot::TinkoffMarket market(
         400,
-        TradingBot::CandleTimeDelta::CANDLE_15_MIN,
+        TradingBot::CandleTimeDelta::CANDLE_1_MIN,
         "GAZP",
         2
     );
