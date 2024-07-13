@@ -41,6 +41,14 @@ namespace TradingBot {
         return balance;
     }
 
+    double Market::getFee() const {
+        return fee;
+    }
+
+    Balance Market::getStartBalance() const {
+        return Balance();
+    }
+
     const Order& Market::getLastOrder() const {
         if (orderHistory.empty()) {
             return lastOrder;

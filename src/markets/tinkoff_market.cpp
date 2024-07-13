@@ -49,6 +49,7 @@ namespace TradingBot {
         assetA("rub"),
         assetB(asset)
     {
+        fee = 0.003;
         accountId = resolveAccountId(tinkoffClient);
         instrument = tinkoffClient.InstrumentsService_ShareBy(assetB)["instrument"];
 
@@ -196,6 +197,10 @@ namespace TradingBot {
 
     Balance TinkoffMarket::getBalance() const {
         return balance;
+    }
+
+    double TinkoffMarket::getFee() const {
+        return fee;
     }
 
 } // namespace TradingBot

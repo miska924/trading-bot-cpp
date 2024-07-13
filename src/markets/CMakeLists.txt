@@ -18,6 +18,7 @@ target_link_libraries(
   backtest_market
   market
   vector_view
+  date_time
 )
 
 target_link_libraries(

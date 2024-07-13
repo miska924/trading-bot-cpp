@@ -47,10 +47,21 @@ namespace TradingBot {
         body["from"] = Helpers::DateTime(from);
         body["to"] = Helpers::DateTime(to);
 
-        return httpClient.post(
+        std::cerr << body.toStyledString() << std::endl;
+
+        Json::Value response = httpClient.post(
             TINKOFF_URL_PREFIX + "MarketDataService/GetCandles",
             body
         );
+        while (!response["candles"]) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            response = httpClient.post(
+                TINKOFF_URL_PREFIX + "MarketDataService/GetCandles",
+                body
+            );
+        };
+
+        return response;
     }
 
     Json::Value TinkoffClient::OrdersService_PostOrder(

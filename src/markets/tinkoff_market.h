@@ -30,6 +30,7 @@ namespace TradingBot {
         bool update() override;
         Helpers::VectorView<Candle> getCandles() const override;
         Balance getBalance() const override;
+        double getFee() const override;
     private:
         CandleTimeDelta timeDelta;
 

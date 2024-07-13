@@ -65,8 +65,18 @@ namespace TradingBot {
 
         cpr::Response response = session.Post();
 
+        while (response.status_code == 429) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            response = session.Post();
+        }
+
         if (response.status_code != 200) {
-            throw std::runtime_error("Failed to post " + url + ": " + std::to_string(int(response.status_code)) + " " + response.reason);
+            throw std::runtime_error(
+                "Failed to post " + url + ": "
+                + std::to_string(int(response.status_code))
+                + ", " + response.reason
+                + ", " + response.text
+                + ", " + response.status_line);
         }
 
         return toJson(response.text);

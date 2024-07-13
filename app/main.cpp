@@ -10,17 +10,20 @@
 #include "strategies/dummy_strategy.h"
 #include "plotting/plotting.h"
 #include "helpers/date_time.h"
+#include "helpers/vector_view.h"
+#include "markets/market.h"
 
 
 int main() {
     TradingBot::TinkoffMarket market(
-        400,
-        TradingBot::CandleTimeDelta::CANDLE_1_MIN,
+        2 * 365 * 24,
+        TradingBot::CandleTimeDelta::CANDLE_1_HOUR,
         "GAZP",
         2
     );
-    TradingBot::DummyStrategy strategy(&market);
-    strategy.run();
-    // test();
+    std::cerr << "market is set" << std::endl;
+    Helpers::VectorView<TradingBot::Candle> candles = market.getCandles();
+    std::cerr << "candles: " << candles.size() << std::endl;
+    writeCSVFile("../test_data/GAZP_1h_3y.csv", candles);
     return 0;
 }

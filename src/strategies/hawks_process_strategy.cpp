@@ -39,7 +39,9 @@ namespace TradingBot {
         assert(checkParamSet(paramSet));
         this->market = market;
         atr = ATRFeature(atrPeriod, true);
-        checkPointBalance = market->getBalance().asAssetA();
+        if (market != nullptr) {
+            checkPointBalance = market->getBalance().asAssetA();
+        }
     }
 
     void HawksProcessStrategy::step() {

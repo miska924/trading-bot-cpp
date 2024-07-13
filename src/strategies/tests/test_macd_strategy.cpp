@@ -25,3 +25,14 @@ TEST(MACDStrategyTest, TestMACDStrategyLarge) {
     TradingBot::plot("TestMACDStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
     EXPECT_EQ(market.getOrderHistory().size(), 6908);
 }
+
+// TEST(MACDStrategyTest, TestMACDStrategyGAZP) {
+//     std::string testDataFileName = "../../../../test_data/gazp_1h_3y.csv";
+//     std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+//     TradingBot::BacktestMarket market = TradingBot::BacktestMarket(candles, true, false, 0.003, {.assetA = 2000});
+//     TradingBot::MACDStrategy strategy = TradingBot::MACDStrategy(&market, 20, 40);
+//     strategy.run();
+//     TradingBot::plot("TestMACDStrategyGAZP.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
+//     EXPECT_EQ(market.getOrderHistory().size(), 6908);
+// }
+

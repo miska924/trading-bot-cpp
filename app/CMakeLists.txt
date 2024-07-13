@@ -16,4 +16,5 @@ target_link_libraries(
     hawks_process_strategy
     averaging_strategy
     dummy_strategy
+    date_time
 )

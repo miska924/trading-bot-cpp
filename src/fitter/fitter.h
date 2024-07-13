@@ -20,6 +20,9 @@ namespace TradingBot {
     template<class Strat>
     class StrategyFitter {
     private:
+        Balance startBalance;
+        double fee;
+
         Helpers::VectorView<Candle> candles;
         double fitAroundThreshold;
         bool reliable = false;
@@ -56,7 +59,9 @@ namespace TradingBot {
             const ParamSet& paramSetMin,
             const ParamSet& paramSetMax,
             int repeats = 1,
-            double fitAroundThreshold = 1
+            double fitAroundThreshold = 1,
+            double fee = DEFAULT_FEE,
+            Balance startBalance = Balance()
         );
         ~StrategyFitter();
 
@@ -174,12 +179,16 @@ namespace TradingBot {
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax,
         int repeat,
-        double fitAroundThreshold
+        double fitAroundThreshold,
+        double fee,
+        Balance startBalance
     ) : candles(candles),
         paramSetMin(paramSetMin),
         paramSetMax(paramSetMax),
         fitAroundThreshold(fitAroundThreshold),
-        repeat(repeat)
+        repeat(repeat),
+        fee(fee),
+        startBalance(startBalance)
     {
         numThreads = std::thread::hardware_concurrency();
         --numThreads;
@@ -216,7 +225,7 @@ namespace TradingBot {
         bool* threadStatus,
         int index
     ) {
-        BacktestMarket market = BacktestMarket(candles, false);
+        BacktestMarket market = BacktestMarket(candles, false, false, fee, startBalance);
         Strat strategy = Strat(
             &market,
             paramSet
@@ -392,7 +401,7 @@ namespace TradingBot {
         }
         assert(!bestParameters.empty());
 
-        BacktestMarket market = BacktestMarket(candles, false);
+        BacktestMarket market = BacktestMarket(candles, false, false, fee, startBalance);
         Strat bestStrategy = Strat(
             &market,
             bestParameters
@@ -422,7 +431,7 @@ namespace TradingBot {
             return false;
         }
 
-        BacktestMarket market = BacktestMarket(candles, true);
+        BacktestMarket market = BacktestMarket(candles, true, false, fee, startBalance);
         Strat bestStrategy = Strat(
             &market,
             bestParameters

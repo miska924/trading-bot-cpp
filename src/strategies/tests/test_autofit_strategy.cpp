@@ -11,6 +11,9 @@ const double EPS = 1e-5;
 const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
 const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
+const std::string gazpTestDataFileName = "../../../../test_data/GAZP_1h_3y.csv";
+const std::vector<TradingBot::Candle> gazpCandles = TradingBot::readCSVFile(gazpTestDataFileName);
+
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     TradingBot::BacktestMarket market(candles);
@@ -81,5 +84,23 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
     EXPECT_EQ(
         market.getBalance().asAssetA(),
         124.16714631107786
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
+    TradingBot::BacktestMarket market(gazpCandles, true, false, 0.003, {.assetA = 2000});
+    TradingBot::AutoFitStrategy<TradingBot::MACDHoldFixedStrategy> strategy(
+        &market,
+        {5000, 0, 1000, 1000, 0, 1.0},
+        {1, 1, 1},
+        {100, 1000, 1000}
+    );
+    strategy.run();
+
+    TradingBot::plot("TestAutoFitGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        6748.2310554062806
     );
 }
