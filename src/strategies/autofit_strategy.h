@@ -24,10 +24,8 @@ namespace TradingBot {
     template <class Strat>
     class AutoFitStrategy : public Strategy {
     public:
-        AutoFitStrategy() = default;
-        AutoFitStrategy(Market* market, const ParamSet& paramSet, const ParamSet& paramSetMin, const ParamSet& paramSetMax);
+        AutoFitStrategy(const ParamSet& paramSet, const ParamSet& paramSetMin, const ParamSet& paramSetMax);
         AutoFitStrategy(
-            Market* market,
             int fitWindow = DEFAULT_FIT_WINDOW,
             int testWindow = DEFAULT_TEST_WINDOW,
             int fitStep = DEFAULT_FIT_STEP,
@@ -37,7 +35,7 @@ namespace TradingBot {
             const ParamSet& paramSetMin = {},
             const ParamSet& paramSetMax = {}
         );
-        virtual void step() override;
+        virtual Signal step(bool newCandle) override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
         virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots() override;
 
@@ -61,14 +59,11 @@ namespace TradingBot {
 
     template <class Strat>
     AutoFitStrategy<Strat>::AutoFitStrategy(
-        Market* market,
         const ParamSet& paramSet,
         const ParamSet& paramSetMin,
         const ParamSet& paramSetMax
     ) : paramSetMin(paramSetMin), paramSetMax(paramSetMax) {
         assert(checkParamSet(paramSet));
-
-        this->market = market;
         this->paramSet = paramSet;
         fitWindow = std::get<int>(paramSet[0]);
         testWindow = std::get<int>(paramSet[1]);
@@ -80,7 +75,6 @@ namespace TradingBot {
 
     template <class Strat>
     AutoFitStrategy<Strat>::AutoFitStrategy(
-        Market* market,
         int fitWindow,
         int testWindow,
         int fitStep,
@@ -108,8 +102,6 @@ namespace TradingBot {
             fitAroundThreshold,
         };
         assert(checkParamSet(paramSet));
-
-        this->market = market;
     }
 
     template <class Strat>
@@ -122,15 +114,20 @@ namespace TradingBot {
     }
 
     template <class Strat>
-    void AutoFitStrategy<Strat>::step() {
-        if (market->getCandles().size() < fitWindow + testWindow) {
-            return;
+    Signal AutoFitStrategy<Strat>::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
         }
-        
+
+        if (market->getCandles().size() < fitWindow + testWindow) {
+            return {};
+        }
+
+        bool reset = false;
         if (nextFit <= market->time() && (forceStop || market->getBalance().assetB == 0)) {
             plots = getPlots();
             if (market->getBalance().assetB != 0) {
-                market->order(Order{.side = OrderSide::RESET});
+                reset = true;
             }
 
             nextFit = market->time() + fitStep * market->getCandleTimeDelta();
@@ -156,11 +153,9 @@ namespace TradingBot {
 
             reliable = false;
             if (fitter.isReliable()) {
-                if (!testWindow) {
-                    reliable = true;
-                    strategy = Strat(market, fitter.getBestParameters());
-                    std::cerr << "^- OK -^" << std::endl;
-                } else {
+                bool testPassed = false;
+
+                if (testWindow) {
                     BacktestMarket testMarket = BacktestMarket(
                         allCandles.subView(
                             allCandles.size() - testWindow,
@@ -171,25 +166,34 @@ namespace TradingBot {
                         market->getFee(),
                         market->getBalance()
                     );
-                    Strat testStrategy = Strat(
-                        &testMarket,
-                        fitter.getBestParameters()
-                    );
-                    testStrategy.run();
+                    Strat testStrategy = Strat(fitter.getBestParameters());
+                    SimpleTrader(&testStrategy, &testMarket).run();
                     double fitness = testMarket.getFitness();
 
                     if (fitness > fitAroundThreshold) {
-                        reliable = true;
-                        strategy = Strat(market, fitter.getBestParameters());
-                        std::cerr << "^- OK -^" << std::endl;
+                        testPassed = true;
                     }
+                }
+
+                if (!testWindow || testPassed) {
+                    reliable = true;
+                    strategy = Strat(fitter.getBestParameters());
+                    strategy.attachMarketInfo(market);
                 }
             }
         }
 
+        Signal signal = {
+            .reset = reset
+        };
+
         if (reliable) {
-            strategy.step();
+            Signal strategySignal = strategy.step(newCandle);
+            signal.reset |= strategySignal.reset;
+            signal.order = strategySignal.order;
         }
+
+        return signal;
     }
 
     template <class Strat>

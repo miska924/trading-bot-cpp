@@ -77,4 +77,16 @@ namespace TradingBot {
         return asAssetA() < other.asAssetA();
     }
 
+    MarketInfo::MarketInfo(Market* market): market(market) {}
+    time_t MarketInfo::time() const { return market->time(); }
+    Helpers::VectorView<Candle> MarketInfo::getCandles() const { return market->getCandles(); }
+    const std::vector<Order>& MarketInfo::getOrderHistory() const { return market->getOrderHistory(); }
+    const std::vector<Balance>& MarketInfo::getBalanceHistory() const { return market->getBalanceHistory(); }
+    Balance MarketInfo::getBalance() const { return market->getBalance(); }
+    double MarketInfo::getFee() const { return market->getFee(); }
+    Balance MarketInfo::getStartBalance() const { return market->getStartBalance(); }
+    const Order& MarketInfo::getLastOrder() const { return market->getLastOrder(); }
+    time_t MarketInfo::getCandleTimeDelta() const { return market->getCandleTimeDelta(); }
+    bool MarketInfo::finished() const { return market->finished(); }
+
 } // namespace TradingBot

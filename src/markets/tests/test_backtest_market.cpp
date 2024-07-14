@@ -4,7 +4,7 @@
 #include "markets/backtest_market.h"
 
 
-const std::string testDataFileName = "../../../../test_data/data.csv";
+const std::string testDataFileName = "../../../../test_data/btcusdt_15m_10d.csv";
 const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
 
@@ -100,6 +100,6 @@ TEST(BacktestingTest, TestCandleTimeDelta15m) {
 }
 
 TEST(BacktestingTest, TestCandlesFromLargeFile) {
-    std::string testDataFileName = "../../../../test_data/data.csv";
+    std::string testDataFileName = "../../../../test_data/btcusdt_15m_10d.csv";
     testCandlesFromFile(testDataFileName);
 }

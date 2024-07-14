@@ -7,20 +7,19 @@ namespace TradingBot {
         return {};
     }
 
+    void Strategy::attachMarketInfo(MarketInfo* marketInfo) {
+        market = marketInfo;
+        onMarketInfoAttach();
+    }
+
+    void Strategy::onMarketInfoAttach() {}
+
     const ParamSet& Strategy::getParamSet() const {
         return paramSet;
     }
 
     bool Strategy::checkParamSet(const ParamSet& paramSet) const {
         return true;
-    }
-
-    void Strategy::run() {
-        do {
-            if (market->update()) {
-                step();
-            }
-        } while (!market->finished());
     }
 
 } // namespace TradingBot

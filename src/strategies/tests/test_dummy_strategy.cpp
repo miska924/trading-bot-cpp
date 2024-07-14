@@ -2,12 +2,16 @@
 
 #include "markets/dummy_market.h"
 #include "strategies/dummy_strategy.h"
+#include "traders/simple_trader.h"
 
+
+using namespace TradingBot;
 
 TEST(DummyStrategyTest, TestRunStrategy) {
-    TradingBot::DummyMarket market = TradingBot::DummyMarket();
-    TradingBot::DummyStrategy strategy = TradingBot::DummyStrategy(&market);
-    strategy.run();
+    DummyMarket market;
+    DummyStrategy strategy;
+
+    SimpleTrader(&strategy, &market).run();
 
     EXPECT_EQ(market.getOrderHistory().empty(), false);
 }

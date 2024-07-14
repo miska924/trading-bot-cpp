@@ -7,27 +7,30 @@
 #include "strategies/averaging_strategy.h"
 #include "strategies/sma_bounce_strategy.h"
 #include "strategies/donchain_strategy.h"
+#include "traders/simple_trader.h"
+
+
+using namespace TradingBot;
 
 
 const double EPS = 1e-5;
 const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
-const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
+const std::vector<Candle> candles = readCSVFile(testDataFileName);
 
 const std::string gazpTestDataFileName = "../../../../test_data/gazp_1h_3y.csv";
-const std::vector<TradingBot::Candle> gazpCandles = TradingBot::readCSVFile(gazpTestDataFileName);
+const std::vector<Candle> gazpCandles = readCSVFile(gazpTestDataFileName);
 
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
-    TradingBot::BacktestMarket market(candles);
-    TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
-        &market,
+    BacktestMarket market(candles);
+    AutoFitStrategy<MACDHoldSlowStrategy> strategy(
         {1000, 0, 1000, 100, 0, 1.0},
         {1, 1},
         {1000, 1000}
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot("TestAutoFitMACDHoldSlowStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitMACDHoldSlowStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -36,16 +39,15 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
-    TradingBot::BacktestMarket market(candles);
-    TradingBot::AutoFitStrategy<TradingBot::MACDHoldFixedStrategy> strategy(
-        &market,
+    BacktestMarket market(candles);
+    AutoFitStrategy<MACDHoldFixedStrategy> strategy(
         {1000, 0, 1000, 1000, 0, 1.0},
         {1, 1, 1},
         {1000, 1000, 1000}
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot("TestAutoFitMACDHoldFixedStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitMACDHoldFixedStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -54,16 +56,15 @@ TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
-    TradingBot::BacktestMarket market(candles);
-    TradingBot::AutoFitStrategy<TradingBot::MACDHoldSlowStrategy> strategy(
-        &market,
+    BacktestMarket market(candles);
+    AutoFitStrategy<MACDHoldSlowStrategy> strategy(
         {1000, 0, 1000, 100, 1, 1.0},
         {1, 1},
         {1000, 1000}
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot("TestAutoFitMACDHoldSlowStrategyForceStop.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitMACDHoldSlowStrategyForceStop.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -72,16 +73,15 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
-    TradingBot::BacktestMarket market(candles);
-    TradingBot::AutoFitStrategy<TradingBot::AveragingStrategy> strategy(
-        &market,
+    BacktestMarket market(candles);
+    AutoFitStrategy<AveragingStrategy> strategy(
         {10000, 0, 1000, 1000, 0, 1.0},
         {1000, 40, 1000, 3.0, 0.1},
         {1000, 60, 1000, 40.0, 0.1}
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot("TestAutoFitAveragingStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitAveragingStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -90,16 +90,15 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
-    TradingBot::BacktestMarket market(gazpCandles, true, false, 0.003, {.assetA = 2000});
-    TradingBot::AutoFitStrategy<TradingBot::MACDHoldFixedStrategy> strategy(
-        &market,
+    BacktestMarket market(gazpCandles, true, false, 0.003, {.assetA = 2000});
+    AutoFitStrategy<MACDHoldFixedStrategy> strategy(
         {5000, 0, 1000, 1000, 0, 1.0},
         {1, 1, 1},
         {100, 1000, 1000}
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot("TestAutoFitGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -108,17 +107,16 @@ TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitSMABounceGAZP) {
-    TradingBot::BacktestMarket market(
+    BacktestMarket market(
         gazpCandles, true, false, 0.003, {.assetA = 2000});
-    TradingBot::AutoFitStrategy<TradingBot::SMABounceStrategy> strategy(
-        &market,
+    AutoFitStrategy<SMABounceStrategy> strategy(
         {1000, 0, 1000, 1000, 1, 1.0},
         {90, 100, 1.0, 0.5},
         {90, 100, 2.0, 5.0}
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot(
+    plot(
         "TestAutoFitSMABounceGAZP.png",
         market.getCandles(),
         market.getOrderHistory(),
@@ -133,17 +131,16 @@ TEST(AutoFitStrategyTest, TestAutoFitSMABounceGAZP) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitDonchainGAZP) {
-    TradingBot::BacktestMarket market(
+    BacktestMarket market(
         gazpCandles, true, false, 0.003, {.assetA = 2000});
-    TradingBot::AutoFitStrategy<TradingBot::DonchainStrategy> strategy(
-        &market,
+    AutoFitStrategy<DonchainStrategy> strategy(
         {5000, 0, 1000, 700, 1, 1.05},
         { 10},
         { 700 }
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot(
+    plot(
         "TestAutoFitDonchainGAZP.png",
         market.getCandles(),
         market.getOrderHistory(),
@@ -158,17 +155,16 @@ TEST(AutoFitStrategyTest, TestAutoFitDonchainGAZP) {
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitDonchainLastLoserGAZP) {
-    TradingBot::BacktestMarket market(
+    BacktestMarket market(
         gazpCandles, true, false, 0.003, {.assetA = 2000});
-    TradingBot::AutoFitStrategy<TradingBot::DonchainLastLoserStrategy> strategy(
-        &market,
+    AutoFitStrategy<DonchainLastLoserStrategy> strategy(
         {5000, 0, 1000, 700, 1, 1.00},
         { 10},
         { 700 }
     );
-    strategy.run();
+    SimpleTrader(&strategy, &market).run();
 
-    TradingBot::plot(
+    plot(
         "TestAutoFitDonchainLastLoserGAZP.png",
         market.getCandles(),
         market.getOrderHistory(),

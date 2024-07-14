@@ -14,7 +14,7 @@
 
 namespace TradingBot {
 
-    const int HISTORY_BATCH_SIZE = 60;
+    const int HISTORY_BATCH_SIZE = 60 * 24;
 
     class TinkoffMarket : public Market {
     public:

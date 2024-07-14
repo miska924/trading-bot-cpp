@@ -6,7 +6,7 @@
 
 const double EPS = 1e-5;
 
-std::string testDataFileName = "../../../../test_data/data.csv";
+std::string testDataFileName = "../../../../test_data/btcusdt_15m_10d.csv";
 std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
 

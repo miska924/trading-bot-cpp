@@ -22,12 +22,10 @@ namespace TradingBot {
     class HawksProcessStrategy : public Strategy {
     public:
         HawksProcessStrategy(
-            Market* market,
             const ParamSet& paramSet
         );
 
         HawksProcessStrategy(
-            Market* market = nullptr,
             int atrPeriod = DEFAULT_HAWKS_PROCESS_ATR_PERIOD,
             int normRangePeriod = DEFAULT_HAWKS_PROCESS_NORM_RANGE_PERIOD,
             int normalRangeSmoothPeriod = DEFAULT_HAWKS_PROCESS_NORM_RANGE_SMOOTH_PERIOD,
@@ -38,7 +36,9 @@ namespace TradingBot {
 
         bool checkParamSet(const ParamSet& paramSet) const override;
 
-        void step() override;
+        virtual void onMarketInfoAttach() override;
+
+        Signal step(bool newCandle) override;
 
     private:
         int atrPeriod = 0;
