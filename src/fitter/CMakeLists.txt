@@ -2,9 +2,10 @@ add_library(fitter fitter.cpp)
 
 target_link_libraries(
   fitter
+  PRIVATE
   backtest_market
   market
-  matplot
+  Matplot++::matplot
   plotting
   strategy
   vector_view

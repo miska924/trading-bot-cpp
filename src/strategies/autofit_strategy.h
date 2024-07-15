@@ -130,7 +130,10 @@ namespace TradingBot {
                 ),
                 paramSetMin,
                 paramSetMax,
-                fitAroundThreshold
+                1,
+                fitAroundThreshold,
+                market->getFee(),
+                market->getStartBalance()
             );
             fitter.fit(fitIterations);
 
@@ -145,7 +148,10 @@ namespace TradingBot {
                             allCandles.size() - testWindow,
                             allCandles.size()
                         ),
-                        false
+                        false,
+                        false,
+                        market->getFee(),
+                        market->getBalance()
                     );
                     Strat testStrategy = Strat(
                         &testMarket,

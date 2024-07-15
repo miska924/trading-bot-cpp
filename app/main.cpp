@@ -1,25 +1,29 @@
 #include <iostream>
 #include <vector>
 
+#include "markets/tinkoff_market.h"
 #include "markets/backtest_market.h"
 #include "strategies/autofit_strategy.h"
 #include "strategies/macd_strategy.h"
+#include "strategies/hawks_process_strategy.h"
+#include "strategies/averaging_strategy.h"
+#include "strategies/dummy_strategy.h"
+#include "plotting/plotting.h"
+#include "helpers/date_time.h"
+#include "helpers/vector_view.h"
+#include "markets/market.h"
 
 
 int main() {
-    const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
-    std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
-    TradingBot::BacktestMarket market(candles, true, true);
-
-    TradingBot::AutoFitStrategy<TradingBot::MACDHoldFixedStrategy> strategy(
-        &market,
-        {1000, 1000, 1000, 0, TradingBot::Balance().asAssetA() * 1.0},
-        {1, 1, 1},
-        {1000, 1000, 1000}
+    TradingBot::TinkoffMarket market(
+        2 * 365 * 24,
+        TradingBot::CandleTimeDelta::CANDLE_1_HOUR,
+        "GAZP",
+        2
     );
-
-    strategy.run();
-    TradingBot::plot("BestStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory());
-
+    std::cerr << "market is set" << std::endl;
+    Helpers::VectorView<TradingBot::Candle> candles = market.getCandles();
+    std::cerr << "candles: " << candles.size() << std::endl;
+    writeCSVFile("../test_data/GAZP_1h_3y.csv", candles);
     return 0;
 }

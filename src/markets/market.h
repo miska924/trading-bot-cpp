@@ -8,6 +8,22 @@
 
 namespace TradingBot {
 
+    enum CandleTimeDelta {
+        CANDLE_1_MIN = 60,
+        CANDLE_2_MIN = 2 * CANDLE_1_MIN,
+        CANDLE_3_MIN = 3 * CANDLE_1_MIN,
+        CANDLE_5_MIN = 5 * CANDLE_1_MIN,
+        CANDLE_10_MIN = 10 * CANDLE_1_MIN,
+        CANDLE_15_MIN = 15 * CANDLE_1_MIN,
+        CANDLE_30_MIN = 30 * CANDLE_1_MIN,
+        CANDLE_1_HOUR = 60 * CANDLE_1_MIN,
+        CANDLE_2_HOUR = 2 * CANDLE_1_HOUR,
+        CANDLE_4_HOUR = 4 * CANDLE_1_HOUR,
+        CANDLE_1_DAY = 24 * CANDLE_1_MIN,
+        CANDLE_1_WEEK = 7 * CANDLE_1_DAY,
+        CANDLE_1_MONTH = 30 * CANDLE_1_DAY,
+    };
+
     const double DEFAULT_ASSET_A_BALANCE = 100.0;
 
     struct Candle {
@@ -57,12 +73,16 @@ namespace TradingBot {
         virtual Helpers::VectorView<Candle> getCandles() const = 0;
         const std::vector<Order>& getOrderHistory() const;
         const std::vector<Balance>& getBalanceHistory() const;
-        Balance getBalance() const;
+        virtual Balance getBalance() const;
+        virtual double getFee() const;
+        virtual Balance getStartBalance() const;
         virtual const Order& getLastOrder() const;
         time_t getCandleTimeDelta() const;
+        virtual bool finished() const;
     protected:
         void saveOrder(Order order);
         Balance balance;
+        double fee = 0;
         Order lastOrder = {.side = OrderSide::RESET};
 
         std::vector<Balance> balanceHistory;

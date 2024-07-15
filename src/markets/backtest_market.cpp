@@ -7,6 +7,8 @@
 #include <random>
 #include <sstream>
 
+#include "helpers/date_time.h"
+
 
 namespace TradingBot {
 
@@ -46,6 +48,22 @@ namespace TradingBot {
         return candles;
     }
 
+    void writeCSVFile(const std::string& file, const Helpers::VectorView<Candle>& candles) {
+        std::ofstream fout(file);
+        fout << ",time,open,high,low,close,volume" << std::endl;
+
+        for (size_t i = 0; i < candles.size(); ++i) {
+            fout << Helpers::DateTime(candles[i].time) << ",";
+            fout << candles[i].time << ",";
+            fout << candles[i].open << ",";
+            fout << candles[i].high << ",";
+            fout << candles[i].low << ",";
+            fout << candles[i].close << ",";
+            fout << candles[i].volume << std::endl;
+        }
+    }
+
+
     time_t BacktestMarket::time() const {
         if (current == -1) {
             return 0;
@@ -62,14 +80,14 @@ namespace TradingBot {
         double amount = order.amount * all;
 
         if (order.side == OrderSide::RESET) {
-            balance.assetA += balance.assetB * order.price * (1.0 - DEFAULT_FEE);
+            balance.assetA += balance.assetB * order.price * (1.0 - fee);
             balance.assetB = 0;
         } else if (order.side == OrderSide::BUY) {
-            balance.assetB += amount / order.price * (1.0 - DEFAULT_FEE);
+            balance.assetB += amount / order.price * (1.0 - fee);
             balance.assetA -= amount;
         } else if (order.side == OrderSide::SELL) {
             balance.assetB -= amount / order.price;
-            balance.assetA += amount * (1.0 - DEFAULT_FEE);
+            balance.assetA += amount * (1.0 - fee);
         }
 
         balance.update(order.price, order.time);
@@ -80,6 +98,10 @@ namespace TradingBot {
         lastOrder = order;
         
         return true;
+    }
+
+    bool BacktestMarket::finished() const {
+        return current + 1 >= candles.size();
     }
 
     bool BacktestMarket::update() {
@@ -115,9 +137,18 @@ namespace TradingBot {
     BacktestMarket::BacktestMarket(
         const Helpers::VectorView<Candle>& candles,
         bool saveHistory,
-        bool verbose
-    ) : candles(candles), saveHistory(saveHistory), verbose(verbose) {
+        bool verbose,
+        double fee,
+        Balance balance
+    ) :
+        candles(candles),
+        saveHistory(saveHistory),
+        verbose(verbose),
+        fee(fee),
+        startBalance(balance)
+    {
         current = -1;
+        this->balance = balance;
 
         if (candles.size() > 1) {
             candleTimeDelta = candles[1].time - candles[0].time;
@@ -135,7 +166,7 @@ namespace TradingBot {
     void BacktestMarket::restart() {
         finish();
 
-        balance = Balance();
+        balance = startBalance;
         if (saveHistory) {
             balanceHistory.clear();
             orderHistory.clear();
@@ -147,7 +178,15 @@ namespace TradingBot {
 
     double BacktestMarket::getFitness() const {
         // return balance.asAssetA() - maxDrawdown;
-        return balance.asAssetA() / Balance().asAssetA() - (std::sqrt(sumSquaredDrawdown / (current)));
+        return balance.asAssetA() / startBalance.asAssetA() - (std::sqrt(sumSquaredDrawdown / (current)));
+    }
+
+    Balance BacktestMarket::getStartBalance() const {
+        return startBalance;
+    }
+
+    double BacktestMarket::getFee() const {
+        return fee;
     }
 
     Helpers::VectorView<Candle> BacktestMarket::getCandles() const {

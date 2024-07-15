@@ -29,10 +29,11 @@ target_link_libraries(
 
 target_link_libraries(
     autofit_strategy
+    PRIVATE
     backtest_market
     fitter
     market
-    matplot
+    Matplot++::matplot
     plotting
     plotting
     strategy

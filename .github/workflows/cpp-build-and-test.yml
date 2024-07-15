@@ -12,17 +12,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Install C++ Compiler and Ninja
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y g++ cmake ninja-build
+    - name: Install All Dependencies
+      run: sudo bash prepare.sh
     - name: Create Build Directory
       run: mkdir build
     - name: Configure CMake
-      run: cmake -S . -B build -G Ninja -DRUN_LARGE_TESTS=OFF
+      run: cd build && cmake ..
     - name: Build
-      run: cmake --build build
+      run: cd build && make -j8
     - name: Test
-      run: |
-        cd build
-        ctest --output-on-failure
+      run: cd build && ctest -j8 --output-on-failure

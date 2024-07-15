@@ -33,8 +33,20 @@ namespace TradingBot {
         return balanceHistory;
     }
 
+    bool Market::finished() const {
+        return false;
+    }
+
     Balance Market::getBalance() const {
         return balance;
+    }
+
+    double Market::getFee() const {
+        return fee;
+    }
+
+    Balance Market::getStartBalance() const {
+        return Balance();
     }
 
     const Order& Market::getLastOrder() const {

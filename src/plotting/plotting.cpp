@@ -7,6 +7,7 @@
 namespace TradingBot {
 
     bool checkGnuplot() {
+        // return false;
         return std::system("gnuplot -V > /dev/null 2>&1") == 0;
     }
     
