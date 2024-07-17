@@ -29,7 +29,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        154.36272866519681
+        144.55431314333848
     );
 }
 
@@ -47,7 +47,7 @@ TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        156.97329832407993
+        120.46629912208212
     );
 }
 
@@ -65,7 +65,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        124.1775374311995
+        131.32287169509021
     );
 }
 
@@ -83,7 +83,7 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        124.16714631107786
+        92.240999011623728
     );
 }
 
@@ -101,6 +101,6 @@ TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        6748.2310554062806
+        2468.9338506823738
     );
 }

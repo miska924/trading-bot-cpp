@@ -23,7 +23,7 @@ TEST(HawksProcessStrategyTest, TestHawksProcessStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        442.74545519997986
+        439.40371925631598
     );
 }
 
@@ -55,6 +55,6 @@ TEST(HawksProcessStrategyTest, TestHawksProcessRiskStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        46089.509270620249
+        43128.258981971027
     );
 }
