@@ -80,11 +80,15 @@ namespace TradingBot {
         double amount = order.amount * all;
 
         if (order.side == OrderSide::RESET) {
-            balance.assetA += balance.assetB * order.price * (1.0 - fee);
+            if (balance.assetB > 0) {
+                balance.assetA += balance.assetB * order.price * (1.0 - fee);
+            } else {
+                balance.assetA -= (-balance.assetB) * order.price * (1.0 + fee);
+            }
             balance.assetB = 0;
         } else if (order.side == OrderSide::BUY) {
-            balance.assetB += amount / order.price * (1.0 - fee);
-            balance.assetA -= amount;
+            balance.assetB += amount / order.price;
+            balance.assetA -= amount * (1.0 + fee);
         } else if (order.side == OrderSide::SELL) {
             balance.assetB -= amount / order.price;
             balance.assetA += amount * (1.0 - fee);

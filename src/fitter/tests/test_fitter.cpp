@@ -21,7 +21,7 @@ TEST(TestFitter, TestMACDStrategyFit) {
 
     EXPECT_EQ(
         fitter.getBestBalance(),
-        156.02999080723393
+        146.72566690061387
     );
 }
 
@@ -33,7 +33,7 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
 
     EXPECT_EQ(
         fitter.getBestBalance(),
-        463.7644542941091
+        349.82787428207513
     );
 }
 
@@ -52,7 +52,7 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
 
     EXPECT_EQ(
         fitter.getBestBalance(),
-        174.67593979808686
+        170.14181061086202
     );
 
     fitter.test(test);
@@ -69,7 +69,7 @@ TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
     
     EXPECT_EQ(
         fitter.getBestBalance(),
-        160.82584865112196
+        128.44719123045124
     );
 }
 
@@ -84,7 +84,7 @@ TEST(TestFitter, TestAveragingStrategyFit) {
     
     EXPECT_EQ(
         fitter.getBestBalance(),
-        107674.87292014458 // it's actually overfitting i think
+        39572.460719690047 // it's actually overfitting
     );
 }
 // 100 51 775 40.6 0.1
