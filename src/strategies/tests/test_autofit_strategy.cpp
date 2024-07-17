@@ -8,9 +8,11 @@
 #include "strategies/sma_bounce_strategy.h"
 #include "strategies/donchain_strategy.h"
 #include "traders/simple_trader.h"
+#include "helpers/vector_view.h"
 
 
 using namespace TradingBot;
+using namespace Helpers;
 
 
 const double EPS = 1e-5;
@@ -19,6 +21,9 @@ const std::vector<Candle> candles = readCSVFile(testDataFileName);
 
 const std::string gazpTestDataFileName = "../../../../test_data/gazp_1h_3y.csv";
 const std::vector<Candle> gazpCandles = readCSVFile(gazpTestDataFileName);
+
+const std::string gazp1minTestDataFileName = "../../../../test_data/gazp_1m_1M.csv";
+const std::vector<Candle> gazp1minCandles = readCSVFile(gazp1minTestDataFileName);
 
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
@@ -91,10 +96,10 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
 
 TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
     BacktestMarket market(gazpCandles, true, false, 0.003, {.assetA = 2000});
-    AutoFitStrategy<MACDHoldFixedStrategy> strategy(
-        {5000, 0, 1000, 1000, 0, 1.0},
-        {1, 1, 1},
-        {100, 1000, 1000}
+    AutoFitStrategy<MACDHoldSlowStrategy> strategy(
+        {1000, 0, 1000, 10000, 0, 1.00},
+        {30, 300},
+        {30, 300}
     );
     SimpleTrader(&strategy, &market).run();
 
@@ -102,7 +107,7 @@ TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        2683.561363456884
+        2585.4359248372389
     );
 }
 
@@ -175,5 +180,22 @@ TEST(AutoFitStrategyTest, TestAutoFitDonchainLastLoserGAZP) {
     EXPECT_EQ(
         market.getBalance().asAssetA(),
         3957.647588279322
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFit1minGAZP) {
+    BacktestMarket market(gazp1minCandles, true, false, 0.003, {.assetA = 2000});
+    AutoFitStrategy<AveragingStrategy> strategy(
+        {10000, 0, 60, 100, 0, 1.0},
+        {300, 1000, 5000, 10.0, 0.1},
+        {300, 1000, 5000, 10.0, 0.1}
+    );
+    SimpleTrader(&strategy, &market).run();
+
+    plot("TestAutoFit1minGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        1943.0441397134562
     );
 }

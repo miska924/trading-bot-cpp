@@ -33,3 +33,10 @@ To enable plotting for tests to see strategy performance you need `gnuplot` to b
     </summary>
     http://www.gnuplot.info/
 </details>
+
+## Prepare & run
+
+<code>
+    docker build . -t trading-bot:1.0
+    docker run -e TINKOFF_TOKEN=$(cat ~/.tinkoff/token) trading-bot:latest
+</code>
