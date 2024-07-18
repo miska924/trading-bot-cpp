@@ -25,7 +25,7 @@ namespace TradingBot {
             return lastValue / period;
         }
         assert(period + 1 <= candles.size());
-        double diff = (candles.back().close - lastValue);
+        double diff = (candles.back().close - candles[candles.size() - period - 1].close);
         lastValue = lastValue + diff;
         return lastValue / period;
     }

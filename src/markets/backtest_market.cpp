@@ -120,7 +120,7 @@ namespace TradingBot {
         }
 
         maxBalance = std::max(maxBalance, balance.asAssetA());
-        double drawdown = ((maxBalance - balance.asAssetA()) / maxBalance);
+        double drawdown = ((maxBalance - balance.asAssetA()) / startBalance.asAssetA());
         maxDrawdown = std::max(maxDrawdown, drawdown);
         sumSquaredDrawdown += drawdown * drawdown;
 

@@ -1,6 +1,7 @@
 add_library(feature feature.cpp)
 add_library(ema_feature ema_feature.cpp)
 add_library(atr_feature atr_feature.cpp)
+add_library(sma_feature sma_feature.cpp)
 
 target_link_libraries(
     feature

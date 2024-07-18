@@ -5,6 +5,7 @@
 #include "strategies/autofit_strategy.h"
 #include "strategies/macd_strategy.h"
 #include "strategies/averaging_strategy.h"
+#include "strategies/sma_bounce_strategy.h"
 
 
 const double EPS = 1e-5;
@@ -98,6 +99,35 @@ TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
     strategy.run();
 
     TradingBot::plot("TestAutoFitGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        2468.9338506823738
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFitSMABounceGAZP) {
+    TradingBot::BacktestMarket market(
+        gazpCandles, true, false, 0.003, {.assetA = 2000});
+    TradingBot::SMABounceStrategy strategy(
+        &market,
+        {40, 100, 2.0, 5.0}
+    );
+    // TradingBot::AutoFitStrategy<TradingBot::SMABounceStrategy> strategy(
+    //     &market,
+    //     {3000, 0, 1000, 10000, 1, 1.0},
+    //     {10, 100, 1.0, 0.5},
+    //     {100, 100, 2.0, 5.0}
+    // );
+    strategy.run();
+
+    TradingBot::plot(
+        "TestAutoFitSMABounceGAZP.png",
+        market.getCandles(),
+        market.getOrderHistory(),
+        market.getBalanceHistory(),
+        strategy.getPlots()
+    );
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),

@@ -18,6 +18,7 @@ namespace TradingBot {
         virtual void step() = 0;
         virtual const ParamSet& getParamSet() const;
         virtual bool checkParamSet(const ParamSet& paramSet) const;
+        virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots();
     protected:
         Market* market;
         ParamSet paramSet;

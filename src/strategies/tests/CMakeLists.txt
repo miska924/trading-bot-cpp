@@ -47,6 +47,8 @@ target_link_libraries(
   averaging_strategy
   atr_feature
   hawks_process_strategy
+  sma_bounce_strategy
+  sma_feature
 )
 
 target_link_libraries(
