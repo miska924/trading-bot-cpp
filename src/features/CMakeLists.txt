@@ -22,4 +22,11 @@ target_link_libraries(
     vector_view
 )
 
+target_link_libraries(
+    sma_feature
+    feature
+    market
+    vector_view
+)
+
 add_subdirectory(tests)

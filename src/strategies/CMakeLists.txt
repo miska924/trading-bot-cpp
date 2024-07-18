@@ -58,4 +58,14 @@ target_link_libraries(
     vector_view
 )
 
+target_link_libraries(
+    sma_bounce_strategy
+    sma_feature
+    atr_feature
+    feature
+    market
+    strategy
+    vector_view
+)
+
 add_subdirectory(tests)
