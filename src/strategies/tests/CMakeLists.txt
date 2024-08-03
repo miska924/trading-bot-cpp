@@ -7,6 +7,7 @@ add_executable(test_donchain_strategy test_donchain_strategy.cpp)
 
 target_link_libraries(
   test_dummy_strategy
+  PRIVATE
   GTest::gtest_main
   market
   dummy_market
@@ -14,10 +15,12 @@ target_link_libraries(
   strategy
   dummy_strategy
   vector_view
+  simple_trader
 )
 
 target_link_libraries(
   test_macd_strategy
+  PRIVATE
   GTest::gtest_main
   market
   backtest_market
@@ -28,6 +31,7 @@ target_link_libraries(
   fitter
   plotting
   vector_view
+  simple_trader
 )
 
 target_link_libraries(
@@ -51,10 +55,12 @@ target_link_libraries(
   sma_bounce_strategy
   sma_feature
   donchain_strategy
+  simple_trader
 )
 
 target_link_libraries(
   test_averaging_strategy
+  PRIVATE
   GTest::gtest_main
   market
   backtest_market
@@ -65,10 +71,12 @@ target_link_libraries(
   fitter
   plotting
   vector_view
+  simple_trader
 )
 
 target_link_libraries(
   test_hawks_process_strategy
+  PRIVATE
   GTest::gtest_main
   market
   backtest_market
@@ -79,6 +87,7 @@ target_link_libraries(
   fitter
   plotting
   vector_view
+  simple_trader
 )
 
 
@@ -93,6 +102,7 @@ target_link_libraries(
   fitter
   plotting
   vector_view
+  simple_trader
 )
 
 gtest_discover_tests(test_dummy_strategy)

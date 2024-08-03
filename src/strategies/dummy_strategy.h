@@ -5,12 +5,10 @@
 
 namespace TradingBot {
 
-    const double DUMMY_STRATEGY_BUY_AMOUNT = 1.0;
-
     class DummyStrategy : public Strategy {
     public:
-        DummyStrategy(Market* _market);
-        virtual void step() override;
+        DummyStrategy() = default;
+        virtual Signal step(bool newCandle) override;
     };
 
 } // namespace TradingBot

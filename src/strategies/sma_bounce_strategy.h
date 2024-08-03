@@ -15,17 +15,15 @@ namespace TradingBot {
     class SMABounceStrategy : public Strategy {
     public:
         SMABounceStrategy(
-            Market* market = nullptr,
             int period = DEFAULT_SMA_PERIOD,
             int atrPeriod = 1000,
             double gapOutCoeff = 10,
             double gap = DEFAULT_SMA_GAP
         );
         SMABounceStrategy(
-            Market* market,
             const ParamSet& paramSet
         );
-        virtual void step() override;
+        virtual Signal step(bool newCandle) override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
 
         virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots() override;

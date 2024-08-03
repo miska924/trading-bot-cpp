@@ -8,7 +8,7 @@
 namespace TradingBot {
 
     SMABounceStrategy::SMABounceStrategy(
-        Market* market, int period, int atrPeriod, double gapOutCoeff, double gap
+        int period, int atrPeriod, double gapOutCoeff, double gap
     ) :
         period(period),
         atrPeriod(atrPeriod),
@@ -19,14 +19,11 @@ namespace TradingBot {
     {
         paramSet = {period, atrPeriod, gapOutCoeff, gap};
         assert(checkParamSet(paramSet));
-        this->market = market;
     }
 
     SMABounceStrategy::SMABounceStrategy(
-        Market* market,
         const ParamSet& paramSet
     ) : SMABounceStrategy(
-        market,
         std::get<int>(paramSet[0]),
         std::get<int>(paramSet[1]),
         std::get<double>(paramSet[2]),
@@ -55,10 +52,14 @@ namespace TradingBot {
         return true;
     }
 
-    void SMABounceStrategy::step() {
+    Signal SMABounceStrategy::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
+        }
+
         Helpers::VectorView<Candle> candles = market->getCandles();
         if (candles.size() <= period || candles.size() < atrPeriod) {
-            return;
+            return {};
         }
         double sma = smaFeature(candles, true);
         double atr = atrFeature(candles, true);
@@ -77,14 +78,12 @@ namespace TradingBot {
 
         if (up < price) {
             side = OrderSide::BUY;
-            // std::cerr << "side BUY" << std::endl;
         } else if (price < down) {
             side = OrderSide::SELL;
-            // std::cerr << "side SELL" << std::endl;
         }
 
         if (side == OrderSide::RESET) {
-            return;
+            return {};
         }
 
         bool newInGap = false;
@@ -92,25 +91,27 @@ namespace TradingBot {
             newInGap = true;
         }
 
-        // if (waiting && (waitLeft-- <= 0 || (
-        //     false
-        //     // || (price < down && market->getBalance().assetB > 0) ||
-        //     // (price > up && market->getBalance().assetB < 0)
-        // ))) {
+        bool reset = false;
+        double order = 0.0;
         double position = market->getBalance().assetB;
         if (waiting && (
             (position > 0 && (price < down2 || price > up2)) ||
             (position < 0 && (price > up2 || price < down2))
         )) {
             waiting = false;
-            market->order({.side = OrderSide::RESET});
+            reset = true;
         } 
         if (!waiting && side != OrderSide::RESET && !inGap && newInGap) {
             waiting = true;
-            market->order({.side = side, .amount = 1});
+            order = side == OrderSide::BUY ? 1 : -1;
         }
 
         inGap = newInGap;
+
+        return {
+            .reset = reset,
+            .order = order,
+        };
     }
 
 } // namespace TradingBot

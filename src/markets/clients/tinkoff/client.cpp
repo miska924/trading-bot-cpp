@@ -47,8 +47,6 @@ namespace TradingBot {
         body["from"] = Helpers::DateTime(from);
         body["to"] = Helpers::DateTime(to);
 
-        std::cerr << body.toStyledString() << std::endl;
-
         Json::Value response = httpClient.post(
             TINKOFF_URL_PREFIX + "MarketDataService/GetCandles",
             body

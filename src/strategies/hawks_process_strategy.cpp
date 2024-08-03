@@ -4,11 +4,9 @@
 namespace TradingBot {
 
     HawksProcessStrategy::HawksProcessStrategy(
-        Market* market,
         const ParamSet& paramSet
     ) {
         assert(checkParamSet(paramSet));
-        this->market = market;
         atrPeriod = std::get<int>(paramSet[0]);
         normRangePeriod = std::get<int>(paramSet[1]);
         normalRangeSmoothPeriod = std::get<int>(paramSet[2]);
@@ -20,7 +18,6 @@ namespace TradingBot {
     }
 
     HawksProcessStrategy::HawksProcessStrategy(
-        Market* market,
         int atrPeriod,
         int normRangePeriod,
         int normalRangeSmoothPeriod,
@@ -37,25 +34,30 @@ namespace TradingBot {
     {
         paramSet = {atrPeriod, normRangePeriod, normalRangeSmoothPeriod, risk, preventDrawdown, preventDrawdownCoeff};
         assert(checkParamSet(paramSet));
-        this->market = market;
         atr = ATRFeature(atrPeriod, true);
-        if (market != nullptr) {
-            checkPointBalance = market->getBalance().asAssetA();
-        }
     }
 
-    void HawksProcessStrategy::step() {
+    void HawksProcessStrategy::onMarketInfoAttach() {
+        checkPointBalance = market->getBalance().asAssetA();
+    }
+
+    Signal HawksProcessStrategy::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
+        }
+
         Helpers::VectorView<Candle> candles = market->getCandles();
         if (candles.size() < atrPeriod) {
-            return;
+            return {};
         }
 
         // checkPointBalance = std::max(checkPointBalance, market->getBalance().asAssetA());
         if (preventDrawdown) {
             double drawdown = (checkPointBalance - market->getBalance().asAssetA()) / checkPointBalance;
             if (market->getBalance().assetB != 0 && drawdown > preventDrawdownCoeff) {
-                market->order({.side = OrderSide::RESET});
-                return;
+                return {
+                    .reset = true
+                };
             }
         }
             
@@ -65,7 +67,7 @@ namespace TradingBot {
         updateNormRange(normRangeValue, candles.size() - 1);
 
         if (normRange.size() < normRangePeriod) {
-            return;
+            return {};
         }
 
         auto percentile05 = normRangeSorted.begin();
@@ -95,27 +97,34 @@ namespace TradingBot {
         }
 
         if (!cross || lastUpCrossIndex == -1 || lastDownCrossIndex == -1) {
-            return;
+            return {};
         }
 
         if (lastDownCrossIndex > lastUpCrossIndex) {
             if (market->getBalance().assetB != 0) {
-                market->order({.side = OrderSide::RESET});
+                return {
+                    .reset = true
+                };
             }
-            return;
+            return {};
         }
 
         if (market->getBalance().assetB != 0) {
-            return;
+            return {};
         }
 
         if (candles[lastDownCrossIndex].close < candles[lastUpCrossIndex].close) {
-            market->order({.side = OrderSide::BUY, .amount = risk});
             checkPointBalance = market->getBalance().asAssetA();
+            return {
+                .order = risk
+            };
         } else {
-            market->order({.side = OrderSide::SELL, .amount = risk});
             checkPointBalance = market->getBalance().asAssetA();
+            return {
+                .order = -risk
+            };
         }
+        return {};
     }
 
     bool HawksProcessStrategy::checkParamSet(const ParamSet& paramSet) const {

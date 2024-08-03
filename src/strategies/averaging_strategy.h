@@ -15,9 +15,8 @@ namespace TradingBot {
 
     class AveragingStrategy : public Strategy {
     public:
-        AveragingStrategy(Market* market, const ParamSet& paramSet);
+        AveragingStrategy(const ParamSet& paramSet);
         AveragingStrategy(
-            Market* market = nullptr,
             int atrPeriod = DEFAULT_AVERAGING_ATR_PERIOD,
             int positionSidePeriod = DEFAULT_AVERAGING_POSITION_SIDE_PERIOD,
             int waitCandles = DEFAULT_AVERAGING_FORCE_CLOSE_CANDLES,
@@ -25,7 +24,7 @@ namespace TradingBot {
             double risk = DEFAULT_AVERAGING_RISK
         );
 
-        virtual void step() override;
+        virtual Signal step(bool newCandle) override;
 
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
 

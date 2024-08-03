@@ -90,4 +90,21 @@ namespace TradingBot {
         time_t candleTimeDelta;
     };
 
+    class MarketInfo {
+    public:
+        MarketInfo(Market* market);
+        time_t time() const;
+        Helpers::VectorView<Candle> getCandles() const;
+        const std::vector<Order>& getOrderHistory() const;
+        const std::vector<Balance>& getBalanceHistory() const;
+        Balance getBalance() const;
+        double getFee() const;
+        Balance getStartBalance() const;
+        const Order& getLastOrder() const;
+        time_t getCandleTimeDelta() const;
+        bool finished() const;
+    private:
+        Market* market;
+    };
+
 } // namespace TradingBot

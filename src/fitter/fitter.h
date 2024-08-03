@@ -11,6 +11,7 @@
 #include "markets/market.h"
 #include "plotting/plotting.h"
 #include "strategies/strategy.h"
+#include "traders/simple_trader.h"
 
 
 namespace TradingBot {
@@ -226,12 +227,9 @@ namespace TradingBot {
         bool* threadStatus,
         int index
     ) {
-        BacktestMarket market = BacktestMarket(candles, false, false, fee, startBalance);
-        Strat strategy = Strat(
-            &market,
-            paramSet
-        );
-        strategy.run();
+        BacktestMarket market(candles, false, false, fee, startBalance);
+        Strat strategy(paramSet);
+        SimpleTrader(&strategy, &market).run();
         double fitness = market.getFitness();
 
         {
@@ -378,7 +376,7 @@ namespace TradingBot {
         ParamSet paramSet;
 
         index.clear();
-        Strat s = Strat(nullptr);
+        Strat s = Strat();
         generateParamSets(
             s,
             paramSet,
@@ -402,12 +400,9 @@ namespace TradingBot {
         }
         assert(!bestParameters.empty());
 
-        BacktestMarket market = BacktestMarket(candles, false, false, fee, startBalance);
-        Strat bestStrategy = Strat(
-            &market,
-            bestParameters
-        );
-        bestStrategy.run();
+        BacktestMarket market(candles, false, false, fee, startBalance);
+        Strat bestStrategy(bestParameters);
+        SimpleTrader(&bestStrategy, &market).run();
         bestBalance = market.getBalance().asAssetA();   
         bestFitness = market.getFitness();
     }
@@ -438,12 +433,9 @@ namespace TradingBot {
             return false;
         }
 
-        BacktestMarket market = BacktestMarket(candles, true, false, fee, startBalance);
-        Strat bestStrategy = Strat(
-            &market,
-            bestParameters
-        );
-        bestStrategy.run();
+        BacktestMarket market(candles, true, false, fee, startBalance);
+        Strat bestStrategy(bestParameters);
+        SimpleTrader(&bestStrategy, &market).run();
 
         plot(
             fileName,

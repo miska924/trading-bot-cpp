@@ -3,7 +3,7 @@
 
 namespace TradingBot {
 
-    DonchainStrategy::DonchainStrategy(Market* _market, const ParamSet& paramSet):
+    DonchainStrategy::DonchainStrategy(const ParamSet& paramSet):
         minQueue([](const double& a, const double& b) {
             return std::min(a, b);
         }),
@@ -12,8 +12,6 @@ namespace TradingBot {
         }) 
     {
         assert(checkParamSet(paramSet));
-
-        market = _market;
         period = std::get<int>(paramSet[0]);
     }
 
@@ -34,14 +32,17 @@ namespace TradingBot {
         return { minPlot, maxPlot };
     }
 
-    DonchainStrategy::DonchainStrategy(Market* _market, int period):
-        DonchainStrategy(_market, ParamSet{ period }) {}
+    DonchainStrategy::DonchainStrategy(int period):
+        DonchainStrategy(ParamSet{ period }) {}
 
+    Signal DonchainStrategy::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
+        }
 
-    void DonchainStrategy::step() {
         Helpers::VectorView<Candle> candles = market->getCandles();
         if (candles.size() < period + 1) {
-            return;
+            return {};
         }
 
         while (minQueue.size() < period) {
@@ -59,14 +60,17 @@ namespace TradingBot {
         minPlot.push_back({lastCandle.time, minimum});
         maxPlot.push_back({lastCandle.time, maximum});
 
+        bool reset = false;
+        double order = 0.0;
+
         if (waitMin && close < minimum) {
-            market->order({.side = OrderSide::RESET});
-            market->order({.side = OrderSide::SELL, .amount = 1});
+            reset = true;
+            order = -1;
             waitMax = true;
             waitMin = false;
         } else if (waitMax && close > maximum) {
-            market->order({.side = OrderSide::RESET});
-            market->order({.side = OrderSide::BUY, .amount = 1});
+            reset = true;
+            order = 1;
             waitMin = true;
             waitMax = false;
         }
@@ -76,19 +80,28 @@ namespace TradingBot {
 
         minQueue.pop();
         maxQueue.pop();
+
+        return {
+            .reset = reset,
+            .order = order,
+        };
     }
 
-    DonchainLastLoserStrategy::DonchainLastLoserStrategy(Market* _market, const ParamSet& paramSet):
-        DonchainStrategy(_market, paramSet) {}
+    DonchainLastLoserStrategy::DonchainLastLoserStrategy(const ParamSet& paramSet):
+        DonchainStrategy(paramSet) {}
 
-    DonchainLastLoserStrategy::DonchainLastLoserStrategy(Market* _market, int period):
-        DonchainLastLoserStrategy(_market, ParamSet{ period }) {}
+    DonchainLastLoserStrategy::DonchainLastLoserStrategy(int period):
+        DonchainLastLoserStrategy(ParamSet{ period }) {}
 
 
-    void DonchainLastLoserStrategy::step() {
+    Signal DonchainLastLoserStrategy::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
+        }
+
         Helpers::VectorView<Candle> candles = market->getCandles();
         if (candles.size() < period + 1) {
-            return;
+            return {};
         }
 
         while (minQueue.size() < period) {
@@ -106,13 +119,15 @@ namespace TradingBot {
         minPlot.push_back({lastCandle.time, minimum});
         maxPlot.push_back({lastCandle.time, maximum});
 
+        bool reset = false;
+        double order = 0.0;
         if (waitMin && close < minimum) {
             if (market->getBalance().assetB != 0) {
-                market->order({.side = OrderSide::RESET});
+                reset = true;
             }
 
             if (lastPrice < close) {
-                market->order({.side = OrderSide::SELL, .amount = 1});
+                order = -1;
             }
 
             waitMax = true;
@@ -120,11 +135,11 @@ namespace TradingBot {
             lastPrice = close;
         } else if (waitMax && close > maximum) {
             if (market->getBalance().assetB != 0) {
-                market->order({.side = OrderSide::RESET});
+                reset = true;
             }
 
             if (lastPrice > close) {
-                market->order({.side = OrderSide::BUY, .amount = 1});
+                order = 1;
             }
 
             waitMin = true;
@@ -137,6 +152,11 @@ namespace TradingBot {
 
         minQueue.pop();
         maxQueue.pop();
+
+        return {
+            .reset = reset,
+            .order = order,
+        };
     }
 
 } // namespace TradingBot

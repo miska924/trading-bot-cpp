@@ -18,7 +18,13 @@ namespace TradingBot {
 
     class BacktestMarket : public Market {
     public:
-        BacktestMarket(const Helpers::VectorView<Candle>& candles, bool saveHistory = true, bool verbose = false, double fee = DEFAULT_FEE, Balance balance = Balance());
+        BacktestMarket(
+            const Helpers::VectorView<Candle>& candles,
+            bool saveHistory = true,
+            bool verbose = false,
+            double fee = DEFAULT_FEE,
+            Balance balance = Balance()
+        );
         ~BacktestMarket() = default;
         time_t time() const override;
         virtual bool order(Order order) override;

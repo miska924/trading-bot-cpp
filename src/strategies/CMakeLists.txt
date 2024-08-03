@@ -40,6 +40,7 @@ target_link_libraries(
     plotting
     strategy
     vector_view
+    simple_trader
 )
 
 target_link_libraries(

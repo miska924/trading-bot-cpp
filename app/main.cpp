@@ -14,16 +14,24 @@
 #include "markets/market.h"
 
 
+using namespace TradingBot;
+
 int main() {
-    TradingBot::TinkoffMarket market(
-        2 * 365 * 24,
-        TradingBot::CandleTimeDelta::CANDLE_1_HOUR,
+
+    TinkoffMarket market(
+        10000,
+        CandleTimeDelta::CANDLE_1_MIN,
         "GAZP",
         2
     );
-    std::cerr << "market is set" << std::endl;
-    Helpers::VectorView<TradingBot::Candle> candles = market.getCandles();
-    std::cerr << "candles: " << candles.size() << std::endl;
-    writeCSVFile("../test_data/gazp_1h_3y.csv", candles);
+
+    AutoFitStrategy<AveragingStrategy> strategy(
+        {10000, 0, 1, 1, 0, 1.0},
+        {300, 5000, 1000, 1.5, 1.0},
+        {300, 5000, 1000, 1.5, 1.0}
+    );
+
+    SimpleTrader(&strategy, &market).run();
+
     return 0;
 }

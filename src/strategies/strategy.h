@@ -3,24 +3,31 @@
 #include <iostream>
 #include <variant>
 #include <vector>
+#include <optional>
 
 #include "markets/market.h"
 
 
 namespace TradingBot {
 
+    struct Signal {
+        bool reset = false;
+        double order = 0.0;
+    };
+
     using ParamSet = std::vector<std::variant<int, double>>;
 
     class Strategy {
     public:
         virtual ~Strategy() = default;
-        void run();
-        virtual void step() = 0;
+        void attachMarketInfo(MarketInfo* marketInfo);
+        virtual void onMarketInfoAttach();
+        virtual Signal step(bool newCandle) = 0;
         virtual const ParamSet& getParamSet() const;
         virtual bool checkParamSet(const ParamSet& paramSet) const;
         virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots();
     protected:
-        Market* market;
+        MarketInfo* market;
         ParamSet paramSet;
     };
 

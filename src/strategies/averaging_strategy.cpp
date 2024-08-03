@@ -3,12 +3,8 @@
 
 namespace TradingBot {
 
-    AveragingStrategy::AveragingStrategy(
-        Market* market, const ParamSet& paramSet
-    ) {
+    AveragingStrategy::AveragingStrategy(const ParamSet& paramSet) {
         assert(checkParamSet(paramSet));
-
-        this->market = market;
 
         this->paramSet = paramSet;
         atrPeriod = std::get<int>(paramSet[0]);
@@ -21,7 +17,6 @@ namespace TradingBot {
     }
 
     AveragingStrategy::AveragingStrategy(
-        Market* market,
         int atrPeriod,
         int positionSidePeriod,
         int waitCandles,
@@ -36,7 +31,6 @@ namespace TradingBot {
     {
         paramSet = {atrPeriod, positionSidePeriod, waitCandles, coeff, risk};
         assert(checkParamSet(paramSet));
-        this->market = market;
         atr = ATRFeature(atrPeriod);
     }
 
@@ -60,15 +54,20 @@ namespace TradingBot {
         return true;
     }
 
-    void AveragingStrategy::step() {
-        Helpers::VectorView<Candle> candles = market->getCandles();
-        if (candles.size() <= std::max(atrPeriod, positionSidePeriod)) {
-            return;
+    Signal AveragingStrategy::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
         }
 
+        Helpers::VectorView<Candle> candles = market->getCandles();
+        if (candles.size() <= std::max(atrPeriod, positionSidePeriod)) {
+            return {};
+        }
+
+        bool reset = false;
         if (market->time() >= waitUntill && inCombo) {
-            market->order({.side = OrderSide::RESET});
             inCombo = false;
+            reset = true;
         }
 
         if (atrValue && noUpdateCount) {
@@ -83,50 +82,68 @@ namespace TradingBot {
             if (lastOrder.side == OrderSide::BUY) {
                 if (lastOrder.price - candles.back().close >= savedAtr * coeff) {
                     if (position == positionsLimit) {
-                        market->order({.side = OrderSide::RESET});
                         inCombo = false;
-                        return;
+                        return {
+                            .reset = true
+                        };
                     }
                     positionsSum = positionsSum + candles.back().close;
                     ++position;
                     lastOrder = {.side = OrderSide::BUY, .amount = risk, .price = candles.back().close};
-                    market->order(lastOrder);
+                    return {
+                        .reset = reset,
+                        .order = risk
+                    };
                 } else if (candles.back().close - positionsSum / position >= savedAtr * coeff) {
-                    market->order({.side = OrderSide::RESET});
                     inCombo = false;
+                    return {
+                        .reset = true
+                    };
                 }
             } else if (lastOrder.side == OrderSide::SELL) {
                 if (candles.back().close - lastOrder.price >= savedAtr * coeff) {
                     if (position == positionsLimit) {
-                        market->order({.side = OrderSide::RESET});
                         inCombo = false;
-                        return;
+                        return {
+                            .reset = true
+                        };
                     }
                     positionsSum = positionsSum + candles.back().close;
                     ++position;
                     lastOrder = {.side = OrderSide::SELL, .amount = risk, .price = candles.back().close};
-                    market->order(lastOrder);
+                    return {
+                        .reset = reset,
+                        .order = -risk
+                    };
                 } else if (positionsSum / position - candles.back().close >= savedAtr * coeff) {
-                    market->order({.side = OrderSide::RESET});
                     inCombo = false;
+                    return {
+                        .reset = true
+                    };
                 }
             }
-            return;
+            return {
+                .reset = reset
+            };
         }
 
+        Signal signal = {
+            .reset = reset
+        };
         if (candles.back().close > candles[candles.size() - positionSidePeriod].close) {
             lastOrder = {.side = OrderSide::BUY, .amount = risk, .price = candles.back().close};
-            market->order(lastOrder);
+            signal.order = risk;
             waitUntill = market->time() + waitCandles * market->getCandleTimeDelta();
         } else {
             lastOrder = {.side = OrderSide::SELL, .amount = risk, .price = candles.back().close};
-            market->order(lastOrder) + waitCandles * market->getCandleTimeDelta();
+            signal.order = -risk;
             waitUntill = market->time() + waitCandles * market->getCandleTimeDelta();
         }
         savedAtr = atrValue;
         positionsSum = candles.back().close;
         position = 1;
         inCombo = true;
+        return signal;
     }
 
 } // namespace TradingBot

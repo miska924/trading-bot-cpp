@@ -9,9 +9,9 @@ namespace TradingBot {
 
     class DonchainStrategy : public Strategy {
     public:
-        DonchainStrategy(Market* _market, const ParamSet& paramSet);
-        DonchainStrategy(Market* _market = nullptr, int period = 10);
-        virtual void step() override;
+        DonchainStrategy(const ParamSet& paramSet);
+        DonchainStrategy(int period = 10);
+        virtual Signal step(bool newCandle) override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
         virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots() override;
 
@@ -31,9 +31,9 @@ namespace TradingBot {
 
     class DonchainLastLoserStrategy : public DonchainStrategy {
     public:
-        DonchainLastLoserStrategy(Market* _market, const ParamSet& paramSet);
-        DonchainLastLoserStrategy(Market* _market = nullptr, int period = 10);
-        virtual void step() override;
+        DonchainLastLoserStrategy(const ParamSet& paramSet);
+        DonchainLastLoserStrategy(int period = 10);
+        virtual Signal step(bool newCandle) override;
 
     protected:
         double lastPrice = 0;
