@@ -6,13 +6,14 @@
 #include "strategies/macd_strategy.h"
 #include "strategies/averaging_strategy.h"
 #include "strategies/sma_bounce_strategy.h"
+#include "strategies/donchain_strategy.h"
 
 
 const double EPS = 1e-5;
 const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
 const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
-const std::string gazpTestDataFileName = "../../../../test_data/GAZP_1h_3y.csv";
+const std::string gazpTestDataFileName = "../../../../test_data/gazp_1h_3y.csv";
 const std::vector<TradingBot::Candle> gazpCandles = TradingBot::readCSVFile(gazpTestDataFileName);
 
 
@@ -48,7 +49,7 @@ TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        120.46629912208212
+        110.30551980797605
     );
 }
 
@@ -84,7 +85,7 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        92.240999011623728
+        96.57225940480653
     );
 }
 
@@ -102,23 +103,19 @@ TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        2468.9338506823738
+        2683.561363456884
     );
 }
 
 TEST(AutoFitStrategyTest, TestAutoFitSMABounceGAZP) {
     TradingBot::BacktestMarket market(
         gazpCandles, true, false, 0.003, {.assetA = 2000});
-    TradingBot::SMABounceStrategy strategy(
+    TradingBot::AutoFitStrategy<TradingBot::SMABounceStrategy> strategy(
         &market,
-        {40, 100, 2.0, 5.0}
+        {1000, 0, 1000, 1000, 1, 1.0},
+        {90, 100, 1.0, 0.5},
+        {90, 100, 2.0, 5.0}
     );
-    // TradingBot::AutoFitStrategy<TradingBot::SMABounceStrategy> strategy(
-    //     &market,
-    //     {3000, 0, 1000, 10000, 1, 1.0},
-    //     {10, 100, 1.0, 0.5},
-    //     {100, 100, 2.0, 5.0}
-    // );
     strategy.run();
 
     TradingBot::plot(
@@ -131,6 +128,56 @@ TEST(AutoFitStrategyTest, TestAutoFitSMABounceGAZP) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        2468.9338506823738
+        4731.3559663538499
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFitDonchainGAZP) {
+    TradingBot::BacktestMarket market(
+        gazpCandles, true, false, 0.003, {.assetA = 2000});
+    TradingBot::AutoFitStrategy<TradingBot::DonchainStrategy> strategy(
+        &market,
+        {5000, 0, 1000, 700, 1, 1.05},
+        { 10},
+        { 700 }
+    );
+    strategy.run();
+
+    TradingBot::plot(
+        "TestAutoFitDonchainGAZP.png",
+        market.getCandles(),
+        market.getOrderHistory(),
+        market.getBalanceHistory(),
+        strategy.getPlots()
+    );
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        3524.3113513751705
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFitDonchainLastLoserGAZP) {
+    TradingBot::BacktestMarket market(
+        gazpCandles, true, false, 0.003, {.assetA = 2000});
+    TradingBot::AutoFitStrategy<TradingBot::DonchainLastLoserStrategy> strategy(
+        &market,
+        {5000, 0, 1000, 700, 1, 1.00},
+        { 10},
+        { 700 }
+    );
+    strategy.run();
+
+    TradingBot::plot(
+        "TestAutoFitDonchainLastLoserGAZP.png",
+        market.getCandles(),
+        market.getOrderHistory(),
+        market.getBalanceHistory(),
+        strategy.getPlots()
+    );
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        3957.647588279322
     );
 }

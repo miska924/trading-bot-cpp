@@ -24,6 +24,6 @@ int main() {
     std::cerr << "market is set" << std::endl;
     Helpers::VectorView<TradingBot::Candle> candles = market.getCandles();
     std::cerr << "candles: " << candles.size() << std::endl;
-    writeCSVFile("../test_data/GAZP_1h_3y.csv", candles);
+    writeCSVFile("../test_data/gazp_1h_3y.csv", candles);
     return 0;
 }
