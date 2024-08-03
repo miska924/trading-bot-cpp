@@ -19,6 +19,7 @@ namespace TradingBot {
         const Helpers::VectorView<TradingBot::Candle>& candles,
         const std::vector<TradingBot::Order>& orders,
         const std::vector<TradingBot::Balance>& balances,
+        const std::vector<std::vector<std::pair<time_t, double>>>& additional = {},
         bool logBalance = false
     );
 

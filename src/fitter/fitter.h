@@ -80,6 +80,7 @@ namespace TradingBot {
         void test(const Helpers::VectorView<Candle>& candles);
         ParamSet getBestParameters();
         double getBestBalance();
+        double getBestFitness();
         bool plotBestStrategy(const std::string& fileName);
         void heatmapFitnesses(const std::string& fileName);
         void heatmapTestFitnesses(const std::string& fileName);
@@ -408,6 +409,7 @@ namespace TradingBot {
         );
         bestStrategy.run();
         bestBalance = market.getBalance().asAssetA();   
+        bestFitness = market.getFitness();
     }
 
     template<class Strat>
@@ -423,6 +425,11 @@ namespace TradingBot {
     template <class Strat>
     double StrategyFitter<Strat>::getBestBalance() {
         return bestBalance;
+    }
+
+    template <class Strat>
+    double StrategyFitter<Strat>::getBestFitness() {
+        return bestFitness;
     }
 
     template <class Strat>

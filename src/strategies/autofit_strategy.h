@@ -39,8 +39,11 @@ namespace TradingBot {
         );
         virtual void step() override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
+        virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots() override;
 
     protected:
+        std::vector<std::vector<std::pair<time_t, double> > > plots;
+
         int fitWindow;
         int testWindow;
         int fitStep;
@@ -110,12 +113,22 @@ namespace TradingBot {
     }
 
     template <class Strat>
+    std::vector<std::vector<std::pair<time_t, double> > > AutoFitStrategy<Strat>::getPlots() {
+        std::vector<std::vector<std::pair<time_t, double> > > result = plots;
+        for (const auto& plot : strategy.getPlots()) {
+            result.push_back(plot);
+        }
+        return result;
+    }
+
+    template <class Strat>
     void AutoFitStrategy<Strat>::step() {
         if (market->getCandles().size() < fitWindow + testWindow) {
             return;
         }
         
         if (nextFit <= market->time() && (forceStop || market->getBalance().assetB == 0)) {
+            plots = getPlots();
             if (market->getBalance().assetB != 0) {
                 market->order(Order{.side = OrderSide::RESET});
             }
@@ -137,11 +150,16 @@ namespace TradingBot {
             );
             fitter.fit(fitIterations);
 
+            std::cerr << fitter.getBestParameters() << " "
+                      << fitter.getBestBalance() << " "
+                      << fitter.getBestFitness() << "\n";
+
             reliable = false;
             if (fitter.isReliable()) {
                 if (!testWindow) {
                     reliable = true;
                     strategy = Strat(market, fitter.getBestParameters());
+                    std::cerr << "^- OK -^" << std::endl;
                 } else {
                     BacktestMarket testMarket = BacktestMarket(
                         allCandles.subView(
@@ -163,6 +181,7 @@ namespace TradingBot {
                     if (fitness > fitAroundThreshold) {
                         reliable = true;
                         strategy = Strat(market, fitter.getBestParameters());
+                        std::cerr << "^- OK -^" << std::endl;
                     }
                 }
             }

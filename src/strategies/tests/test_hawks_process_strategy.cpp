@@ -50,6 +50,7 @@ TEST(HawksProcessStrategyTest, TestHawksProcessRiskStrategy) {
         market.getCandles().toVector(),
         market.getOrderHistory(),
         market.getBalanceHistory(),
+        {},
         true
     );
 

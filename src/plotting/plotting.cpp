@@ -16,6 +16,7 @@ namespace TradingBot {
         const Helpers::VectorView<TradingBot::Candle>& candles,
         const std::vector<TradingBot::Order>& orders,
         const std::vector<TradingBot::Balance>& balances,
+        const std::vector<std::vector<std::pair<time_t, double>>>& additional,
         bool logBalance
     ) {
         if (!checkGnuplot()) {
@@ -63,11 +64,31 @@ namespace TradingBot {
             }
         }
 
+        std::vector<std::pair<std::vector<time_t>, std::vector<double>>> additionalPlots;
+        for (int i = 0; i < additional.size(); ++i) {
+            additionalPlots.push_back({{}, {}});
+            for (int j = 0; j < additional[i].size(); ++j) {
+                additionalPlots.back().first.push_back(additional[i][j].first);
+                additionalPlots.back().second.push_back(additional[i][j].second);
+            }
+        }
+
         auto fig = matplot::figure(true);
         auto ax1 = fig->add_subplot(2, 1, 1);
 
         ax1->hold(matplot::on);
         ax1->plot(candleTimes, candleCloses);
+
+        std::cerr << "PLOTS: " << additionalPlots.size() << std::endl;
+        for (int i = 0; i < additionalPlots.size(); ++i) {
+            // for (int j = 0; j < additionalPlots[i].second.size(); ++j) {
+            //     std::cerr << additionalPlots[i].first[j] << " ";
+            // }
+            // std::cerr << std::endl;
+
+            auto plot = ax1->plot(additionalPlots[i].first, additionalPlots[i].second);
+            plot->color("#FFAA00");
+        }
 
         auto buy = ax1->scatter(buyOrderTimes, buyOrderPrices, 10);
         buy->marker_face_color("#00AA00");
@@ -84,7 +105,11 @@ namespace TradingBot {
         auto ax2 = fig->add_subplot(2, 1, 2);
         ax1->shared_from_this();
         ax2->hold(matplot::on);
-        ax2->loglog(balanceTimes, balanceHistory);
+        if (logBalance) {
+            ax2->loglog(balanceTimes, balanceHistory);
+        } else {
+            ax2->plot(balanceTimes, balanceHistory);
+        }
 
         ax1->position({
             WIDTH_MARGIN,

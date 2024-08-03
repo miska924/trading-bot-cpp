@@ -3,6 +3,10 @@
 
 namespace TradingBot {
 
+    std::vector<std::vector<std::pair<time_t, double> > > Strategy::getPlots() {
+        return {};
+    }
+
     const ParamSet& Strategy::getParamSet() const {
         return paramSet;
     }
