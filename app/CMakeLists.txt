@@ -13,7 +13,7 @@ target_link_libraries(
     feature
     vector_view
     tinkoff_market
-    hawks_process_strategy
+    hawkes_process_strategy
     averaging_strategy
     dummy_strategy
     date_time

@@ -2,24 +2,24 @@
 
 #include "markets/backtest_market.h"
 #include "plotting/plotting.h"
-#include "strategies/hawks_process_strategy.h"
+#include "strategies/hawkes_process_strategy.h"
 #include "traders/simple_trader.h"
 
 
 using namespace TradingBot;
 
 
-TEST(HawksProcessStrategyTest, TestHawksProcessStrategy) {
+TEST(HawkesProcessStrategyTest, TestHawkesProcessStrategy) {
     std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
     std::vector<Candle> candles = readCSVFile(testDataFileName);
 
     BacktestMarket market(candles);
-    HawksProcessStrategy strategy;
+    HawkesProcessStrategy strategy;
 
+    strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-
     plot(
-        "TestHawksProcessStrategy.png",
+        "TestHawkesProcessStrategy.png",
         market.getCandles().toVector(),
         market.getOrderHistory(),
         market.getBalanceHistory()
@@ -32,12 +32,12 @@ TEST(HawksProcessStrategyTest, TestHawksProcessStrategy) {
 }
 
 
-TEST(HawksProcessStrategyTest, TestHawksProcessRiskStrategy) {
+TEST(HawkesProcessStrategyTest, TestHawkesProcessRiskStrategy) {
     std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
     std::vector<Candle> candles = readCSVFile(testDataFileName);
 
     BacktestMarket market(candles);
-    HawksProcessStrategy strategy(
+    HawkesProcessStrategy strategy(
         10000, /* atrPeriod */ 
         10000, /* normRangePeriod */ 
         50, /* normalRangeSmoothPeriod */ 
@@ -46,10 +46,10 @@ TEST(HawksProcessStrategyTest, TestHawksProcessRiskStrategy) {
         0.0 /* preventDrawdownCoeff */
     );
 
+    strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-
     plot(
-        "TestHawksProcessRiskStrategy.png",
+        "TestHawkesProcessRiskStrategy.png",
         market.getCandles().toVector(),
         market.getOrderHistory(),
         market.getBalanceHistory(),

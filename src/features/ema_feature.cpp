@@ -17,7 +17,9 @@ namespace TradingBot {
             ema += candles[i].close * alphaPow;
             alphaPow *= (1.0 - smooth);
         }
-        return ema * smooth;
+
+        // incorrect: return ema * smooth;
+        return ema * smooth * (1.0 + alphaPow);
     }
 
     double EMAFeature::operator()(const Helpers::VectorView<Candle>& candles, bool incremental) {
@@ -27,9 +29,8 @@ namespace TradingBot {
         }
         assert(period + 1 <= candles.size());
         double diff = candles.back().close - lastValue;
-        double correction = pow(1.0 - smooth, period) * candles[candles.size() - period - 1].close;
+        double correction = candles[candles.size() - period - 1].close * pow(smooth, period);
         return lastValue = lastValue + smooth * (diff - correction);
-        
     }
 
     int EMAFeature::getPeriod() const {

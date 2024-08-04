@@ -3,7 +3,7 @@ add_library(autofit_strategy autofit_strategy.cpp)
 add_library(macd_strategy macd_strategy.cpp)
 add_library(dummy_strategy dummy_strategy.cpp)
 add_library(averaging_strategy averaging_strategy.cpp)
-add_library(hawks_process_strategy hawks_process_strategy.cpp)
+add_library(hawkes_process_strategy hawkes_process_strategy.cpp)
 add_library(sma_bounce_strategy sma_bounce_strategy.cpp)
 add_library(donchain_strategy donchain_strategy.cpp)
 
@@ -53,7 +53,7 @@ target_link_libraries(
 )
 
 target_link_libraries(
-    hawks_process_strategy
+    hawkes_process_strategy
     atr_feature
     feature
     market

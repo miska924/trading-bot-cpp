@@ -38,11 +38,16 @@ namespace TradingBot {
         virtual Signal step(bool newCandle) override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
 
+        virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots() override;
+
     protected:
         EMAFeature fastEMA;
         EMAFeature slowEMA;
         double fast = 0;
         double slow = 0;
+
+        std::vector<std::pair<time_t, double> > fastPlot;
+        std::vector<std::pair<time_t, double> > slowPlot;
     };
 
     class MACDHoldFixedStrategy : public MACDStrategy {
@@ -55,6 +60,7 @@ namespace TradingBot {
         );
         virtual Signal step(bool newCandle) override;
         virtual bool checkParamSet(const ParamSet& paramSet) const override;
+
     protected:
         int hold = 1;
         int waitUntill = 0;
