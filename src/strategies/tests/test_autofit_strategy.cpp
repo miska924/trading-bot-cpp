@@ -7,6 +7,7 @@
 #include "strategies/averaging_strategy.h"
 #include "strategies/sma_bounce_strategy.h"
 #include "strategies/donchain_strategy.h"
+#include "strategies/hawks_process_strategy.h"
 #include "traders/simple_trader.h"
 #include "helpers/vector_view.h"
 
@@ -197,5 +198,22 @@ TEST(AutoFitStrategyTest, TestAutoFit1minGAZP) {
     EXPECT_EQ(
         market.getBalance().asAssetA(),
         1943.0441397134562
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFitHawksProcessGAZP) {
+    BacktestMarket market(gazpCandles, true, false, 0.003, {.assetA = 2000});
+    AutoFitStrategy<HawksProcessStrategy> strategy(
+        {2000, 0, 1000, 100, 0, 1.0},
+        {30, 30, 4, 1.0, 1, 0.1},
+        {30, 100, 4, 1.0, 1, 0.1}
+    );
+    SimpleTrader(&strategy, &market).run();
+
+    plot("TestAutoFitHawksProcessGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        3816.48063912006
     );
 }

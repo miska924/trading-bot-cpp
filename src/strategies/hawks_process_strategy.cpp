@@ -14,7 +14,6 @@ namespace TradingBot {
         preventDrawdown = std::get<int>(paramSet[4]);
         preventDrawdownCoeff = std::get<double>(paramSet[5]);
         atr = ATRFeature(atrPeriod, true);
-        checkPointBalance = market->getBalance().asAssetA();
     }
 
     HawksProcessStrategy::HawksProcessStrategy(
