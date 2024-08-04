@@ -45,6 +45,10 @@ namespace TradingBot {
         return true;
     }
 
+    std::vector<std::vector<std::pair<time_t, double> > > MACDStrategy::getPlots() {
+        return {fastPlot, slowPlot};
+    }
+
     Signal MACDStrategy::step(bool newCandle) {
         if (!newCandle) {
             return {};
@@ -68,6 +72,11 @@ namespace TradingBot {
         }
         fast = fastEMA(candles, true);
         slow = slowEMA(candles, true);
+
+        if (savePlots) {
+            fastPlot.push_back({candles.back().time, fast});
+            slowPlot.push_back({candles.back().time, slow});
+        }
 
         if (fast > slow && previousFast < previousSlow) {
             return {
@@ -164,6 +173,11 @@ namespace TradingBot {
         }
         fast = fastEMA(candles, true);
         slow = slowEMA(candles, true);
+
+        if (savePlots) {
+            fastPlot.push_back({candles.back().time, fast});
+            slowPlot.push_back({candles.back().time, slow});
+        }
 
         time_t wait = hold * market->getCandleTimeDelta();
         if (fast > slow && previousFast < previousSlow) {

@@ -11,7 +11,7 @@ TEST(DummyStrategyTest, TestRunStrategy) {
     DummyMarket market;
     DummyStrategy strategy;
 
+    strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-
     EXPECT_EQ(market.getOrderHistory().empty(), false);
 }

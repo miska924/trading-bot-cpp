@@ -72,8 +72,10 @@ namespace TradingBot {
         double up2 = sma + atr * gap * gapOutCoeff;
         double down2 = sma - atr * gap * gapOutCoeff;
 
-        ups.push_back({candles.back().time, up});
-        downs.push_back({candles.back().time, down});
+        if (savePlots) {
+            ups.push_back({candles.back().time, up});
+            downs.push_back({candles.back().time, down});
+        }
 
 
         if (up < price) {

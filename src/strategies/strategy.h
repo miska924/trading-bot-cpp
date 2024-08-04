@@ -26,9 +26,13 @@ namespace TradingBot {
         virtual const ParamSet& getParamSet() const;
         virtual bool checkParamSet(const ParamSet& paramSet) const;
         virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots();
+        void enableSavingPlots();
+        void disableSavingPlots();
     protected:
         MarketInfo* market;
         ParamSet paramSet;
+
+        bool savePlots = false;
     };
 
 } // namespace TradingBot

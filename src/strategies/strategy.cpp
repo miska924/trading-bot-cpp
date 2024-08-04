@@ -7,6 +7,14 @@ namespace TradingBot {
         return {};
     }
 
+    void Strategy::enableSavingPlots() {
+        savePlots = true;
+    }
+
+    void Strategy::disableSavingPlots() {
+        savePlots = false;
+    }
+
     void Strategy::attachMarketInfo(MarketInfo* marketInfo) {
         market = marketInfo;
         onMarketInfoAttach();

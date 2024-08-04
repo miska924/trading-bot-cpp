@@ -125,7 +125,9 @@ namespace TradingBot {
 
         bool reset = false;
         if (nextFit <= market->time() && (forceStop || market->getBalance().assetB == 0)) {
-            plots = getPlots();
+            if (savePlots) {
+                plots = getPlots();
+            }
             if (market->getBalance().assetB != 0) {
                 reset = true;
             }
@@ -179,6 +181,9 @@ namespace TradingBot {
                     reliable = true;
                     strategy = Strat(fitter.getBestParameters());
                     strategy.attachMarketInfo(market);
+                    if (savePlots) {
+                        strategy.enableSavingPlots();
+                    }
                 }
             }
         }

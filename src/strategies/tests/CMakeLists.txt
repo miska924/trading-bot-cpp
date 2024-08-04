@@ -2,7 +2,7 @@ add_executable(test_dummy_strategy test_dummy_strategy.cpp)
 add_executable(test_macd_strategy test_macd_strategy.cpp)
 add_executable(test_autofit_strategy test_autofit_strategy.cpp)
 add_executable(test_averaging_strategy test_averaging_strategy.cpp)
-add_executable(test_hawks_process_strategy test_hawks_process_strategy.cpp)
+add_executable(test_hawkes_process_strategy test_hawkes_process_strategy.cpp)
 add_executable(test_donchain_strategy test_donchain_strategy.cpp)
 
 target_link_libraries(
@@ -51,7 +51,7 @@ target_link_libraries(
   vector_view
   averaging_strategy
   atr_feature
-  hawks_process_strategy
+  hawkes_process_strategy
   sma_bounce_strategy
   sma_feature
   donchain_strategy
@@ -75,13 +75,13 @@ target_link_libraries(
 )
 
 target_link_libraries(
-  test_hawks_process_strategy
+  test_hawkes_process_strategy
   PRIVATE
   GTest::gtest_main
   market
   backtest_market
   strategy
-  hawks_process_strategy
+  hawkes_process_strategy
   feature
   atr_feature
   fitter
@@ -109,5 +109,5 @@ gtest_discover_tests(test_dummy_strategy)
 gtest_discover_tests(test_macd_strategy)
 gtest_discover_tests(test_autofit_strategy)
 gtest_discover_tests(test_averaging_strategy)
-gtest_discover_tests(test_hawks_process_strategy)
+gtest_discover_tests(test_hawkes_process_strategy)
 gtest_discover_tests(test_donchain_strategy)

@@ -39,4 +39,11 @@ namespace TradingBot {
         double lastPrice = 0;
     };
 
+    class DonchainLastWinnerStrategy : public DonchainLastLoserStrategy {
+    public:
+        DonchainLastWinnerStrategy(const ParamSet& paramSet);
+        DonchainLastWinnerStrategy(int period = 10);
+        virtual Signal step(bool newCandle) override;
+    };
+
 } // namespace TradingBot

@@ -19,13 +19,13 @@ namespace TradingBot {
     const bool DEFAULT_HAWKS_PROCESS_PREVENT_DRAWDOWN = false;
     const double DEFAULT_HAWKS_PROCESS_PREVENT_DRAWDOWN_COEFF = 0.01;
 
-    class HawksProcessStrategy : public Strategy {
+    class HawkesProcessStrategy : public Strategy {
     public:
-        HawksProcessStrategy(
+        HawkesProcessStrategy(
             const ParamSet& paramSet
         );
 
-        HawksProcessStrategy(
+        HawkesProcessStrategy(
             int atrPeriod = DEFAULT_HAWKS_PROCESS_ATR_PERIOD,
             int normRangePeriod = DEFAULT_HAWKS_PROCESS_NORM_RANGE_PERIOD,
             int normalRangeSmoothPeriod = DEFAULT_HAWKS_PROCESS_NORM_RANGE_SMOOTH_PERIOD,
