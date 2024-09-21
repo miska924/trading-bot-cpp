@@ -72,6 +72,10 @@ namespace TradingBot {
     }
 
     bool BacktestMarket::order(Order order) {
+        if (balance.asAssetA() <= 0) {
+            return false;
+        }
+
         assert(current != -1 && current < candles.size());
         order.time = time();
         order.price = candles[current].close;

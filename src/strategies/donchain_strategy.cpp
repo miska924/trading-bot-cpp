@@ -116,8 +116,10 @@ namespace TradingBot {
         double minimum = minQueue.functionValue();
         double maximum = maxQueue.functionValue();
 
-        minPlot.push_back({lastCandle.time, minimum});
-        maxPlot.push_back({lastCandle.time, maximum});
+        if (savePlots) {
+            minPlot.push_back({lastCandle.time, minimum});
+            maxPlot.push_back({lastCandle.time, maximum});
+        }
 
         bool reset = false;
         double order = 0.0;
@@ -139,6 +141,79 @@ namespace TradingBot {
             }
 
             if (lastPrice > close) {
+                order = 1;
+            }
+
+            waitMin = true;
+            waitMax = false;
+            lastPrice = close;
+        }
+
+        minQueue.push(close);
+        maxQueue.push(close);
+
+        minQueue.pop();
+        maxQueue.pop();
+
+        return {
+            .reset = reset,
+            .order = order,
+        };
+    }
+
+    DonchainLastWinnerStrategy::DonchainLastWinnerStrategy(const ParamSet& paramSet):
+        DonchainLastLoserStrategy(paramSet) {}
+
+    DonchainLastWinnerStrategy::DonchainLastWinnerStrategy(int period):
+        DonchainLastWinnerStrategy(ParamSet{ period }) {}
+
+    Signal DonchainLastWinnerStrategy::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
+        }
+
+        Helpers::VectorView<Candle> candles = market->getCandles();
+        if (candles.size() < period + 1) {
+            return {};
+        }
+
+        while (minQueue.size() < period) {
+            double value = candles[candles.size() - period - 1 + minQueue.size()].close;
+            minQueue.push(value);
+            maxQueue.push(value);
+        }
+
+        Candle lastCandle = candles.back();
+        double close = lastCandle.close;
+
+        double minimum = minQueue.functionValue();
+        double maximum = maxQueue.functionValue();
+
+        if (savePlots) {
+            minPlot.push_back({lastCandle.time, minimum});
+            maxPlot.push_back({lastCandle.time, maximum});
+        }
+
+        bool reset = false;
+        double order = 0.0;
+        if (waitMin && close < minimum) {
+            if (market->getBalance().assetB != 0) {
+                reset = true;
+            }
+
+            if (lastPrice > close) {
+                order = -1;
+            }
+
+            waitMax = true;
+            waitMin = false;
+            lastPrice = close;
+        } else if (waitMax && close > maximum) {
+            if (market->getBalance().assetB != 0) {
+                reset = true;
+            }
+
+            if (lastPrice < close) {
                 order = 1;
             }
 

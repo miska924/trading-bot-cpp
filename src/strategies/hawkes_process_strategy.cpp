@@ -1,9 +1,9 @@
-#include "hawks_process_strategy.h"
+#include "hawkes_process_strategy.h"
 
 
 namespace TradingBot {
 
-    HawksProcessStrategy::HawksProcessStrategy(
+    HawkesProcessStrategy::HawkesProcessStrategy(
         const ParamSet& paramSet
     ) {
         assert(checkParamSet(paramSet));
@@ -16,7 +16,7 @@ namespace TradingBot {
         atr = ATRFeature(atrPeriod, true);
     }
 
-    HawksProcessStrategy::HawksProcessStrategy(
+    HawkesProcessStrategy::HawkesProcessStrategy(
         int atrPeriod,
         int normRangePeriod,
         int normalRangeSmoothPeriod,
@@ -36,17 +36,18 @@ namespace TradingBot {
         atr = ATRFeature(atrPeriod, true);
     }
 
-    void HawksProcessStrategy::onMarketInfoAttach() {
+    void HawkesProcessStrategy::onMarketInfoAttach() {
         checkPointBalance = market->getBalance().asAssetA();
     }
 
-    Signal HawksProcessStrategy::step(bool newCandle) {
+    Signal HawkesProcessStrategy::step(bool newCandle) {
         if (!newCandle) {
             return {};
         }
 
         Helpers::VectorView<Candle> candles = market->getCandles();
-        if (candles.size() < atrPeriod) {
+
+        if (candles.size() < atrPeriod + normRangePeriod - 1) {
             return {};
         }
 
@@ -59,14 +60,21 @@ namespace TradingBot {
                 };
             }
         }
-            
-        double atrValue = atr(candles, true);
-        double logDiff = (std::log1p(candles.back().high) - std::log1p(candles.back().low));
-        double normRangeValue = logDiff / atrValue;
-        updateNormRange(normRangeValue, candles.size() - 1);
 
-        if (normRange.size() < normRangePeriod) {
-            return {};
+        if (normRange.size() == normRangePeriod) {
+            double atrValue = atr(candles, true);
+            double logDiff = (std::log1p(candles.back().high) - std::log1p(candles.back().low));
+            double normRangeValue = logDiff / atrValue;
+            updateNormRange(normRangeValue, candles.size() - 1);
+        }
+
+        while (normRange.size() < normRangePeriod) {
+            int rightBound = candles.size() - normRangePeriod + normRange.size() + 1;
+
+            double atrValue = atr(candles.subView(0, rightBound), true);
+            double logDiff = (std::log1p(candles[rightBound - 1].high) - std::log1p(candles[rightBound - 1].low));
+            double normRangeValue = logDiff / atrValue;
+            updateNormRange(normRangeValue, rightBound - 1);
         }
 
         auto percentile05 = normRangeSorted.begin();
@@ -126,7 +134,7 @@ namespace TradingBot {
         return {};
     }
 
-    bool HawksProcessStrategy::checkParamSet(const ParamSet& paramSet) const {
+    bool HawkesProcessStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 6) {
             return false;
         }
@@ -161,7 +169,7 @@ namespace TradingBot {
         return true;
     }
 
-    void HawksProcessStrategy::updateNormRange(double value, int index) {
+    void HawkesProcessStrategy::updateNormRange(double value, int index) {
         normRangeSorted.insert({value, index});
         normRangeSorted.erase(normRange.front());
         normRange.push_back({value, index});
