@@ -34,17 +34,17 @@ unzip cpr.zip
 
 cd googletest-${GOOGLE_TEST_VERSION} && mkdir -p build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release
-make install -j8
+make install -j$(nproc --all)
 cd ../..
 
 cd matplotplusplus-${MATPLOTPP_VERSION} && mkdir -p build && cd build
 cmake .. -DMATPLOTPP_BUILD_WITH_SANITIZERS=false -DMATPLOTPP_BUILD_EXAMPLES=false
-make install -j8
+make install -j$(nproc --all)
 cd ../..
 
 cd cpr-${CPR_VERSION} && mkdir -p build && cd build
 cmake .. -DCPR_USE_SYSTEM_CURL=ON
-make install -j8
+make install -j$(nproc --all)
 cd ../..
 
 cd ..

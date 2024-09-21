@@ -2,3 +2,4 @@ build/**
 .vscode
 test_data/btcusdt_1m_3y.csv
 deps/**
+Testing/**
