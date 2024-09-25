@@ -1,9 +1,10 @@
 add_executable(test_dummy_strategy test_dummy_strategy.cpp)
-add_executable(test_macd_strategy test_macd_strategy.cpp)
+add_executable(test_ema_crossover_strategy test_ema_crossover_strategy.cpp)
 add_executable(test_autofit_strategy test_autofit_strategy.cpp)
 add_executable(test_averaging_strategy test_averaging_strategy.cpp)
 add_executable(test_hawkes_process_strategy test_hawkes_process_strategy.cpp)
 add_executable(test_donchain_strategy test_donchain_strategy.cpp)
+add_executable(test_ordinal_patterns_strategy test_ordinal_patterns_strategy.cpp)
 
 target_link_libraries(
   test_dummy_strategy
@@ -19,13 +20,13 @@ target_link_libraries(
 )
 
 target_link_libraries(
-  test_macd_strategy
+  test_ema_crossover_strategy
   PRIVATE
   GTest::gtest_main
   market
   backtest_market
   strategy
-  macd_strategy
+  ema_crossover_strategy
   feature
   ema_feature
   fitter
@@ -40,7 +41,7 @@ target_link_libraries(
   GTest::gtest_main
   backtest_market
   market
-  macd_strategy
+  ema_crossover_strategy
   strategy
   ema_feature
   feature
@@ -90,7 +91,6 @@ target_link_libraries(
   simple_trader
 )
 
-
 target_link_libraries(
   test_donchain_strategy
   GTest::gtest_main
@@ -105,9 +105,24 @@ target_link_libraries(
   simple_trader
 )
 
+target_link_libraries(
+  test_ordinal_patterns_strategy
+  GTest::gtest_main
+  market
+  backtest_market
+  strategy
+  ordinal_patterns_strategy
+  function_queue
+  fitter
+  plotting
+  vector_view
+  simple_trader
+)
+
 gtest_discover_tests(test_dummy_strategy)
-gtest_discover_tests(test_macd_strategy)
+gtest_discover_tests(test_ema_crossover_strategy)
 gtest_discover_tests(test_autofit_strategy)
 gtest_discover_tests(test_averaging_strategy)
 gtest_discover_tests(test_hawkes_process_strategy)
 gtest_discover_tests(test_donchain_strategy)
+gtest_discover_tests(test_ordinal_patterns_strategy)

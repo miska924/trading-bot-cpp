@@ -60,6 +60,8 @@ namespace TradingBot {
         OrderSide side;
         double amount;
         double price;
+        double stopLoss = 0;
+        double takeProfit = 0;
 
         bool operator==(const Order& other) const;
     };

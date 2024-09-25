@@ -26,6 +26,7 @@ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-sanitize=address -fno
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 enable_testing()
 include(GoogleTest)
+include(CTest)
 
 include_directories(src)
 

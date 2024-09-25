@@ -72,13 +72,17 @@ namespace TradingBot {
     }
 
     bool BacktestMarket::order(Order order) {
+        return forcePriceOrder(order, candles[current].close);
+    }
+
+    bool BacktestMarket::forcePriceOrder(Order order, double price) {
         if (balance.asAssetA() <= 0) {
             return false;
         }
 
         assert(current != -1 && current < candles.size());
         order.time = time();
-        order.price = candles[current].close;
+        order.price = price;
 
         double all = balance.asAssetA();
         double amount = order.amount * all;
@@ -112,10 +116,29 @@ namespace TradingBot {
         return current + 1 >= candles.size();
     }
 
+    void BacktestMarket::checkSLTP() {
+        if (lastOrder.side == OrderSide::BUY) {
+            if (lastOrder.stopLoss && candles[current].low <= lastOrder.stopLoss) {
+                forcePriceOrder({.side = OrderSide::RESET}, lastOrder.stopLoss);
+            } else if (lastOrder.takeProfit && candles[current].high >= lastOrder.takeProfit) {
+                forcePriceOrder({.side = OrderSide::RESET}, lastOrder.takeProfit);
+            }
+        } else if (lastOrder.side == OrderSide::SELL) {
+            if (lastOrder.stopLoss && candles[current].high >= lastOrder.stopLoss) {
+                forcePriceOrder({.side = OrderSide::RESET}, lastOrder.stopLoss);
+            } else if (lastOrder.takeProfit && candles[current].low <= lastOrder.takeProfit) {
+                forcePriceOrder({.side = OrderSide::RESET}, lastOrder.takeProfit);
+            }
+        }
+    }
+
     bool BacktestMarket::update() {
         if (current + 1 >= candles.size()) {
             return false;
         }
+
+        checkSLTP();
+
         ++current;
 
         balance.update(candles[current].close, time());

@@ -54,8 +54,8 @@ namespace TradingBot {
         Candle lastCandle = candles.back();
         double close = lastCandle.close;
 
-        double minimum = minQueue.functionValue();
-        double maximum = maxQueue.functionValue();
+        double minimum = minQueue.getValue();
+        double maximum = maxQueue.getValue();
 
         minPlot.push_back({lastCandle.time, minimum});
         maxPlot.push_back({lastCandle.time, maximum});
@@ -113,8 +113,8 @@ namespace TradingBot {
         Candle lastCandle = candles.back();
         double close = lastCandle.close;
 
-        double minimum = minQueue.functionValue();
-        double maximum = maxQueue.functionValue();
+        double minimum = minQueue.getValue();
+        double maximum = maxQueue.getValue();
 
         if (savePlots) {
             minPlot.push_back({lastCandle.time, minimum});
@@ -186,8 +186,8 @@ namespace TradingBot {
         Candle lastCandle = candles.back();
         double close = lastCandle.close;
 
-        double minimum = minQueue.functionValue();
-        double maximum = maxQueue.functionValue();
+        double minimum = minQueue.getValue();
+        double maximum = maxQueue.getValue();
 
         if (savePlots) {
             minPlot.push_back({lastCandle.time, minimum});

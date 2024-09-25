@@ -3,7 +3,7 @@
 #include "markets/backtest_market.h"
 #include "plotting/plotting.h"
 #include "strategies/autofit_strategy.h"
-#include "strategies/macd_strategy.h"
+#include "strategies/ema_crossover_strategy.h"
 #include "strategies/averaging_strategy.h"
 #include "strategies/sma_bounce_strategy.h"
 #include "strategies/donchain_strategy.h"
@@ -23,7 +23,7 @@ std::vector<Candle> gazp1MCandles = readCSVFile("../../../../test_data/gazp_1m_1
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     BacktestMarket market(btcusdt15m3yCandles);
-    AutoFitStrategy<MACDHoldSlowStrategy> strategy(
+    AutoFitStrategy<EMACrossoverHoldSlowStrategy> strategy(
         {1000, 0, 1000, 100, 0, 1.0},
         {1, 1},
         {1000, 1000}
@@ -31,7 +31,7 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
 
-    plot("TestAutoFitMACDHoldSlowStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitEMACrossoverHoldSlowStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -39,16 +39,16 @@ TEST(AutoFitStrategyTest, TestAutoFitStrategy) {
     );
 }
 
-TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
+TEST(AutoFitStrategyTest, TestAutoFitEMACrossoverHoldFixedStrategy) {
     BacktestMarket market(btcusdt15m3yCandles);
-    AutoFitStrategy<MACDHoldFixedStrategy> strategy(
+    AutoFitStrategy<EMACrossoverHoldFixedStrategy> strategy(
         {1000, 0, 1000, 1000, 0, 1.0},
         {1, 1, 1},
         {1000, 1000, 1000}
     );
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestAutoFitMACDHoldFixedStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitEMACrossoverHoldFixedStrategy.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -58,14 +58,14 @@ TEST(AutoFitStrategyTest, TestAutoFitMACDHoldFixedStrategy) {
 
 TEST(AutoFitStrategyTest, TestAutoFitStrategyForceStop) {
     BacktestMarket market(btcusdt15m3yCandles);
-    AutoFitStrategy<MACDHoldSlowStrategy> strategy(
+    AutoFitStrategy<EMACrossoverHoldSlowStrategy> strategy(
         {1000, 0, 1000, 100, 1, 1.0},
         {1, 1},
         {1000, 1000}
     );
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestAutoFitMACDHoldSlowStrategyForceStop.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitEMACrossoverHoldSlowStrategyForceStop.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
@@ -90,16 +90,33 @@ TEST(AutoFitStrategyTest, TestAutoFitAveragingStrategy) {
     );
 }
 
-TEST(AutoFitStrategyTest, TestAutoFitGAZP) {
+TEST(AutoFitStrategyTest, TestAutoFitEMACrossoverHoldSlowStrategyGAZP) {
     BacktestMarket market(gazp1h3yCandles, true, false, 0.003, {.assetA = 2000});
-    AutoFitStrategy<MACDHoldSlowStrategy> strategy(
+    AutoFitStrategy<EMACrossoverHoldSlowStrategy> strategy(
         {1000, 0, 1000, 10000, 0, 1.00},
         {30, 300},
         {30, 300}
     );
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestAutoFitGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+    plot("TestAutoFitEMACrossoverHoldSlowStrategyGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
+
+    EXPECT_EQ(
+        market.getBalance().asAssetA(),
+        3006.279037446403
+    );
+}
+
+TEST(AutoFitStrategyTest, TestAutoFitEMACrossoverStrategyGAZP) {
+    BacktestMarket market(gazp1h3yCandles, true, false, 0.003, {.assetA = 2000});
+    AutoFitStrategy<EMACrossoverStrategy> strategy(
+        {1000, 0, 1000, 10000, 0, 1.00},
+        {1, 1},
+        {1000, 1000}
+    );
+    strategy.enableSavingPlots();
+    SimpleTrader(&strategy, &market).run();
+    plot("TestAutoFitEMACrossoverStrategyGAZP.png", market.getCandles(), market.getOrderHistory(), market.getBalanceHistory());
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),

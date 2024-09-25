@@ -5,7 +5,7 @@ target_link_libraries(
   PRIVATE
   backtest_market
   market
-  macd_strategy
+  ema_crossover_strategy
   averaging_strategy
   atr_feature
   strategy
