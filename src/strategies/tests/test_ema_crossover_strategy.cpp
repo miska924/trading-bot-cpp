@@ -2,7 +2,7 @@
 
 #include "markets/backtest_market.h"
 #include "plotting/plotting.h"
-#include "strategies/macd_strategy.h"
+#include "strategies/ema_crossover_strategy.h"
 #include "traders/simple_trader.h"
 
 
@@ -14,37 +14,37 @@ std::vector<Candle> btcusdt15m3yCandles = readCSVFile("../../../../test_data/btc
 std::vector<Candle> gazp1h3yCandles = readCSVFile("../../../../test_data/gazp_1h_3y.csv");
 
 
-TEST(MACDStrategyTest, TestMACDStrategy) {
+TEST(EMACrossoverStrategyTest, TestEMACrossoverStrategy) {
     BacktestMarket market(btcusdt15m10dCandles);
-    MACDStrategy strategy;
+    EMACrossoverStrategy strategy;
 
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestMACDStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+    plot("TestEMACrossoverStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
     EXPECT_EQ(market.getOrderHistory().size(), 56);
     EXPECT_EQ(market.getBalance().asAssetA(), 86.922363544836927);
 }
 
-TEST(MACDStrategyTest, TestMACDStrategyLarge) {
+TEST(EMACrossoverStrategyTest, TestEMACrossoverStrategyLarge) {
     BacktestMarket market(btcusdt15m3yCandles);
-    MACDStrategy strategy(20, 40);
+    EMACrossoverStrategy strategy(20, 40);
 
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestMACDStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+    plot("TestEMACrossoverStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
     EXPECT_EQ(market.getOrderHistory().size(), 4824);
     EXPECT_EQ(market.getBalance().asAssetA(), 0.01000386245488198);
 }
 
-TEST(MACDStrategyTest, TestMACDStrategyGAZP) {
+TEST(EMACrossoverStrategyTest, TestEMACrossoverStrategyGAZP) {
     BacktestMarket market(gazp1h3yCandles, true, false, 0.003, {.assetA = 2000});
-    MACDStrategy strategy(64, 124);
+    EMACrossoverStrategy strategy(64, 124);
 
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestMACDStrategyGAZP.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+    plot("TestEMACrossoverStrategyGAZP.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
     EXPECT_EQ(market.getOrderHistory().size(), 224);
     EXPECT_EQ(market.getBalance().asAssetA(), 4523.7747167896732);

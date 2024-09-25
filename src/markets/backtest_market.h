@@ -39,6 +39,9 @@ namespace TradingBot {
         double getFee() const override;
 
     private:
+        bool forcePriceOrder(Order order, double price);
+        void checkSLTP();
+    
         double fee;
         Balance startBalance;
 

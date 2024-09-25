@@ -4,7 +4,7 @@
 #include "fitter/fitter.h"
 #include "helpers/test_data.h"
 #include "strategies/strategy.h"
-#include "strategies/macd_strategy.h"
+#include "strategies/ema_crossover_strategy.h"
 #include "strategies/averaging_strategy.h"
 
 
@@ -13,11 +13,11 @@ const std::string testDataFileName = "../../../../test_data/btcusdt_15m_3y.csv";
 const std::vector<TradingBot::Candle> candles = TradingBot::readCSVFile(testDataFileName);
 
 
-TEST(TestFitter, TestMACDStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDStrategy> fitter(candles, {1, 1}, {1000, 1000});
+TEST(TestFitter, TestEMACrossoverStrategyFit) {
+    TradingBot::StrategyFitter<TradingBot::EMACrossoverStrategy> fitter(candles, {1, 1}, {1000, 1000});
     fitter.fit(100);
-    fitter.plotBestStrategy("TestMACDStrategyFit.png");
-    fitter.heatmapFitnesses("TestMACDStrategyFitHeatmap.png");
+    fitter.plotBestStrategy("TestEMACrossoverStrategyFit.png");
+    fitter.heatmapFitnesses("TestEMACrossoverStrategyFitHeatmap.png");
 
     EXPECT_EQ(
         fitter.getBestBalance(),
@@ -25,11 +25,11 @@ TEST(TestFitter, TestMACDStrategyFit) {
     );
 }
 
-TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(candles, {1, 1}, {1000, 1000});
+TEST(TestFitter, TestEMACrossoverHoldSlowStrategyFit) {
+    TradingBot::StrategyFitter<TradingBot::EMACrossoverHoldSlowStrategy> fitter(candles, {1, 1}, {1000, 1000});
     fitter.fit(100);
-    fitter.plotBestStrategy("TestMACDHoldSlowStrategyFit.png");
-    fitter.heatmapFitnesses("TestMACDHoldSlowStrategyFitHeatmap.png");
+    fitter.plotBestStrategy("TestEMACrossoverHoldSlowStrategyFit.png");
+    fitter.heatmapFitnesses("TestEMACrossoverHoldSlowStrategyFitHeatmap.png");
 
     EXPECT_EQ(
         fitter.getBestBalance(),
@@ -37,7 +37,7 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFit) {
     );
 }
 
-TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
+TEST(TestFitter, TestEMACrossoverHoldSlowStrategyFitTrainTest) {
     int BEGIN = 5000;
     int TRAIN = 10000;
     int STEP1 = 2000;
@@ -45,10 +45,10 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
     Helpers::VectorView<TradingBot::Candle> train(candles, BEGIN, BEGIN + TRAIN);
     Helpers::VectorView<TradingBot::Candle> test(candles, BEGIN + TRAIN, BEGIN + TRAIN + STEP1);
     Helpers::VectorView<TradingBot::Candle> test2(candles, BEGIN + TRAIN + STEP1, BEGIN + TRAIN + STEP1 + STEP2);
-    TradingBot::StrategyFitter<TradingBot::MACDHoldSlowStrategy> fitter(train, {1, 1}, {1000, 1000});
+    TradingBot::StrategyFitter<TradingBot::EMACrossoverHoldSlowStrategy> fitter(train, {1, 1}, {1000, 1000});
     fitter.fit(100);
-    fitter.plotBestStrategy("TestMACDHoldSlowStrategyFit.png");
-    fitter.heatmapFitnesses("TestMACDHoldSlowStrategyFitHeatmap.png");
+    fitter.plotBestStrategy("TestEMACrossoverHoldSlowStrategyFit.png");
+    fitter.heatmapFitnesses("TestEMACrossoverHoldSlowStrategyFitHeatmap.png");
 
     EXPECT_EQ(
         fitter.getBestBalance(),
@@ -56,15 +56,15 @@ TEST(TestFitter, TestMACDHoldSlowStrategyFitTrainTest) {
     );
 
     fitter.test(test);
-    fitter.heatmapTestFitnesses("TestMACDHoldSlowStrategyFitHeatmapTest.png");
+    fitter.heatmapTestFitnesses("TestEMACrossoverHoldSlowStrategyFitHeatmapTest.png");
     fitter.test(test2);
-    fitter.heatmapTestFitnesses("TestMACDHoldSlowStrategyFitHeatmapTest2.png");
+    fitter.heatmapTestFitnesses("TestEMACrossoverHoldSlowStrategyFitHeatmapTest2.png");
 }
 
-TEST(TestFitter, TestMACDHoldFixedStrategyFit) {
-    TradingBot::StrategyFitter<TradingBot::MACDHoldFixedStrategy> fitter(candles, {1, 1, 1}, {1000, 1000, 1000});
+TEST(TestFitter, TestEMACrossoverHoldFixedStrategyFit) {
+    TradingBot::StrategyFitter<TradingBot::EMACrossoverHoldFixedStrategy> fitter(candles, {1, 1, 1}, {1000, 1000, 1000});
     fitter.fit(100);
-    fitter.plotBestStrategy("TestMACDHoldFixedStrategyFit.png");
+    fitter.plotBestStrategy("TestEMACrossoverHoldFixedStrategyFit.png");
     // cannot make heatmap because of too many parameters (3, but need 2)
     
     EXPECT_EQ(

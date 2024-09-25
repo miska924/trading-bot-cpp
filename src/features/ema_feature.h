@@ -4,6 +4,7 @@
 
 #include "features/feature.h"
 #include "helpers/vector_view.h"
+#include "helpers/function_queue.h"
 
 
 namespace TradingBot {
@@ -19,6 +20,7 @@ namespace TradingBot {
         int period;
         double smooth;
         double lastValue = 0;
+        Helpers::WeightedSumQueue<double> queue;
     };
 
 } // namespace TradingBot
