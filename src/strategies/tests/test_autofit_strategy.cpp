@@ -52,7 +52,7 @@ TEST(AutoFitStrategyTest, TestAutoFitEMACrossoverHoldFixedStrategy) {
 
     EXPECT_EQ(
         market.getBalance().asAssetA(),
-        47.334823719308247
+        173.94617492254636
     );
 }
 

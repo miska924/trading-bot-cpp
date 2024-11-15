@@ -3,18 +3,15 @@
 
 namespace TradingBot {
 
-    AveragingStrategy::AveragingStrategy(const ParamSet& paramSet) {
-        assert(checkParamSet(paramSet));
-
-        this->paramSet = paramSet;
-        atrPeriod = std::get<int>(paramSet[0]);
-        positionSidePeriod = std::get<int>(paramSet[1]);
-        waitCandles = std::get<int>(paramSet[2]);
-        coeff = std::get<double>(paramSet[3]);
-        risk = std::get<double>(paramSet[4]);
-
-        atr = ATRFeature(atrPeriod);
-    }
+    AveragingStrategy::AveragingStrategy(const ParamSet& paramSet)
+        : Strategy(paramSet)
+        , atrPeriod(std::get<int>(paramSet[0]))
+        , positionSidePeriod(std::get<int>(paramSet[1]))
+        , waitCandles(std::get<int>(paramSet[2]))
+        , coeff(std::get<double>(paramSet[3]))
+        , risk(std::get<double>(paramSet[4]))
+        , atr(std::get<int>(paramSet[0]))
+    {}
 
     AveragingStrategy::AveragingStrategy(
         int atrPeriod,
@@ -22,17 +19,15 @@ namespace TradingBot {
         int waitCandles,
         double coeff,
         double risk
-    ) :
-        atrPeriod(atrPeriod),
-        positionSidePeriod(positionSidePeriod),
-        waitCandles(waitCandles),
-        coeff(coeff),
-        risk(risk) 
-    {
-        paramSet = {atrPeriod, positionSidePeriod, waitCandles, coeff, risk};
-        assert(checkParamSet(paramSet));
-        atr = ATRFeature(atrPeriod);
-    }
+    )
+        : Strategy({atrPeriod, positionSidePeriod, waitCandles, coeff, risk})
+        , atrPeriod(atrPeriod)
+        , positionSidePeriod(positionSidePeriod)
+        , waitCandles(waitCandles)
+        , coeff(coeff)
+        , risk(risk)
+        , atr(atrPeriod)
+    {}
 
     bool AveragingStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 5) {

@@ -5,38 +5,57 @@
 
 namespace TradingBot {
 
-    double ATRFeature::atr(const Helpers::VectorView<Candle>& candles) {
+    double logIf(double value, bool logPrice) {
+        return logPrice ? log1p(value) : value;
+    }
+
+    double trueRange(const Helpers::VectorView<Candle>& candles, int index, int period, bool logPrice) {
+        double result = logIf(candles[index].high, logPrice) - logIf(candles[index].low, logPrice);
+        if (candles.size() - index < period) {
+            result = std::max(
+                result,
+                std::max(
+                    std::abs(logIf(candles[index].high, logPrice) - logIf(candles[index - 1].close, logPrice)),
+                    std::abs(logIf(candles[index - 1].close, logPrice) - logIf(candles[index].low, logPrice))
+                )
+            );
+        }
+        return result;
+    }
+
+    double atr(const Helpers::VectorView<Candle>& candles, int period, bool logPrice) {
         int size = candles.size();
         int begin = size - period;
         double sum = 0;
         for (int i = size - 1; i >= begin; --i) {
-            double diff = candles[i].high - candles[i].low;
-            sum += diff * diff;
+            sum += trueRange(candles, i, period, logPrice);
         }
-        savedSum = sum;
-        return sqrt(sum / period);
+        return sum / period;
     }
 
-    ATRFeature::ATRFeature(int period, bool log) : period(period), log(log) {}
+    ATRFeature::ATRFeature(int period, bool logPrice) :
+        period(period),
+        logPrice(logPrice),
+        queue([](double a, double b) -> double { return a + b; }) {}
 
     double ATRFeature::operator()(const Helpers::VectorView<Candle>& candles, bool incremental) {
-        if (!incremental || !lastValue) {
-            assert(period <= candles.size());
-            return lastValue = atr(candles);
+        int size = candles.size();
+        assert(period <= size);
+
+        if (!incremental) {
+            return atr(candles, period, logPrice);
         }
-        assert(period < candles.size());
-        int removeId = candles.size() - period - 1;
-        double add;
-        double remove;
-        if (log) {
-            add = std::log1p(candles.back().high) - std::log1p(candles.back().low);
-            remove = std::log1p(candles[removeId].high) - std::log1p(candles[removeId].low);
+
+        if (!queue.size()) {
+            for (int i = period; i > 0; --i) {
+                queue.push(trueRange(candles, size - i, period, logPrice));
+            }
         } else {
-            add = candles.back().high - candles.back().low;
-            remove = candles[removeId].high - candles[removeId].low;
+            queue.push(trueRange(candles, size - 1, period, logPrice));
+            queue.pop();
         }
-        savedSum = (savedSum + add * add - remove * remove);
-        return lastValue = sqrt(savedSum / period);
+
+        return queue.getValue() / period;
     }
 
     int ATRFeature::getPeriod() const {

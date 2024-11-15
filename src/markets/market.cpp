@@ -1,5 +1,6 @@
 #include "markets/market.h"
 
+#include <iostream>
 #include <chrono>
 #include <time.h>
 
@@ -50,10 +51,7 @@ namespace TradingBot {
     }
 
     const Order& Market::getLastOrder() const {
-        if (orderHistory.empty()) {
-            return lastOrder;
-        }
-        return orderHistory.back();
+        return lastOrder;
     }
 
     time_t Market::getCandleTimeDelta() const {
@@ -62,6 +60,12 @@ namespace TradingBot {
 
     void Market::saveOrder(Order order) {
         orderHistory.push_back(order);
+    }
+
+    void Market::ModifyStopLossTakeProfit(double stopLoss, double takeProfit) {
+        // std::cerr << "ModifyStopLossTakeProfit: " << stopLoss << " " << takeProfit << std::endl;
+        lastOrder.stopLoss = stopLoss;
+        lastOrder.takeProfit = takeProfit;
     }
 
     double Balance::asAssetA() const {

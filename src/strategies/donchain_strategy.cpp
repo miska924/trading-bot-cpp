@@ -3,17 +3,16 @@
 
 namespace TradingBot {
 
-    DonchainStrategy::DonchainStrategy(const ParamSet& paramSet):
-        minQueue([](const double& a, const double& b) {
+    DonchainStrategy::DonchainStrategy(const ParamSet& paramSet)
+        : Strategy(paramSet)
+        , period(std::get<int>(paramSet[0]))
+        , minQueue([](const double& a, const double& b) {
             return std::min(a, b);
-        }),
-        maxQueue([](const double& a, const double& b) {
+        })
+        , maxQueue([](const double& a, const double& b) {
             return std::max(a, b);
         }) 
-    {
-        assert(checkParamSet(paramSet));
-        period = std::get<int>(paramSet[0]);
-    }
+    {}
 
     bool DonchainStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 1) {

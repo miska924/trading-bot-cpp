@@ -9,7 +9,7 @@ namespace TradingBot {
 
     class Trader {
     public:
-        Trader(Strategy* strategy, Market* market);
+        Trader(Strategy* strategy = nullptr, Market* market = nullptr);
         virtual ~Trader() = default;
 
         void run();

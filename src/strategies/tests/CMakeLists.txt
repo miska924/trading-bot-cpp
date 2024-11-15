@@ -89,6 +89,7 @@ target_link_libraries(
   plotting
   vector_view
   simple_trader
+  sltp_trader
 )
 
 target_link_libraries(

@@ -49,7 +49,6 @@ namespace TradingBot {
         int current = -1;
         bool saveHistory;
         bool verbose;
-        Order lastOrder = {.side = OrderSide::RESET};
 
         double maxBalance = 0;
         double maxDrawdown = 0;

@@ -9,23 +9,26 @@ namespace Helpers {
     class VectorView {
     public:
         VectorView() = delete;
-        VectorView(const std::vector<T>& vector): _vector(vector) {
-            _begin = 0;
-            _end = vector.size();
-            _size = vector.size();
-        }
+        VectorView(const std::vector<T>& vector)
+            : _vector(vector)
+            , _begin(0)
+            , _end(vector.size())
+            , _size(vector.size()) {}
 
-        VectorView(const std::vector<T>& vector, size_t begin, size_t end): _vector(vector) {
+        VectorView(const std::vector<T>& vector, size_t begin, size_t end)
+            : _vector(vector)
+            , _begin(begin)
+            , _end(end)
+            , _size(end - begin)
+        {
             assert(begin <= end && end <= vector.size());
-            _begin = begin;
-            _end = end;
-            _size = end - begin;
         }
 
-        VectorView(
-            const VectorView<T>& other
-        ): _vector(other._vector), _begin(other._begin), _end(other._end), _size(other._size) {
-        }
+        VectorView(const VectorView<T>& other)
+            : _vector(other._vector)
+            , _begin(other._begin)
+            , _end(other._end)
+            , _size(other._size) {}
 
         size_t size() const {
             return _size;
@@ -39,7 +42,7 @@ namespace Helpers {
 
         VectorView<T> subView(size_t begin, size_t end) const {
             assert(begin <= end && end <= _size);
-            return VectorView<T>(_vector, this->_begin + begin, this->_begin + end);
+            return VectorView<T>(_vector, _begin + begin, _begin + end);
         }
 
         std::vector<T> toVector() const {

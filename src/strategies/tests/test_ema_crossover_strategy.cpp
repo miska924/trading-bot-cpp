@@ -22,8 +22,8 @@ TEST(EMACrossoverStrategyTest, TestEMACrossoverStrategy) {
     SimpleTrader(&strategy, &market).run();
     plot("TestEMACrossoverStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
-    EXPECT_EQ(market.getOrderHistory().size(), 56);
-    EXPECT_EQ(market.getBalance().asAssetA(), 86.922363544836927);
+    EXPECT_EQ(market.getOrderHistory().size(), 80);
+    EXPECT_EQ(market.getBalance().asAssetA(), 86.918313558503598);
 }
 
 TEST(EMACrossoverStrategyTest, TestEMACrossoverStrategyLarge) {
@@ -40,12 +40,12 @@ TEST(EMACrossoverStrategyTest, TestEMACrossoverStrategyLarge) {
 
 TEST(EMACrossoverStrategyTest, TestEMACrossoverStrategyGAZP) {
     BacktestMarket market(gazp1h3yCandles, true, false, 0.003, {.assetA = 2000});
-    EMACrossoverStrategy strategy(64, 124);
+    EMACrossoverStrategy strategy(32, 124);
 
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
     plot("TestEMACrossoverStrategyGAZP.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
-    EXPECT_EQ(market.getOrderHistory().size(), 224);
-    EXPECT_EQ(market.getBalance().asAssetA(), 4523.7747167896732);
+    EXPECT_EQ(market.getOrderHistory().size(), 360);
+    EXPECT_EQ(market.getBalance().asAssetA(), 4690.5825690187739);
 }

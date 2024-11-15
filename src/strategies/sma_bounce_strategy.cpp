@@ -9,17 +9,15 @@ namespace TradingBot {
 
     SMABounceStrategy::SMABounceStrategy(
         int period, int atrPeriod, double gapOutCoeff, double gap
-    ) :
-        period(period),
-        atrPeriod(atrPeriod),
-        gapOutCoeff(gapOutCoeff),
-        gap(gap),
-        smaFeature(period),
-        atrFeature(atrPeriod)
-    {
-        paramSet = {period, atrPeriod, gapOutCoeff, gap};
-        assert(checkParamSet(paramSet));
-    }
+    )
+        : Strategy({period, atrPeriod, gapOutCoeff, gap})
+        , period(period)
+        , atrPeriod(atrPeriod)
+        , gap(gap)
+        , gapOutCoeff(gapOutCoeff)
+        , smaFeature(period)
+        , atrFeature(atrPeriod)
+    {}
 
     SMABounceStrategy::SMABounceStrategy(
         const ParamSet& paramSet

@@ -4,6 +4,7 @@
 #include "plotting/plotting.h"
 #include "strategies/hawkes_process_strategy.h"
 #include "traders/simple_trader.h"
+#include "traders/sltp_trader.h"
 
 
 using namespace TradingBot;
@@ -17,7 +18,8 @@ TEST(HawkesProcessStrategyTest, TestHawkesProcessStrategy) {
     HawkesProcessStrategy strategy;
 
     strategy.enableSavingPlots();
-    SimpleTrader(&strategy, &market).run();
+    DynamicPercentSLTrader(&strategy, &market, 0.05, 0.05).run();
+    // SimpleTrader(&strategy, &market).run();
     plot(
         "TestHawkesProcessStrategy.png",
         market.getCandles().toVector(),
@@ -40,14 +42,11 @@ TEST(HawkesProcessStrategyTest, TestHawkesProcessRiskStrategy) {
     HawkesProcessStrategy strategy(
         10000, /* atrPeriod */ 
         10000, /* normRangePeriod */ 
-        50, /* normalRangeSmoothPeriod */ 
-        10, /* risk */ 
-        0, /* preventDrawdown */ 
-        0.0 /* preventDrawdownCoeff */
+        50 /* normalRangeSmoothPeriod */
     );
 
     strategy.enableSavingPlots();
-    SimpleTrader(&strategy, &market).run();
+    DynamicPercentSLTrader(&strategy, &market, 10, 1).run();
     plot(
         "TestHawkesProcessRiskStrategy.png",
         market.getCandles().toVector(),

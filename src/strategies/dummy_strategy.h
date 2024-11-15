@@ -7,8 +7,10 @@ namespace TradingBot {
 
     class DummyStrategy : public Strategy {
     public:
-        DummyStrategy() = default;
-        virtual Signal step(bool newCandle) override;
+        DummyStrategy(const ParamSet& paramSet);
+
+        bool checkParamSet(const ParamSet& paramSet) const override;
+        Signal step(bool newCandle) override;
     };
 
 } // namespace TradingBot

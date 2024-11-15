@@ -19,12 +19,13 @@ namespace TradingBot {
 
     class Strategy {
     public:
+        Strategy(const ParamSet& paramSet);
         virtual ~Strategy() = default;
         void attachMarketInfo(MarketInfo* marketInfo);
         virtual void onMarketInfoAttach();
         virtual Signal step(bool newCandle) = 0;
-        virtual const ParamSet& getParamSet() const;
-        virtual bool checkParamSet(const ParamSet& paramSet) const;
+        const ParamSet& getParamSet() const;
+        virtual bool checkParamSet(const ParamSet& paramSet) const = 0;
         virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots();
         void enableSavingPlots();
         void disableSavingPlots();

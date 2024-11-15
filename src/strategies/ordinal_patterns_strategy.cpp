@@ -12,17 +12,19 @@ namespace TradingBot {
     OrdinalPatternsStrategy::OrdinalPatternsStrategy(
         int fitPeriod,
         int orderPeriod
-    ) : fitPeriod(fitPeriod), orderPeriod(orderPeriod) {
-        paramSet = {fitPeriod, orderPeriod};
-        assert(checkParamSet(paramSet));
-    }
+    )
+        : Strategy({fitPeriod, orderPeriod})
+        , fitPeriod(fitPeriod)
+        , orderPeriod(orderPeriod)
+    {}
 
     OrdinalPatternsStrategy::OrdinalPatternsStrategy(
         const ParamSet& paramSet
-    ) : OrdinalPatternsStrategy(
-        std::get<int>(paramSet[0]),
-        std::get<int>(paramSet[1])
-    ) {}
+    )
+        : Strategy(paramSet)
+        , fitPeriod(std::get<int>(paramSet[0]))
+        , orderPeriod(std::get<int>(paramSet[1]))
+    {}
 
     Signal OrdinalPatternsStrategy::step(bool newCandle) {
         if (!newCandle) {
