@@ -4,7 +4,7 @@ target_link_libraries(
     trading_bot_app
     market
     backtest_market
-    macd_strategy
+    ema_crossover_strategy
     strategy
     fitter
     matplot

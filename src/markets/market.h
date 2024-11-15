@@ -60,6 +60,8 @@ namespace TradingBot {
         OrderSide side;
         double amount;
         double price;
+        double stopLoss = 0;
+        double takeProfit = 0;
 
         bool operator==(const Order& other) const;
     };
@@ -79,6 +81,7 @@ namespace TradingBot {
         virtual const Order& getLastOrder() const;
         time_t getCandleTimeDelta() const;
         virtual bool finished() const;
+        virtual void ModifyStopLossTakeProfit(double stopLoss, double takeProfit);
     protected:
         void saveOrder(Order order);
         Balance balance;

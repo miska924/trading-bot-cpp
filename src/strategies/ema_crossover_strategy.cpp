@@ -1,4 +1,4 @@
-#include "strategies/macd_strategy.h"
+#include "strategies/ema_crossover_strategy.h"
 
 #include <assert.h>
 
@@ -9,26 +9,19 @@
 
 namespace TradingBot {
 
-    MACDStrategy::MACDStrategy(int fastPeriod, int slowPeriod) {
-        paramSet = {
-            fastPeriod,
-            slowPeriod,
-        };
-        assert(checkParamSet(paramSet));
-        slowEMA = EMAFeature(slowPeriod);
-        fastEMA = EMAFeature(fastPeriod);
-    }
+    EMACrossoverStrategy::EMACrossoverStrategy(int fastPeriod, int slowPeriod)
+        : Strategy({fastPeriod, slowPeriod})
+        , fastEMA(fastPeriod)
+        , slowEMA(slowPeriod)
+    {}
 
-    MACDStrategy::MACDStrategy(const ParamSet& paramSet) {
-        assert(checkParamSet(paramSet));
-        this->paramSet = paramSet;
-        int fast = std::get<int>(paramSet[0]);
-        int slow = std::get<int>(paramSet[1]);
-        fastEMA = EMAFeature(fast);
-        slowEMA = EMAFeature(slow);
-    }
+    EMACrossoverStrategy::EMACrossoverStrategy(const ParamSet& paramSet)
+        : Strategy(paramSet)
+        , fastEMA(std::get<int>(paramSet[0]))
+        , slowEMA(std::get<int>(paramSet[1]))
+    {}
 
-    bool MACDStrategy::checkParamSet(const ParamSet& paramSet) const {
+    bool EMACrossoverStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 2) {
             return false;
         }
@@ -45,11 +38,11 @@ namespace TradingBot {
         return true;
     }
 
-    std::vector<std::vector<std::pair<time_t, double> > > MACDStrategy::getPlots() {
+    std::vector<std::vector<std::pair<time_t, double> > > EMACrossoverStrategy::getPlots() {
         return {fastPlot, slowPlot};
     }
 
-    Signal MACDStrategy::step(bool newCandle) {
+    Signal EMACrossoverStrategy::step(bool newCandle) {
         if (!newCandle) {
             return {};
         }
@@ -92,55 +85,109 @@ namespace TradingBot {
         return {};
     }
 
-    MACDHoldSlowStrategy::MACDHoldSlowStrategy(int fastPeriod, int slowPeriod) {
-        paramSet = {
-            fastPeriod,
-            slowPeriod,
-        };
-        hold = slowPeriod;
-        assert(checkParamSet(paramSet));
-        slowEMA = EMAFeature(slowPeriod);
-        fastEMA = EMAFeature(fastPeriod);
+    EMACrossoverAdvancedStrategy::EMACrossoverAdvancedStrategy(int fastPeriod, int slowPeriod)
+        : EMACrossoverStrategy(fastPeriod, slowPeriod)
+    {}
+
+    EMACrossoverAdvancedStrategy::EMACrossoverAdvancedStrategy(const ParamSet& paramSet)
+        : EMACrossoverStrategy(paramSet)
+    {}
+
+    Signal EMACrossoverAdvancedStrategy::step(bool newCandle) {
+        if (!newCandle) {
+            return {};
+        }
+
+        Helpers::VectorView<Candle> candles = market->getCandles();
+
+        if (candles.size() <= slowEMA.getPeriod()) {
+            fast = slow = 0;
+            return {};
+        }
+
+        double previousFast;
+        double previousSlow;
+        if (fast && slow) {
+            previousFast = fast;
+            previousSlow = slow;
+        } else {
+            previousFast = fastEMA(candles.subView(0, candles.size() - 1));
+            previousSlow = slowEMA(candles.subView(0, candles.size() - 1));
+        }
+        fast = fastEMA(candles, true);
+        slow = slowEMA(candles, true);
+
+        if (candles.back().low > fast) {
+            aboveCombo++;
+        } else {
+            aboveCombo = 0;
+        }
+        if (candles.back().low < fast) {
+            belowCombo++;
+        } else {
+            belowCombo = 0;
+        }
+
+        if (savePlots) {
+            fastPlot.push_back({candles.back().time, fast});
+            slowPlot.push_back({candles.back().time, slow});
+        }
+
+        if (fast > slow && previousFast < previousSlow) {
+            if (aboveCombo > fastPeriod / 3) {
+                return {
+                    .reset = market->getBalance().assetB != 0,
+                    .order = 1
+                };
+            } else {
+                return {.reset = market->getBalance().assetB != 0};
+            }
+        } else if (fast < slow && previousFast > previousSlow) {
+            if (belowCombo > fastPeriod / 3) {
+                return {
+                    .reset = market->getBalance().assetB != 0,
+                    .order = -1
+                };
+            } else {
+                return {.reset = market->getBalance().assetB != 0};
+            }
+        }
+        return {};
     }
 
-    MACDHoldSlowStrategy::MACDHoldSlowStrategy(const ParamSet& paramSet) {
-        assert(checkParamSet(paramSet));
-        this->paramSet = paramSet;
-        int fast = std::get<int>(paramSet[0]);
-        int slow = std::get<int>(paramSet[1]);
-        hold = slow;
-        fastEMA = EMAFeature(fast);
-        slowEMA = EMAFeature(slow);
-    }
+    EMACrossoverHoldSlowStrategy::EMACrossoverHoldSlowStrategy(int fastPeriod, int slowPeriod)
+        : EMACrossoverHoldFixedStrategy({fastPeriod, slowPeriod})
+        , fastEMA(fastPeriod)
+        , slowEMA(slowPeriod)
+        , hold(slowPeriod)
+    {}
 
-    MACDHoldFixedStrategy::MACDHoldFixedStrategy(
-        const ParamSet& paramSet
-    ) {
-        assert(checkParamSet(paramSet));
-        this->paramSet = paramSet;
-        int fast = std::get<int>(paramSet[0]);
-        int slow = std::get<int>(paramSet[1]);
-        hold = std::get<int>(paramSet[2]);
-        fastEMA = EMAFeature(fast);
-        slowEMA = EMAFeature(slow);
-    }
+    EMACrossoverHoldSlowStrategy::EMACrossoverHoldSlowStrategy(const ParamSet& paramSet)
+        : Strategy(paramSet)
+        , fastEMA(std::get<int>(paramSet[0]))
+        , slowEMA(std::get<int>(paramSet[1]))
+        , hold(std::get<int>(paramSet[1]))
+    {}
 
-    MACDHoldFixedStrategy::MACDHoldFixedStrategy(
+    EMACrossoverHoldFixedStrategy::EMACrossoverHoldFixedStrategy(const ParamSet& paramSet)
+        : Strategy(paramSet)
+        , fastEMA(std::get<int>(paramSet[0]))
+        , slowEMA(std::get<int>(paramSet[1]))
+        , hold(std::get<int>(paramSet[2]))
+    {}
+
+    EMACrossoverHoldFixedStrategy::EMACrossoverHoldFixedStrategy(
         int fastPeriod,
         int slowPeriod,
         int holdCandles
-    ) : hold(holdCandles) {
-        paramSet = {
-            fastPeriod,
-            slowPeriod,
-            holdCandles,
-        };
-        assert(checkParamSet(paramSet));
-        slowEMA = EMAFeature(slowPeriod);
-        fastEMA = EMAFeature(fastPeriod);
-    }
+    )
+        : Strategy({fastPeriod, slowPeriod, holdCandles})
+        , fastEMA(fastPeriod)
+        , slowEMA(slowPeriod)
+        , hold(holdCandles)
+    {}
 
-    Signal MACDHoldFixedStrategy::step(bool newCandle) {
+    Signal EMACrossoverHoldFixedStrategy::step(bool newCandle) {
         if (!newCandle) {
             return {};
         }
@@ -196,7 +243,7 @@ namespace TradingBot {
         return {.reset = reset};
     }
 
-    bool MACDHoldFixedStrategy::checkParamSet(const ParamSet& paramSet) const {
+    bool EMACrossoverHoldFixedStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 3) {
             return false;
         }
@@ -214,7 +261,7 @@ namespace TradingBot {
         return true;
     }
 
-    bool MACDHoldSlowStrategy::checkParamSet(const ParamSet& paramSet) const {
+    bool EMACrossoverHoldSlowStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 2) {
             return false;
         }

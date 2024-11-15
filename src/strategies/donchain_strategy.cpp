@@ -3,17 +3,16 @@
 
 namespace TradingBot {
 
-    DonchainStrategy::DonchainStrategy(const ParamSet& paramSet):
-        minQueue([](const double& a, const double& b) {
+    DonchainStrategy::DonchainStrategy(const ParamSet& paramSet)
+        : Strategy(paramSet)
+        , period(std::get<int>(paramSet[0]))
+        , minQueue([](const double& a, const double& b) {
             return std::min(a, b);
-        }),
-        maxQueue([](const double& a, const double& b) {
+        })
+        , maxQueue([](const double& a, const double& b) {
             return std::max(a, b);
         }) 
-    {
-        assert(checkParamSet(paramSet));
-        period = std::get<int>(paramSet[0]);
-    }
+    {}
 
     bool DonchainStrategy::checkParamSet(const ParamSet& paramSet) const {
         if (paramSet.size() != 1) {
@@ -54,8 +53,8 @@ namespace TradingBot {
         Candle lastCandle = candles.back();
         double close = lastCandle.close;
 
-        double minimum = minQueue.functionValue();
-        double maximum = maxQueue.functionValue();
+        double minimum = minQueue.getValue();
+        double maximum = maxQueue.getValue();
 
         minPlot.push_back({lastCandle.time, minimum});
         maxPlot.push_back({lastCandle.time, maximum});
@@ -113,8 +112,8 @@ namespace TradingBot {
         Candle lastCandle = candles.back();
         double close = lastCandle.close;
 
-        double minimum = minQueue.functionValue();
-        double maximum = maxQueue.functionValue();
+        double minimum = minQueue.getValue();
+        double maximum = maxQueue.getValue();
 
         if (savePlots) {
             minPlot.push_back({lastCandle.time, minimum});
@@ -186,8 +185,8 @@ namespace TradingBot {
         Candle lastCandle = candles.back();
         double close = lastCandle.close;
 
-        double minimum = minQueue.functionValue();
-        double maximum = maxQueue.functionValue();
+        double minimum = minQueue.getValue();
+        double maximum = maxQueue.getValue();
 
         if (savePlots) {
             minPlot.push_back({lastCandle.time, minimum});

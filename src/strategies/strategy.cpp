@@ -3,6 +3,10 @@
 
 namespace TradingBot {
 
+    Strategy::Strategy(const ParamSet& paramSet) : paramSet(paramSet) {
+        assert(checkParamSet(paramSet));
+    }
+
     std::vector<std::vector<std::pair<time_t, double> > > Strategy::getPlots() {
         return {};
     }
@@ -24,10 +28,6 @@ namespace TradingBot {
 
     const ParamSet& Strategy::getParamSet() const {
         return paramSet;
-    }
-
-    bool Strategy::checkParamSet(const ParamSet& paramSet) const {
-        return true;
     }
 
 } // namespace TradingBot

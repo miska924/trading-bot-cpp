@@ -6,7 +6,11 @@
 
 namespace TradingBot {
 
-    SMAFeature::SMAFeature(int period) : period(period) {}
+    SMAFeature::SMAFeature(int period) :
+        period(period),
+        queue([](double a, double b) -> double {
+            return a + b;
+        }) {}
 
     double sum(const Helpers::VectorView<Candle>& candles, int period) {
         int size = candles.size();
@@ -19,15 +23,22 @@ namespace TradingBot {
     }
 
     double SMAFeature::operator()(const Helpers::VectorView<Candle>& candles, bool incremental) {
-        if (!incremental || !lastValue) {
-            assert(period <= candles.size());
-            lastValue = sum(candles, period);
-            return lastValue / period;
+        int size = candles.size();
+        assert(period <= size);
+
+        if (!incremental) {
+            return sum(candles, period) / period;
         }
-        assert(period + 1 <= candles.size());
-        double diff = (candles.back().close - candles[candles.size() - period - 1].close);
-        lastValue = lastValue + diff;
-        return lastValue / period;
+
+        if (!queue.size()) {
+            for (int i = period; i > 0; --i) {
+                queue.push(candles[size - i].close);
+            }
+        } else {
+            queue.push(candles.back().close);
+            queue.pop();
+        }
+        return queue.getValue() / period;
     }
 
     int SMAFeature::getPeriod() const {

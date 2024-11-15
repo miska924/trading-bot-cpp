@@ -1,6 +1,7 @@
 #pragma once
 
 #include "features/feature.h"
+#include "helpers/function_queue.h"
 
 
 namespace TradingBot {
@@ -9,18 +10,16 @@ namespace TradingBot {
 
     class ATRFeature : public Feature {
     public:
-        ATRFeature(int period = DEFAULT_ATR_PERIOD, bool log = false);
+        ATRFeature(int period = DEFAULT_ATR_PERIOD, bool logPrice = false);
         int getPeriod() const;
         double operator()(
             const Helpers::VectorView<Candle>& candles,
             bool incremental = false
         ) override;
     private:
-        double atr(const Helpers::VectorView<Candle>& candles);
-        double savedSum = 0;
+        bool logPrice;
         int period;
-        bool log;
-        double lastValue = 0;
+        Helpers::FunctionQueue<double> queue;
     };
 
 } // namespace TradingBot

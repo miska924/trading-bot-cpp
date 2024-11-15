@@ -1,6 +1,7 @@
 add_executable(test_ema_feature test_ema_feature.cpp)
 add_executable(test_sma_feature test_sma_feature.cpp)
 add_executable(test_atr_feature test_atr_feature.cpp)
+add_executable(test_bollinger_bands_feature test_bollinger_bands_feature.cpp)
 
 target_link_libraries(
   test_ema_feature
@@ -32,6 +33,15 @@ target_link_libraries(
   vector_view
 )
 
+target_link_libraries(
+  test_bollinger_bands_feature
+  GTest::gtest_main
+  bollinger_bands_feature
+  sma_feature
+  vector_view
+)
+
 gtest_discover_tests(test_ema_feature)
 gtest_discover_tests(test_sma_feature)
 gtest_discover_tests(test_atr_feature)
+gtest_discover_tests(test_bollinger_bands_feature)

@@ -2,6 +2,7 @@ add_library(feature feature.cpp)
 add_library(ema_feature ema_feature.cpp)
 add_library(atr_feature atr_feature.cpp)
 add_library(sma_feature sma_feature.cpp)
+add_library(bollinger_bands_feature bollinger_bands_feature.cpp)
 
 target_link_libraries(
     feature
@@ -26,6 +27,14 @@ target_link_libraries(
 target_link_libraries(
     sma_feature
     feature
+    market
+    vector_view
+)
+
+target_link_libraries(
+    bollinger_bands_feature
+    feature
+    sma_feature
     market
     vector_view
 )

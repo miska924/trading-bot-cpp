@@ -39,6 +39,9 @@ namespace TradingBot {
         double getFee() const override;
 
     private:
+        bool forcePriceOrder(Order order, double price);
+        void checkSLTP();
+    
         double fee;
         Balance startBalance;
 
@@ -46,7 +49,6 @@ namespace TradingBot {
         int current = -1;
         bool saveHistory;
         bool verbose;
-        Order lastOrder = {.side = OrderSide::RESET};
 
         double maxBalance = 0;
         double maxDrawdown = 0;

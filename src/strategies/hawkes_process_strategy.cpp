@@ -5,40 +5,25 @@ namespace TradingBot {
 
     HawkesProcessStrategy::HawkesProcessStrategy(
         const ParamSet& paramSet
-    ) {
-        assert(checkParamSet(paramSet));
-        atrPeriod = std::get<int>(paramSet[0]);
-        normRangePeriod = std::get<int>(paramSet[1]);
-        normalRangeSmoothPeriod = std::get<int>(paramSet[2]);
-        risk = std::get<double>(paramSet[3]);
-        preventDrawdown = std::get<int>(paramSet[4]);
-        preventDrawdownCoeff = std::get<double>(paramSet[5]);
-        atr = ATRFeature(atrPeriod, true);
-    }
+    )
+        : Strategy(paramSet)
+        , atrPeriod(std::get<int>(paramSet[0]))
+        , normRangePeriod(std::get<int>(paramSet[1]))
+        , normalRangeSmoothPeriod(std::get<int>(paramSet[2]))
+        , atr(atrPeriod)
+    {}
 
     HawkesProcessStrategy::HawkesProcessStrategy(
         int atrPeriod,
         int normRangePeriod,
-        int normalRangeSmoothPeriod,
-        double risk,
-        bool preventDrawdown,
-        double preventDrawdownCoeff
-    ) :
-        atrPeriod(atrPeriod),
-        normRangePeriod(normRangePeriod),
-        normalRangeSmoothPeriod(normalRangeSmoothPeriod),
-        risk(risk),
-        preventDrawdown(preventDrawdown),
-        preventDrawdownCoeff(preventDrawdownCoeff)
-    {
-        paramSet = {atrPeriod, normRangePeriod, normalRangeSmoothPeriod, risk, preventDrawdown, preventDrawdownCoeff};
-        assert(checkParamSet(paramSet));
-        atr = ATRFeature(atrPeriod, true);
-    }
-
-    void HawkesProcessStrategy::onMarketInfoAttach() {
-        checkPointBalance = market->getBalance().asAssetA();
-    }
+        int normalRangeSmoothPeriod
+    )
+        : Strategy({atrPeriod, normRangePeriod, normalRangeSmoothPeriod})
+        , atrPeriod(atrPeriod)
+        , normRangePeriod(normRangePeriod)
+        , normalRangeSmoothPeriod(normalRangeSmoothPeriod)
+        , atr(atrPeriod)
+    {}
 
     Signal HawkesProcessStrategy::step(bool newCandle) {
         if (!newCandle) {
@@ -49,16 +34,6 @@ namespace TradingBot {
 
         if (candles.size() < atrPeriod + normRangePeriod - 1) {
             return {};
-        }
-
-        // checkPointBalance = std::max(checkPointBalance, market->getBalance().asAssetA());
-        if (preventDrawdown) {
-            double drawdown = (checkPointBalance - market->getBalance().asAssetA()) / checkPointBalance;
-            if (market->getBalance().assetB != 0 && drawdown > preventDrawdownCoeff) {
-                return {
-                    .reset = true
-                };
-            }
         }
 
         if (normRange.size() == normRangePeriod) {
@@ -121,46 +96,32 @@ namespace TradingBot {
         }
 
         if (candles[lastDownCrossIndex].close < candles[lastUpCrossIndex].close) {
-            checkPointBalance = market->getBalance().asAssetA();
             return {
-                .order = risk
+                .order = 1
             };
         } else {
-            checkPointBalance = market->getBalance().asAssetA();
             return {
-                .order = -risk
+                .order = -1
             };
         }
         return {};
     }
 
     bool HawkesProcessStrategy::checkParamSet(const ParamSet& paramSet) const {
-        if (paramSet.size() != 6) {
+        if (paramSet.size() != 3) {
             return false;
         }
 
         const int* atrPeriod = std::get_if<int>(&paramSet[0]);
         const int* normRangePeriod = std::get_if<int>(&paramSet[1]);
         const int* normalRangeSmoothPeriod = std::get_if<int>(&paramSet[2]);
-        const double* risk = std::get_if<double>(&paramSet[3]);
-        const int* preventDrawdown = std::get_if<int>(&paramSet[4]);
-        const double* preventDrawdownCoeff = std::get_if<double>(&paramSet[5]);
         if (atrPeriod == nullptr ||
             normRangePeriod == nullptr ||
-            preventDrawdown == nullptr ||
-            normalRangeSmoothPeriod == nullptr ||
-            risk == nullptr ||
-            preventDrawdownCoeff == nullptr
+            normalRangeSmoothPeriod == nullptr
         ) {
             return false;
         }
         if (*atrPeriod < 1 || *normRangePeriod < 1 || *normalRangeSmoothPeriod < 1) {
-            return false;
-        }
-        if (*risk < 0) {
-            return false;
-        }
-        if (*preventDrawdown < 0 || *preventDrawdown > 1 || *preventDrawdownCoeff < 0 || *preventDrawdownCoeff > 1) {
             return false;
         }
         if (*normRangePeriod < *normalRangeSmoothPeriod) {

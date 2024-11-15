@@ -4,6 +4,7 @@
 
 #include "features/feature.h"
 #include "helpers/vector_view.h"
+#include "helpers/function_queue.h"
 
 
 namespace TradingBot {
@@ -18,6 +19,7 @@ namespace TradingBot {
     private:
         int period;
         double lastValue = 0;
+        Helpers::FunctionQueue<double> queue;
     };
 
 } // namespace TradingBot

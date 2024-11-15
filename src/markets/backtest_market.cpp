@@ -72,13 +72,17 @@ namespace TradingBot {
     }
 
     bool BacktestMarket::order(Order order) {
+        return forcePriceOrder(order, candles[current].close);
+    }
+
+    bool BacktestMarket::forcePriceOrder(Order order, double price) {
         if (balance.asAssetA() <= 0) {
             return false;
         }
 
         assert(current != -1 && current < candles.size());
         order.time = time();
-        order.price = candles[current].close;
+        order.price = price;
 
         double all = balance.asAssetA();
         double amount = order.amount * all;
@@ -112,11 +116,42 @@ namespace TradingBot {
         return current + 1 >= candles.size();
     }
 
+    void BacktestMarket::checkSLTP() {
+        // std::cerr << lastOrder.stopLoss <<std::endl;
+        if (lastOrder.side == OrderSide::BUY) {
+            if (lastOrder.stopLoss && candles[current].low <= lastOrder.stopLoss) {
+                // std::cerr << "STOP LOSS" << std::endl;
+                forcePriceOrder({.side = OrderSide::RESET}, std::min(candles[current].open, lastOrder.stopLoss));
+            } else if (lastOrder.takeProfit && candles[current].high >= lastOrder.takeProfit) {
+                // std::cerr << "TAKE PROFIT" << std::endl;
+                forcePriceOrder({.side = OrderSide::RESET}, std::max(lastOrder.takeProfit, candles[current].open));
+            }
+        } else if (lastOrder.side == OrderSide::SELL) {
+            if (lastOrder.stopLoss && candles[current].high >= lastOrder.stopLoss) {
+                // std::cerr << "STOP LOSS" << std::endl;
+                forcePriceOrder({.side = OrderSide::RESET}, std::max(candles[current].open, lastOrder.stopLoss));
+            } else if (lastOrder.takeProfit && candles[current].low <= lastOrder.takeProfit) {
+                // std::cerr << "TAKE PROFIT" << std::endl;
+                forcePriceOrder({.side = OrderSide::RESET}, std::min(lastOrder.takeProfit, candles[current].open));
+            }
+        }
+    }
+
     bool BacktestMarket::update() {
         if (current + 1 >= candles.size()) {
             return false;
         }
+
+        // Check open-close-high-low price balances to detect margin call
+        if (balance.asAssetA() <= 0) {
+            std::cerr << "Margin call!" << std::endl;
+            return false;
+        }
+
         ++current;
+        if (balance.assetB) {
+            checkSLTP();
+        }
 
         balance.update(candles[current].close, time());
         if (saveHistory) {
@@ -206,14 +241,7 @@ namespace TradingBot {
 
 
     const Order& BacktestMarket::getLastOrder() const {
-        if (!saveHistory) {
-            return lastOrder;
-        }
-
-        if (orderHistory.empty()) {
-            return lastOrder;
-        }
-        return orderHistory.back();
+        return lastOrder;
     }
 
 } // namespace TradingBot

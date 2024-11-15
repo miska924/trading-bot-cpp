@@ -20,13 +20,12 @@ namespace TradingBot {
             double gapOutCoeff = 10,
             double gap = DEFAULT_SMA_GAP
         );
-        SMABounceStrategy(
-            const ParamSet& paramSet
-        );
-        virtual Signal step(bool newCandle) override;
-        virtual bool checkParamSet(const ParamSet& paramSet) const override;
+        SMABounceStrategy(const ParamSet& paramSet);
 
-        virtual std::vector<std::vector<std::pair<time_t, double> > > getPlots() override;
+        Signal step(bool newCandle) override;
+        bool checkParamSet(const ParamSet& paramSet) const override;
+        std::vector<std::vector<std::pair<time_t, double> > > getPlots() override;
+
     private:
         int period;
         int atrPeriod;

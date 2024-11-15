@@ -3,6 +3,12 @@
 
 namespace TradingBot {
 
+    DummyStrategy::DummyStrategy(const ParamSet& paramSet): Strategy(paramSet) {}
+
+    bool DummyStrategy::checkParamSet(const ParamSet& paramSet) const {
+        return true;
+    }
+
     Signal DummyStrategy::step(bool newCandle) {
         if (!newCandle) {
             return {};

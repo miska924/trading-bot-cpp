@@ -4,7 +4,7 @@
 #include "markets/tinkoff_market.h"
 #include "markets/backtest_market.h"
 #include "strategies/autofit_strategy.h"
-#include "strategies/macd_strategy.h"
+#include "strategies/ema_crossover_strategy.h"
 #include "strategies/hawkes_process_strategy.h"
 #include "strategies/averaging_strategy.h"
 #include "strategies/dummy_strategy.h"

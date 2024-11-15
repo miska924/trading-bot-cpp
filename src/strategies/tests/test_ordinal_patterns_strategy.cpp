@@ -2,7 +2,7 @@
 
 #include "markets/backtest_market.h"
 #include "plotting/plotting.h"
-#include "strategies/macd_strategy.h"
+#include "strategies/ordinal_patterns_strategy.h"
 #include "traders/simple_trader.h"
 
 
@@ -14,37 +14,37 @@ std::vector<Candle> btcusdt15m3yCandles = readCSVFile("../../../../test_data/btc
 std::vector<Candle> gazp1h3yCandles = readCSVFile("../../../../test_data/gazp_1h_3y.csv");
 
 
-TEST(MACDStrategyTest, TestMACDStrategy) {
+TEST(OrdinalPatternsStrategyTest, TestOrdinalPatternsStrategy) {
     BacktestMarket market(btcusdt15m10dCandles);
-    MACDStrategy strategy;
+    OrdinalPatternsStrategy strategy;
 
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestMACDStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+    plot("TestOrdinalPatternsStrategy.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
     EXPECT_EQ(market.getOrderHistory().size(), 56);
     EXPECT_EQ(market.getBalance().asAssetA(), 86.922363544836927);
 }
 
-TEST(MACDStrategyTest, TestMACDStrategyLarge) {
+TEST(OrdinalPatternsStrategyTest, TestOrdinalPatternsStrategyLarge) {
     BacktestMarket market(btcusdt15m3yCandles);
-    MACDStrategy strategy(20, 40);
+    OrdinalPatternsStrategy strategy(10000);
 
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestMACDStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+    plot("TestOrdinalPatternsStrategyLarge.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
     EXPECT_EQ(market.getOrderHistory().size(), 4824);
     EXPECT_EQ(market.getBalance().asAssetA(), 0.01000386245488198);
 }
 
-TEST(MACDStrategyTest, TestMACDStrategyGAZP) {
+TEST(OrdinalPatternsStrategyTest, TestOrdinalPatternsStrategyGAZP) {
     BacktestMarket market(gazp1h3yCandles, true, false, 0.003, {.assetA = 2000});
-    MACDStrategy strategy(64, 124);
+    OrdinalPatternsStrategy strategy(24 * 30, 2);
 
     strategy.enableSavingPlots();
     SimpleTrader(&strategy, &market).run();
-    plot("TestMACDStrategyGAZP.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
+    plot("TestOrdinalPatternsStrategyGAZP.png", market.getCandles().toVector(), market.getOrderHistory(), market.getBalanceHistory(), strategy.getPlots());
 
     EXPECT_EQ(market.getOrderHistory().size(), 224);
     EXPECT_EQ(market.getBalance().asAssetA(), 4523.7747167896732);
